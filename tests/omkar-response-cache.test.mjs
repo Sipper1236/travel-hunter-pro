@@ -58,6 +58,17 @@ test('Omkar cache identity binds exact fare inputs and excludes unsupported shap
  ])assert.equal(omkarResponseCacheKey(unsupported),null);
 });
 
+test('Omkar cache scopes adapter key overrides separately even when the environment key is unchanged',async()=>{
+ const store=createJobStore({path:':memory:'});let calls=0;
+ try{
+  const searchOmkarExpedia=async(input,options)=>{calls++;assert.ok(['account-one','account-two'].includes(options.apiKey));return {offers:[offer(input)],priceObservations:[],sources:[{provider:'Expedia via Omkar',status:'ok',received:1,accepted:1}]};};
+  const first=await searchProviders(query,{providerCache:store,omkarOptions:{apiKey:'account-one'},searchOmkarExpedia});
+  const second=await searchProviders(query,{providerCache:store,omkarOptions:{apiKey:'account-two'},searchOmkarExpedia});
+  assert.equal(calls,2);assert.notEqual(second.sources.find(row=>row.provider==='Expedia via Omkar').cacheStatus,'hit');
+  assert.equal(first.offers.length,1);assert.equal(second.offers.length,1);
+ }finally{store.close();}
+});
+
 test('Omkar evicts a mismatched persisted result before dispatching a fresh exact request',async()=>{
  const store=createJobStore({path:':memory:'}),calls=[];
  try{
