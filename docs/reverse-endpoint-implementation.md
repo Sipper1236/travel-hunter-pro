@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## Bounded regional airport-pair overlap — 2026-11-23
+
+Auto-detected two-region one-way adult-only count searches now run up to two exact airport pairs concurrently, while source calls still use their shared per-provider pacing/cooldown. Pair result slots preserve deterministic final coverage order; early provider stops prevent new dispatches and report any already-active pair. Family, identified, infant, youth/senior, round-trip, and ordinary place-expansion shapes stay sequential because they may use browser sessions. Focused location/region/worker tests pass **36/36**. No live provider calls were made; measured speedup and p95 remain unverified. [Evidence](regional-pair-streaming-2026-11-23.md).
+
 ## Successful-response quota exhaustion guard — 2026-11-23
 
 The shared transport now applies a durable source cooldown when a successful response reports `X-RateLimit-Requests-Remaining: 0` and a valid future `X-RateLimit-Requests-Reset`. It still returns the successful response to the active adapter; only later jobs are deferred. This avoids spending a follow-up request after the final allowed request and handles multiple local workers through the same SQLite source policy. The 15 focused source-fetch tests and 39 combined source-fetch/Ignav tests pass; full suite passes 663/663; build passes after retrying Next.js's reminder. The tests use fake responses; no provider request was made. [Evidence](provider-quota-exhaustion-2026-11-23.md).

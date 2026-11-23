@@ -76,11 +76,33 @@ test('region pair search checks the bounded Cartesian airport set and reports co
  assert.equal(result.coverage.origin.moreAvailable,true);assert.equal(result.offers.length,4);
 });
 
+test('adult one-way region searches start a later pair while an earlier pair is still pending',async()=>{
+ const {searchRegionPair}=await import('../lib/regions.mjs');let releaseSlow,resolveThird;const thirdStarted=new Promise(resolve=>{resolveThird=resolve;}),slow=new Promise(resolve=>{releaseSlow=resolve;});
+ const airports={North:{airports:[{code:'AAA'},{code:'BBB'}]},South:{airports:[{code:'CCC'},{code:'DDD'}]}};
+ const pending=searchRegionPair({...q,origin:'North',destination:'South',airportLimit:4},async name=>({region:{name},...airports[name],method:'fixture'}),async input=>{
+  if(input.origin==='AAA'&&input.destination==='CCC')return slow;
+  if(input.origin==='AAA'&&input.destination==='DDD')return {offers:[],sources:[{provider:'Example',status:'ok'}],complete:false};
+  if(input.origin==='BBB'&&input.destination==='CCC')resolveThird();
+  return {offers:[],sources:[{provider:'Example',status:'ok'}],complete:false};
+ },{allowParallelPairs:true});
+ try{
+  await Promise.race([thirdStarted,new Promise((_,reject)=>setTimeout(()=>reject(Error('third route waited for the first route')),500))]);
+ }finally{releaseSlow({offers:[],sources:[{provider:'Example',status:'ok'}],complete:false});}
+ const result=await pending;assert.equal(result.coverage.pairConcurrency,2);assert.equal(result.coverage.pairsChecked,4);assert.deepEqual(result.coverage.checked.map(pair=>[pair.origin.code,pair.destination.code]),[['AAA','CCC'],['AAA','DDD'],['BBB','CCC'],['BBB','DDD']]);
+});
+
+test('family region pair searches stay sequential to avoid overlapping browser-backed Matrix sessions',async()=>{
+ const {searchRegionPair}=await import('../lib/regions.mjs');let active=0,maxActive=0;
+ const airports={North:{airports:[{code:'AAA'},{code:'BBB'}]},South:{airports:[{code:'CCC'},{code:'DDD'}]}};
+ const result=await searchRegionPair({...q,origin:'North',destination:'South',airportLimit:4,children:1,childrenAges:[7]},async name=>({region:{name},...airports[name],method:'fixture'}),async()=>{active++;maxActive=Math.max(active,maxActive);await new Promise(resolve=>setTimeout(resolve,1));active--;return {offers:[],sources:[{provider:'Example',status:'ok'}],complete:false};},{allowParallelPairs:true});
+ assert.equal(maxActive,1);assert.equal(result.coverage.pairConcurrency,1);assert.equal(result.coverage.pairsChecked,4);
+});
+
 test('region pair search stops on provider blocks and reports partial coverage',async()=>{
  const {searchRegionPair}=await import('../lib/regions.mjs');let calls=0;
- const result=await searchRegionPair({...q,origin:'North',destination:'South',airportLimit:4},async name=>({region:{name},airports:[{code:name==='North'?'AAA':'BBB'},{code:name==='North'?'CCC':'DDD'}],method:'test',moreAvailable:false}),async()=>{calls++;return {offers:[],sources:[{provider:'Example',status:'blocked'}],complete:false};});
- assert.equal(calls,1);assert.equal(result.coverage.pairsPlanned,4);assert.equal(result.coverage.pairsChecked,1);assert.equal(result.coverage.stoppedBySource,true);
- assert.deepEqual(result.coverage.uncheckedPairs.map(p=>[p.origin.code,p.destination.code]),[['AAA','DDD'],['CCC','BBB'],['CCC','DDD']]);
+ const result=await searchRegionPair({...q,origin:'North',destination:'South',airportLimit:4},async name=>({region:{name},airports:[{code:name==='North'?'AAA':'BBB'},{code:name==='North'?'CCC':'DDD'}],method:'test',moreAvailable:false}),async()=>{calls++;return {offers:[],sources:[{provider:'Example',status:'blocked'}],complete:false};},{allowParallelPairs:true});
+ assert.equal(calls,2);assert.equal(result.coverage.pairConcurrency,2);assert.equal(result.coverage.pairsPlanned,4);assert.equal(result.coverage.pairsChecked,2);assert.equal(result.coverage.stoppedBySource,true);
+ assert.deepEqual(result.coverage.uncheckedPairs.map(p=>[p.origin.code,p.destination.code]),[['CCC','BBB'],['CCC','DDD']]);
 });
 
 test('region coverage records resolved airports excluded by the cap',async()=>{

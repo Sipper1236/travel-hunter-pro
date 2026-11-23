@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Bounded regional airport-pair overlap — 2026-11-23
+
+Regional one-way adult-only count searches now overlap up to two airport pairs, with shared source pacing/cooldown, deterministic final coverage ordering, serialized recovery checkpoints and explicit active-pair coverage after an early source stop. Family, identified travelers, infants/youths/seniors, round trips and ordinary city expansion remain sequential. Focused region/location/streaming/worker tests pass **36/36**, full `npm test` **665/665**, and `npm run build` passes after retrying Next.js's security reminder. `npm audit --audit-level=low` still reports one moderate Next.js 16.4.3 advisory; the forced fix is outside the declared dependency range. No live provider call was made; real speedup/p95 remains open. [Evidence](docs/regional-pair-streaming-2026-11-23.md).
+
 ## Successful-response quota exhaustion guard — 2026-11-23
 
 `lib/source-fetch.mjs` now reads standardized remaining/reset headers on successful responses. If the provider reports zero requests left and a valid future reset, the current response remains available to the adapter while the shared SQLite policy defers later calls across jobs/workers. The regression confirms a second worker on an independent SQLite connection is blocked. The first full run uncovered and fixed compatibility with Ignav's numeric deterministic test clock. Verification: source-fetch **15/15**, combined source-fetch/Ignav **39/39**, full `npm test` **663/663**, production build passed after the Next.js security reminder retry. `npm audit --audit-level=low` still reports one moderate Next.js 16.4.3 advisory; fix requires an out-of-range forced upgrade. No live provider call was made for this change. [Evidence](docs/provider-quota-exhaustion-2026-11-23.md).

@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Bounded regional airport-pair overlap — 2026-11-23
+
+Auto-detected two-region, one-way adult-only count searches now run with at most two airport pairs in flight. Provider pacing/cooldown and exact route input remain unchanged; final coverage is deterministic, and a refusal stops new pairs while exposing already-active work. Query shapes that may use a browser-backed session remain sequential. Focused region/location/streaming/worker tests pass **36/36**, full `npm test` passes **665/665**, and the production build passes after retrying Next.js's reminder. Audit remains one moderate Next.js advisory with an out-of-range suggested fix. No live provider request or p95 benchmark was made. Overall reverse-endpoint implementation and §17 remain incomplete. [Evidence](docs/regional-pair-streaming-2026-11-23.md).
+
 ## Successful-response quota exhaustion guard — 2026-11-23
 
 Shared HTTP transport now persists a provider cooldown when a successful response says the request quota is exhausted and provides a valid future reset. It preserves the active response and blocks later jobs through the existing durable SQLite provider policy. A compatibility regression discovered by the full suite was corrected for numeric `now` overrides. Tests: focused source-fetch 15/15; source-fetch plus Ignav 39/39; full suite 663/663. Build passed after retrying Next.js 16.4.3's security reminder. Audit remains one moderate Next.js vulnerability; the available fix is outside the declared dependency range. No live provider request was made. This does not close reverse-endpoint or §17 acceptance. See [evidence](docs/provider-quota-exhaustion-2026-11-23.md).

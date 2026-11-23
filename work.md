@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## Reverse-endpoint progress — bounded regional airport-pair overlap — 2026-11-23
+
+Two-region one-way adult-only count searches can now keep up to two exact airport pairs in flight. This reduces idle time between a route's slower selected sources and the next route while preserving each provider's shared pacing/cooldown, deterministic final route order, checkpoints, source-stop behavior, and explicit unsearched-pair coverage. Family, identified-traveler, round-trip, and ordinary city expansion paths stay sequential because they can use browser-backed sessions. Focused region/location/worker tests pass 36/36; no live call was made, so no real-provider speedup or p95 is claimed. Full suite/build/audit results are recorded in [regional-pair evidence](docs/regional-pair-streaming-2026-11-23.md). Reverse-endpoint completion and §17 remain open.
+
 ## Reverse-endpoint progress — provider quota exhaustion handling — 2026-11-23
 
 The shared structured HTTP transport now reads standardized `X-RateLimit-Requests-Remaining` and `X-RateLimit-Requests-Reset` headers on successful responses. If the response consumed the final account request, it persists a per-source cooldown until reset so another concurrent or later job does not make a request that cannot succeed. The current response still returns to its parser. Focused transport tests pass 15/15; full `npm test` passes 663/663, and production build passes after retrying the Next.js security reminder. This is fixture-backed policy evidence; no provider request was made for the change. See [quota exhaustion evidence](docs/provider-quota-exhaustion-2026-11-23.md). Reverse-endpoint completion and §17 remain open.

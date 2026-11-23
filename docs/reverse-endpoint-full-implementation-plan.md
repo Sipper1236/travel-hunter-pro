@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Bounded regional airport-pair overlap — 2026-11-23
+
+Two-region one-way adult-only count searches now overlap at most two exact airport pairs. Per-provider pacing/cooldown remains in force; final route coverage is ordered by the selected pair list, and a source refusal stops new pair scheduling while allowing active work to finish visibly. Family/identified/infant/youth/senior parties, round trips, and ordinary city expansion stay sequential where browser sessions may be used. Focused search/location/streaming/worker tests pass **36/36**, with no live call or speed benchmark. [Evidence](regional-pair-streaming-2026-11-23.md). Provider and §17 acceptance gaps remain open.
+
 ## Successful-response provider quota exhaustion — 2026-11-23
 
 Shared HTTP transport now persists a provider cooldown from successful response quota headers when no requests remain, keeping the current valid response while preventing later jobs from spending a doomed request. A source-policy regression covers the exact zero-remaining/reset case; this was fixture-only, with no live call. Focused source-fetch tests pass 15/15; combined source-fetch/Ignav tests pass 39/39; full suite 663/663; build passed after retrying Next.js's security reminder. Audit reports one moderate Next.js 16.4.3 advisory; the suggested fix requires a forced update outside the declared dependency range. [Evidence](provider-quota-exhaustion-2026-11-23.md). Provider onboarding and reverse-endpoint completion remain open.
@@ -60,7 +64,7 @@ On 2026-11-23, a direct YHZ→LAX one-way Ignav call (2027-01-15, one adult/econ
 
 This document maps the source adapters in the current tree and defines what “fully implemented” means for a reverse/structured endpoint. It is an engineering plan, not a claim that every endpoint is public, stable, authorized for automation, configured, or returning live inventory.
 
-The fastest useful design is to send one exact provider request through the narrowest available structured interface, validate its response immediately, and publish validated results as they arrive. It must not skip provider pacing, query budgets, age/occupancy checks, or evidence labels. “Reverse endpoint” means an observed structured interface; it does not make a private web-app RPC a supported API.
+The fastest useful design is to send one exact provider request through the narrowest available structured interface, validate its response immediately, and publish validated results as they arrive. It must not skip provider pacing, query budgets, age/occupancy checks, or evidence labels. Eligible one-way adult-only regional searches now overlap two airport pairs; party/trip shapes that may require browser sessions stay sequential. “Reverse endpoint” means an observed structured interface; it does not make a private web-app RPC a supported API.
 
 Current work already includes several structured partner APIs, first-party web-app RPCs, bounded parsers, durable jobs, shared source cooldowns, caching, and progressive results. Some sources still use ordinary browser flows because server authorization or a supported price endpoint is missing. The canonical acceptance authority remains [`work.md` §17](../work.md#17-acceptance-criteria); every applicable criterion is still to be evidenced independently.
 
