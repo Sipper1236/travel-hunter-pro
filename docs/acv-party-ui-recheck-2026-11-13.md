@@ -2,7 +2,7 @@
 
 Ran `npm run check:package-infant-guidance` against the current rebuilt loopback site. The controlled Chromium flow verified provider-selected city/airport handling and child/infant party entry, derived infant ages in the browser, and asserted DOBs were not sent to the package worker. All supplier calls were intercepted (0 provider calls); the controlled test made 4 local job calls. Browser output reported `dobSent:false`, `providerCalls:0`, and `jobCalls:4`.
 
-The form and worker continue to restrict child/infant package parties to one room. This matches the previously observed Air Canada Vacations widget behavior: with two rooms selected, its child control was disabled; with one room, child selection worked. Do not bypass that product constraint or combine separate package reservations into a synthetic multi-room total. [Prior live widget evidence](../work.md#p6-live-occupancy-recheck--2026-11-09-0004-utc).
+The form and worker continue to restrict child/infant package parties to one room. This matches the previously observed Air Canada Vacations widget behavior: with two rooms selected, its child control was disabled; with one room, child selection worked. Do not bypass that product constraint or combine separate package reservations into a synthetic multi-room total. [Prior live widget evidence](../work.md#p6-live-childmulti-room-widget-recheck--2026-11-14-1744-utc).
 
 This recheck proves local UI/request behavior only. It did not submit a live package search and does not verify current supplier occupancy acceptance, availability, property address, all fees, checkout totals, or seller price. P6 remains Partial.
 

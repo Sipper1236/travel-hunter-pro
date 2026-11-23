@@ -9,6 +9,7 @@
     "build": "next build",
     "start": "next start --hostname 127.0.0.1",
     "test": "node --test --test-concurrency=2 tests/*.test.mjs",
+    "check:markdown-links": "node scripts/check-markdown-links.mjs",
     "jobs:database": "node scripts/job-database.mjs",
     "worker": "node --env-file-if-exists=.env.local scripts/search-worker.mjs",
     "check:local-stack": "node scripts/check-local-stack.mjs",
@@ -43,7 +44,7 @@
   "dependencies": {
     "@js-temporal/polyfill": "^0.5.1",
     "api-anything": "^0.2.0",
-    "next": "16.4.3",
+    "next": "16.4.6",
     "playwright-core": "1.64.1",
     "react": "19.2.4",
     "react-dom": "19.2.4"

@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## GitHub repository audit — 2026-11-23
+
+The source repository is public; the app remains local-only and is not approved for deployment. Repository presentation, contributor/security guidance, read-only CI, Dependabot, Markdown-link validation, and a Next.js 16.4.6 security update are in place. Verification: clean `npm ci`, 705/705 tests, production build, `npm audit --audit-level=low` with zero findings, 131-file Markdown link check, accessibility controls, responsive UI, dark/light contrast, and local-stack checks passed. The accessibility check timed out twice during its reload suggestion wait, then passed on a full rerun. See the [repository release audit](docs/github-repository-release-audit-2026-11-23.md). Full `work.md` §17 acceptance remains incomplete; public source hosting does not enable public application hosting.
+
 ## Air Canada Vacations structured package response cache — 2026-11-23
 
 The package worker now checks a short durable exact-query cache for positive fresh structured responses from the normal ACV widget endpoint. Its hashed key covers the full validated location, date, passenger, room, cabin, filter, result-limit and budget query. Reads rerun `packageWorkerResultError` and freshness validation. Only the structured widget path caches; rendered-DOM fallbacks, incomplete page loads, empty and invalid results bypass it. Focused cache/contract suites pass 41/41; full `npm test` passes 705/705; the build passes after the security-reminder retry. Audit still reports one moderate Next.js issue. Fixture-only evidence; no live speed claim. [Evidence](docs/acv-structured-response-cache-2026-11-23.md).

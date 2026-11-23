@@ -1,5 +1,7 @@
 # Travel Hunter Pro documentation index
 
+- [GitHub repository release audit (2026-11-23)](github-repository-release-audit-2026-11-23.md) — public repository preparation, dependency update, clean-install verification, UI check results, and remaining release gates.
+
 - [Reverse-endpoint implementation plan and inventory](reverse-endpoint-implementation.md) — current adapter/API inventory, access and entitlement gates, full adapter contract, and latency/streaming targets.
 - [Reservit exact-query hotel response cache (2026-11-23)](reservit-response-cache-2026-11-23.md) — durable exact-query cache for complete fresh official hotel observations, with fixture evidence and live-source limits.
 - [ACV structured package response cache (2026-11-23)](acv-structured-response-cache-2026-11-23.md) — exact-query reuse for validated ordinary-widget responses, with explicit partial-coverage and live-access limits.
@@ -55,7 +57,6 @@
 - [Booking.com Demand conditional-charge disclosure (2026-11-13)](booking-demand-conditional-charge-disclosure-2026-11-13.md) — distinguishes priced, explicitly empty, and missing/incalculable conditional fees; preserves observed charge IDs, modes, condition IDs, and online-collection flags; includes official API references and current controlled verification.
 
 - [ACV adult multi-room allocation disclosure (2026-11-13)](acv-adult-multiroom-allocation-disclosure-2026-11-13.md) — aggregate adult/room URL validation, explicit unknown per-room assignment, controlled tests, and remaining live package gaps.
-
 
 - [P13 initial-page touch-target audit (2026-11-13 23:01 UTC)](p13-touch-target-audit-2026-11-13.md) — 80 initial-page target measurements at 320/1280px, checkbox/radio label handling, and dynamic/device limitations.
 
@@ -156,6 +157,7 @@
 ## Evidence discipline
 
 Fixture-backed tests demonstrate code behavior only. They do not establish current inventory, seller acceptance, exact taxes/fees, eligibility, bookability, or successful checkout. For current status and reproducible commands, use the dated top entries in `HANDOFF.md` and `IMPLEMENTATION-STATUS.md`; keep open items from `work.md` explicitly unresolved until real source evidence exists.
+
 - [Bounded live separate-ticket comparison (2026-11-08 23:38 UTC)](separate-ticket-live-check-2026-11-08-2338.md) — one exact YHZ–LAX round trip, five logical fare searches, two higher-priced exact-flight ticket plans; no alternate airport pairs or seller verification.
 
 ## Latest implementation evidence

@@ -110,7 +110,7 @@ This document maps the source adapters in the current tree and defines what “f
 
 The fastest useful design is to send one exact provider request through the narrowest available structured interface, validate its response immediately, and publish validated results as they arrive. It must not skip provider pacing, query budgets, age/occupancy checks, or evidence labels. Eligible one-way adult-only regional searches now overlap two airport pairs; party/trip shapes that may require browser sessions stay sequential. “Reverse endpoint” means an observed structured interface; it does not make a private web-app RPC a supported API.
 
-Current work already includes several structured partner APIs, first-party web-app RPCs, bounded parsers, durable jobs, shared source cooldowns, caching, and progressive results. Some sources still use ordinary browser flows because server authorization or a supported price endpoint is missing. The canonical acceptance authority remains [`work.md` §17](../work.md#17-acceptance-criteria); every applicable criterion is still to be evidenced independently.
+Current work already includes several structured partner APIs, first-party web-app RPCs, bounded parsers, durable jobs, shared source cooldowns, caching, and progressive results. Some sources still use ordinary browser flows because server authorization or a supported price endpoint is missing. The canonical acceptance authority remains [`work.md` §17](../work.md#17-acceptance-tests-before-labeling-any-feature-done); every applicable criterion is still to be evidenced independently.
 
 ## What counts as a complete adapter
 

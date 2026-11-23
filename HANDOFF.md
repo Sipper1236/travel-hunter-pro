@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## GitHub repository audit and publication — 2026-11-23
+
+The repository is public at [github.com/Sipper1236/travel-hunter-pro](https://github.com/Sipper1236/travel-hunter-pro). The root README now gives a concise local setup and API overview; contributor/security guidance, read-only CI, Dependabot, and a Markdown-link checker are included. Next.js is pinned at 16.4.6. Clean install, all 705 tests, production build, npm audit (0 vulnerabilities), Markdown links (131 files), accessibility controls, responsive UI, theme contrast, and local-stack checks passed. The accessibility check timed out twice during the reload suggestion wait, then passed on a full rerun; see [release audit](docs/github-repository-release-audit-2026-11-23.md). The website is still local-only and this publication does not complete `work.md` §17. No license file is present. Continue with open product acceptance items.
+
 ## Air Canada Vacations structured package response cache — 2026-11-23
 
 Package workers now reuse exact positive, fresh results from the normal widget's structured `packages-search/search` response. The 30-second durable cache binds the normalized route/location, dates, exact party/room occupancy, cabin, filters and page/budget settings; a hit skips terms fetch, browser launch and widget search, preserves the original observation times, and emits cache-hit progress. Only worker-valid structured results cache; empty, stale, invalid, incomplete-page and DOM-fallback results bypass it. Focused normalization/worker-contract tests pass 41/41; full `npm test` passes 705/705 and the build passes after retrying past the security reminder. One moderate Next.js audit advisory remains. Fixture evidence only; no live speedup is claimed. See [evidence](docs/acv-structured-response-cache-2026-11-23.md).
