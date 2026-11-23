@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Google round-trip failure diagnostics — 2026-11-23
+
+Failure results from the native Google round-trip path now preserve one allow-listed internal stage and bounded request/selection counters through the provider status envelope. A regression failed before this change and now passes; the focused native adapter suite passes 16/16. It confirms fixture behavior only. No live request was repeated, and the earlier live `invalid_response` remains unexplained because its stage was not captured. Google RPC permission/stability and round-trip cache live evidence remain open. [Evidence](docs/google-roundtrip-failure-stage-2026-11-23.md).
+
 ## ITA Matrix live adapter recheck — 2026-11-23
 
 A bounded read-only YYZ–LHR one-way CAD request for 2027-02-12 returned 10 Matrix records and 10 accepted itineraries in 41,688 ms. An identical follow-up through `searchProviders` reported a durable cache hit with 10 accepted records; the normal flight worker validator returned `null`. This verifies one live query shape through the endpoint, provider pipeline and cache, but the cold response is slow and is not p95. No price or provider payload was retained. Matrix endpoint scope/rate terms, seller verification and broader live coverage remain open. [Evidence](docs/matrix-live-recheck-2026-11-23.md).

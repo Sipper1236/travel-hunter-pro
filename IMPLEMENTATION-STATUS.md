@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Google round-trip failure diagnostics — 2026-11-23
+
+The native Google round-trip failure envelope now forwards an allow-listed internal stage alongside bounded RPC/selection counts and the provider code. A fixture regression failed before the change and passes now; `node --test tests/google-native.test.mjs` passes 16/16 and confirms no route, date, source URL, or payload leaks into serialized diagnostics. No live request was made. The prior live `invalid_response` remains unexplained and was not repeated. This improves future triage but does not complete Google reliability, provider authorization, or round-trip cache live validation. [Evidence](docs/google-roundtrip-failure-stage-2026-11-23.md).
+
 ## ITA Matrix live adapter recheck — 2026-11-23
 
 One read-only YYZ–LHR one-way request for 2027-02-12, one adult/economy/CAD returned 10 records and 10 accepted itineraries in 41,688 ms. An identical follow-up through `searchProviders` returned `cached: true`, retained 10 accepted itineraries and passed `flightWorkerResultError` (`null`). This demonstrates one live API response through the normal pipeline and durable Matrix cache reuse across separate Node processes. The cold upstream response is slow, and the sample cannot establish p95 or broader reliability. No prices or payloads were retained. Current use scope/rate terms, seller refresh and `work.md` §17 evidence remain open. [Evidence](docs/matrix-live-recheck-2026-11-23.md).

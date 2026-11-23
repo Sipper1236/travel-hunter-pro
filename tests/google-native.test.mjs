@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {searchGoogleOneWay,searchGoogleRoundTrip} from '../lib/google-native.mjs';
+import {sourceFailure} from '../lib/source-errors.mjs';
 import {googleFixtureBrowserFactory,googleTestTimezones} from './fixtures/google-native-site.mjs';
 const query={origin:'YHZ',destination:'LHR',date:'2099-04-15',returnDate:'2099-04-20',tripType:'round-trip',cabin:'economy',adults:2,children:1,childrenAges:[15],filters:{}};
 const options=(fixture={})=>({policy:null,browserFactory:googleFixtureBrowserFactory(fixture),loadTimezones:googleTestTimezones,timeoutMs:10000});
@@ -64,7 +65,14 @@ test('native access refusals and human checks stop without repeated supplier ope
  }
 });
 test('native mismatched return evidence is sanitized instead of becoming an offer',async()=>{
- await assert.rejects(searchGoogleRoundTrip(query,options({mode:'wrong-return'})),error=>error.sourceStatus==='invalid_response'&&!error.message.includes('tfs=')&&!error.message.includes('2099'));
+ await assert.rejects(searchGoogleRoundTrip(query,options({mode:'wrong-return'})),error=>{
+  const failure=sourceFailure('Google Flights',error);
+  assert.equal(failure.providerCode,'native_evidence_incomplete');
+  assert.equal(failure.nativeCoverage.failureStage,'normalization');
+  assert.equal(failure.nativeCoverage.nativeRpcRequests,3);
+  assert.doesNotMatch(JSON.stringify(failure),/tfs=|tfu=|2099|YHZ|LHR/);
+  return error.sourceStatus==='invalid_response'&&!error.message.includes('tfs=')&&!error.message.includes('2099');
+ });
 });
 test('empty native frames require an explicit source no-results statement',async()=>{
  await assert.rejects(searchGoogleRoundTrip(query,options({mode:'empty-frame'})),error=>error.providerCode==='native_direction_incomplete');
