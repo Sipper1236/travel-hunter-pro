@@ -2,7 +2,7 @@
 
 ## Flight provider status-row schema — 2026-11-23
 
-Provider result rows now reject unknown top-level fields; current route/source metadata remains accepted. Nested source telemetry and status values still need full schema definitions. [Evidence](flight-worker-source-row-schema-2026-11-23.md).
+Provider result rows now reject unknown fields and unrecognized statuses; current route/source metadata remains accepted. Nested source telemetry still needs full schema definitions. [Evidence](flight-worker-source-row-schema-2026-11-23.md).
 
 ## Flight offer booking-claim boundary — 2026-11-23
 

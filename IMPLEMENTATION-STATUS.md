@@ -2,7 +2,7 @@
 
 ## Flight worker provider-row fields — 2026-11-23
 
-Unknown provider status row fields now fail validation. Full suite passed 739/739; build and controlled browser check passed; audit found zero vulnerabilities. Nested telemetry and the remaining worker/result schemas remain incomplete. [Evidence](docs/flight-worker-source-row-schema-2026-11-23.md).
+Unknown provider status row fields and unrecognized status values now fail validation. Full suite passed 739/739; build and controlled browser check passed; audit found zero vulnerabilities. Nested telemetry and the remaining worker/result schemas remain incomplete. [Evidence](docs/flight-worker-source-row-schema-2026-11-23.md).
 
 ## Flight offer booking-claim guard — 2026-11-23
 

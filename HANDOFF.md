@@ -2,7 +2,7 @@
 
 ## Flight worker provider-row schema — 2026-11-23
 
-Provider status rows now reject unknown field names, including `sellerVerified`; current adapter metadata remains allowed. Focused cross-provider suites passed 99/99 and full suite 739/739. Build, audit, and controlled browser check passed. Nested telemetry, empty-result status values, and other result subtrees are still open. [Evidence](docs/flight-worker-source-row-schema-2026-11-23.md).
+Provider status rows now reject unknown field names, including `sellerVerified`, and unknown states such as `booked` on empty results; current adapter metadata and statuses remain allowed. Focused cross-provider suites passed 99/99 and full suite 739/739. Build, audit, and controlled browser check passed. Nested telemetry and other result subtrees are still open. [Evidence](docs/flight-worker-source-row-schema-2026-11-23.md).
 
 ## Flight offer booking-claim guard — 2026-11-23
 

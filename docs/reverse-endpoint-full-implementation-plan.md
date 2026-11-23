@@ -2,7 +2,7 @@
 
 ## Flight provider status-row schema — 2026-11-23
 
-Flight worker source rows use an allowlist of current provider/orchestration keys. This blocks unsupported nested seller claims but does not yet validate nested telemetry or all source statuses. [Evidence](flight-worker-source-row-schema-2026-11-23.md).
+Flight worker source rows use an allowlist of current provider/orchestration keys and known source states. This blocks unsupported seller claims but does not yet validate nested telemetry. [Evidence](flight-worker-source-row-schema-2026-11-23.md).
 
 ## Flight offer booking-claim boundary — 2026-11-23
 

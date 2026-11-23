@@ -2,7 +2,7 @@
 
 ## 2026-11-23 continuation — flight provider-row field allowlist
 
-Flight worker provider status rows now reject unknown keys, including an injected `sellerVerified` claim. Current source and regional route metadata remain allowed. Focused tests passed 99/99; full suite 739/739; isolated build, audit, and controlled browser check passed. This does not yet validate the contents of nested timing/diagnostic objects, enumerate source states for empty results, or complete schemas for observations/coverage/other workers. [Evidence](docs/flight-worker-source-row-schema-2026-11-23.md).
+Flight worker provider status rows now reject unknown keys and states, including injected `sellerVerified` data or `status: "booked"`. Current source and regional route metadata remain allowed. Focused tests passed 99/99; full suite 739/739; isolated build, audit, and controlled browser check passed. This does not yet validate the contents of nested timing/diagnostic objects or complete schemas for observations/coverage/other workers. [Evidence](docs/flight-worker-source-row-schema-2026-11-23.md).
 
 ## 2026-11-23 continuation — flight offer booking claims
 

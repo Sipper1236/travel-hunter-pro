@@ -2,7 +2,7 @@
 
 ## 2026-11-23 continuation — flight provider-row schema
 
-Added a known-field boundary for flight worker source rows, including regional source coverage; unknown `sellerVerified` metadata now fails validation. Full suite 739/739, build, audit, and controlled browser QA passed. Nested telemetry and the broad completion goal remain open. See [evidence](docs/flight-worker-source-row-schema-2026-11-23.md).
+Added known-field and status-value boundaries for flight worker source rows, including regional source coverage; unknown `sellerVerified` metadata and `booked` status now fail validation. Full suite 739/739, build, audit, and controlled browser QA passed. Nested telemetry and the broad completion goal remain open. See [evidence](docs/flight-worker-source-row-schema-2026-11-23.md).
 
 ## 2026-11-23 continuation — reject unsupported booking claims
 
