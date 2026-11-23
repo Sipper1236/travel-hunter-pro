@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {chromium} from 'playwright-core';
 import {searchFareCalendar} from '../lib/calendar-search.mjs';
 import {providerCapabilities} from '../lib/provider-capabilities.mjs';
+import {buildMatrixUrl} from '../lib/ita-matrix.mjs';
 
 const base=new URL(process.env.TRAVEL_CHECK_URL||'http://127.0.0.1:3000');
 if(base.protocol!=='http:'||!['localhost','127.0.0.1','[::1]'].includes(base.hostname))throw Error('Use the local application URL.');
@@ -17,13 +18,16 @@ try{
   if(url.pathname==='/api/airports')return route.fulfill({json:{items:[]}});
   if(url.pathname==='/api/search/capabilities'){
    const input=route.request().postDataJSON();
-   return route.fulfill({json:{providers:providerCapabilities(input,{calendar:true,configured:{ignav:true}})}});
+   return route.fulfill({json:{providers:providerCapabilities(input,{calendar:true,configured:{ignav:true,itaMatrix:true}})}});
   }
   if(url.pathname!=='/api/search/jobs')return url.pathname.startsWith('/api/')?route.fulfill({status:404,json:{error:'Unexpected local endpoint.'}}):route.continue();
   const body=route.request().postDataJSON();
   if(body.action==='start'){
    const input=body.input;
    result=await searchFareCalendar(input,{searcher:async query=>({offers:[fare(query,400)],sources:[{provider:'Ignav',status:'ok',received:1}]})});
+   result.query.source='all';
+   const matrixCell=result.dates[0];
+   matrixCell.priceObservations=[{provider:'ITA Matrix',price:507,currency:'CAD',priceScope:'Matrix-reported group total',travelers:`${input.adults} adult`,cabin:'economy',origin:input.origin,destination:input.destination,departureDate:matrixCell.date,...(matrixCell.returnDate?{returnDate:matrixCell.returnDate}:{}),observedAt:new Date().toISOString(),itineraryVerified:false,sourceUrl:buildMatrixUrl({origin:input.origin,destination:input.destination,departureDate:matrixCell.date,...(matrixCell.returnDate?{returnDate:matrixCell.returnDate}:{}),passengers:{adults:input.adults},cabin:'COACH',currency:'CAD'})}];
    const omittedAirports=Array.from({length:34},(_,index)=>({code:`A${String.fromCharCode(65+Math.floor(index/26))}${String.fromCharCode(65+index%26)}`,name:`Omitted Airport ${index+1}`}));
    result.locationCoverage={destination:{type:'region',method:'UNSD M49 Europe country membership',airports:[{code:'FRA',name:'Frankfurt Airport'}],uncheckedAirports:omittedAirports,uncheckedAirportCount:omittedAirports.length,moreAvailable:true,popularityExclusionLimit:3,popularityRankedCandidates:627,popularityExclusionShortfall:0,popularityExcludedAirports:[{code:'LHR',name:'London Heathrow Airport',passengers:83884572}]}};
    preview=structuredClone(result);preview.locationCoverage.destination.uncheckedAirports=preview.locationCoverage.destination.uncheckedAirports.slice(0,20);preview.locationCoverage.destination.uncheckedAirportsSampled=true;preview.partial=true;preview.status='running';preview.limitation='Live prices are provisional until all airport pairs finish.';preview.dates[0].received=0;
@@ -56,12 +60,16 @@ try{
  await calendar.locator('div').filter({hasText:'Fare calendar: running'}).filter({hasText:'1 of 4 provider responses received'}).first().waitFor();
  const liveAnnouncement=calendar.locator('[role="status"]');
  await liveAnnouncement.first().waitFor({state:'attached'});
- assert.match(await liveAnnouncement.first().textContent(),/^Fare calendar update: 1 provider response received; 1 date has matching itinerary quotes and 0 price-only calendar values\. Search in progress\.$/);
+ assert.match(await liveAnnouncement.first().textContent(),/^Fare calendar update: 1 provider response received; 1 date has matching itinerary quotes and 1 price-only calendar value\. Search in progress\.$/);
  assert.equal(await liveAnnouncement.count(),1,'Streaming results should expose one concise live announcement, without per-poll job announcements.');
  const day=calendar.locator('.calendar-day').first();
  await day.locator('strong').first().waitFor();
  assert.match(await day.locator('strong').first().innerText(),/CAD\s*500\.00/);
  assert.match(await day.innerText(),/Best fresh fare seen so far/);
+ const matrixPrice=day.locator('[aria-label="Price-only calendar observation"]');
+ await matrixPrice.getByText('CAD 507.00',{exact:true}).waitFor();
+ await matrixPrice.getByText(/ITA Matrix price-only calendar value/).waitFor();
+ await matrixPrice.getByText(/not a fare quote/).waitFor();
  await day.getByText('2 validated fare observations received so far',{exact:true}).waitFor();
  await day.locator('.observed-offers').getByText('CAD 510.00',{exact:true}).waitFor();
  assert.equal(await day.locator('.observed-offers > ol > li').count(),2,'every validated fare received so far is rendered while the search is still running');
@@ -74,12 +82,13 @@ try{
  await page.waitForFunction(element=>/CAD\s*400\.00/.test(element.textContent),await day.locator('strong').first().elementHandle());
  assert.doesNotMatch(await day.innerText(),/Best fresh fare seen so far/);
  await calendar.getByText(/1 of 1 provider responses received/).waitFor();
- await page.waitForFunction(element=>element.textContent==='Fare calendar search complete: 1 provider response received; 1 date has matching itinerary quotes and 0 price-only calendar values.',await liveAnnouncement.first().elementHandle());
+ await matrixPrice.getByText('CAD 507.00',{exact:true}).waitFor();
+ await page.waitForFunction(element=>element.textContent==='Fare calendar search complete: 1 provider response received; 1 date has matching itinerary quotes and 1 price-only calendar value.',await liveAnnouncement.first().elementHandle());
  await page.waitForFunction(element=>element.textContent.includes('ABH'),await location.elementHandle());
  assert.match(await location.innerText(),/Known omitted airport codes:/,'completed UI lists every code returned by the resolver');
  assert.doesNotMatch(await location.innerText(),/Known omitted airport codes \(sample\)/);
  await location.getByText('Popularity policy excludes up to 3 traffic-ranked airports (627 ranked; shortfall 0): LHR (London Heathrow Airport).',{exact:true}).waitFor();
  assert.equal(errors.length,0,errors.join('; '));
- console.log(JSON.stringify({ui:'calendar-progressive-results',previewOffers:[500,510],finalPrice:400,statusPolls:polls,providerRequestsIntercepted:true,pageErrors:errors.length}));
+ console.log(JSON.stringify({ui:'calendar-progressive-results-with-matrix-price-only',previewOffers:[500,510],matrixPriceOnly:507,finalPrice:400,statusPolls:polls,providerRequestsIntercepted:true,pageErrors:errors.length}));
  await context.close();
 }finally{await browser.close();}

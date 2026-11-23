@@ -1,10 +1,14 @@
 # Travel Hunter Pro — Current Handoff
 
+## Mixed itinerary and Matrix price-only calendar display — 2026-11-23
+
+Fixed a calendar rendering branch that hid price-only provider observations whenever the same date also had a validated itinerary. Itinerary offers and price-only observations now render independently. The production-build browser fixture displays both an Ignav itinerary and a Matrix group-total observation during partial progress and final completion; it uses intercepted fixture traffic and reports two polls and zero page errors. Focused calendar/query/worker tests pass **57/57**; full `npm test` passes **657/657**; the build passed after the Next.js reminder retry. No live provider request was made. Details: [Matrix calendar evidence](docs/matrix-price-only-calendar-2026-11-23.md).
+
 ## ITA Matrix price-only calendar observations — 2026-11-23
 
 Unfiltered exact-route/date fare calendars can now retain an ITA Matrix-reported group total as a separate price-only observation. Acceptance verifies CAD, exact amount, party counts, cabin, one-way or fixed-return dates, observation time, and the encoded Matrix search state in the source URL. Any active filter suppresses this total because the observed group total does not prove filter compliance. The calendar explicitly labels it as not a fare quote and does not place it in the itinerary price field; “Search flights” returns to Matrix for Matrix observations. The durable worker repeats these checks and requires successful Matrix coverage for that route.
 
-Focused calendar/query/worker tests pass **57/57**, full `npm test` passes **657/657**, and `npm run build` passes. No live Matrix query or Matrix-specific browser card check was run for this change; the regression uses a provider fixture. Full repository acceptance and live/provider verification remain open. [Evidence](docs/matrix-price-only-calendar-2026-11-23.md).
+Focused calendar/query/worker tests pass **57/57**, full `npm test` passes **657/657**, and `npm run build` passes. A production-build browser fixture displays the Matrix price-only calendar card beside itinerary results in partial and completed states; it uses intercepted provider/job traffic. No live Matrix query was made. Full repository acceptance and live/provider verification remain open. [Evidence](docs/matrix-price-only-calendar-2026-11-23.md).
 
 ## ITA Matrix streaming in fare calendars — 2026-11-23
 

@@ -11,11 +11,12 @@ Calendar search accepts these observations only with a successful Matrix source 
 ## Verification
 
 - `node --test tests/calendar-search.test.mjs tests/calendar-worker-result.test.mjs tests/calendar-query.test.mjs`: **57/57 passed**.
-- `npm test`: **657/657 passed**.
+- `npm test`: **657/657 passed** after the mixed-result UI adjustment.
 - `npm run build`: passed on Next.js 16.4.3; its security-upgrade reminder remains.
 - Regression coverage includes a valid exact unfiltered Matrix total, worker acceptance, tampered route URL rejection, filtered-result suppression, and wrong-route suppression.
-- No live Matrix request was made. No Matrix-specific browser/UI fixture was run for this change. Existing generic calendar UI checks do not establish that a Matrix price-only card rendered in a browser.
+- The production-build Chromium check `scripts/check-calendar-streaming-ui.mjs` now injects an exact-route Matrix price-only fixture beside a streamed itinerary. It verifies both values appear during partial progress and after completion, with two status polls, intercepted provider/job traffic, and zero page errors. This caught and fixed a UI branch that hid price-only observations whenever an itinerary was present.
+- No live Matrix request was made. The browser evidence is fixture-backed and does not establish live Matrix availability or latency.
 
 ## Limits and next steps
 
-This does not verify flight segments, seller inventory, availability, baggage, taxes/fees beyond the provider-reported group total, or booking completion. Matrix's query state may be structurally valid while the remote result is stale or unavailable; the displayed timestamp is the observation time and no live refresh was performed. Provider rate/access terms and live latency remain unaudited for this feature. Test with an authorized Matrix request and a browser-intercepted Matrix calendar card, then verify seller handoff separately. The wider reverse-endpoint plan and `work.md` §17 are still incomplete.
+This does not verify flight segments, seller inventory, availability, baggage, taxes/fees beyond the provider-reported group total, or booking completion. Matrix's query state may be structurally valid while the remote result is stale or unavailable; the displayed timestamp is the observation time and no live refresh was performed. Provider rate/access terms and live latency remain unaudited for this feature. Verify with an authorized Matrix request and then verify seller handoff separately. The wider reverse-endpoint plan and `work.md` §17 are still incomplete.

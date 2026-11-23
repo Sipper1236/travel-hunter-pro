@@ -1,8 +1,12 @@
 # Reverse-endpoint implementation plan and inventory
 
+## Mixed itinerary and price-only calendar display — 2026-11-23
+
+Calendar cells render Matrix group totals separately even when an itinerary quote is present. The production browser fixture caught and verifies this combination in partial and final views with all network calls intercepted. Focused calendar tests 57/57 and build pass; full `npm test` passes **657/657**. This is fixture evidence, not live Matrix coverage. See [evidence](matrix-price-only-calendar-2026-11-23.md).
+
 ## Calendar price-only Matrix support — 2026-11-23
 
-All-source and Matrix-only calendars can retain an exact ITA Matrix group-total observation as price-only calendar data when its decoded source URL matches the exact route, dates, party, cabin, and Matrix search options. Filtered searches discard these totals. Durable result validation requires a successful Matrix route row and eligible Matrix capability. This does not create a flight offer or verify the itinerary/seller. Focused tests pass 57/57, full suite 657/657, and build passes; no live query or Matrix-specific browser check was made. See [evidence](matrix-price-only-calendar-2026-11-23.md). The source inventory and completion criteria below remain open.
+All-source and Matrix-only calendars can retain an exact ITA Matrix group-total observation as price-only calendar data when its decoded source URL matches the exact route, dates, party, cabin, and Matrix search options. Filtered searches discard these totals. Durable result validation requires a successful Matrix route row and eligible Matrix capability. This does not create a flight offer or verify the itinerary/seller. The production-build browser fixture verifies the Matrix total beside itinerary results during partial and completed states. Focused tests pass 57/57, full suite 657/657, and build passes after the Next.js reminder retry; no live query was made. See [evidence](matrix-price-only-calendar-2026-11-23.md). The source inventory and completion criteria below remain open.
 
 ## ITA Matrix streaming in fare calendars — 2026-11-23
 

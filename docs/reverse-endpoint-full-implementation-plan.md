@@ -1,8 +1,12 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Mixed itinerary and price-only calendar display — 2026-11-23
+
+Fixed the UI so a calendar cell can show a validated itinerary and a separate Matrix price-only total together. A production-build fixture browser check verifies partial and complete rendering (two polls; provider requests intercepted; zero page errors). Focused suite 57/57 and production build pass; full `npm test` passes **657/657**. This is fixture-backed UI evidence only. See [Matrix evidence](matrix-price-only-calendar-2026-11-23.md).
+
 ## Calendar price-only Matrix support — 2026-11-23
 
-Implemented fixture-backed propagation and durable validation of exact, unfiltered Matrix group-total observations in calendar cells. Values are explicitly separate from itinerary quotes. Focused tests 57/57, full suite 657/657, production build passed. No live call or Matrix-specific UI browser check. See [evidence](matrix-price-only-calendar-2026-11-23.md). Provider access/rate authorization, live Matrix evidence, and full acceptance remain open.
+Implemented fixture-backed propagation, durable validation, and calendar display of exact, unfiltered Matrix group-total observations alongside itinerary quotes. Focused tests 57/57, full suite 657/657, production build passed after the Next.js reminder retry; a controlled browser fixture verified partial and completed mixed results. No live call was made. See [evidence](matrix-price-only-calendar-2026-11-23.md). Provider access/rate authorization, live Matrix evidence, and full acceptance remain open.
 
 ## ITA Matrix streaming in fare calendars — 2026-11-23
 

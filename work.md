@@ -1,8 +1,12 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## Reverse-endpoint progress — mixed calendar results — 2026-11-23
+
+Fixed the calendar UI so a Matrix group-total price-only observation is visible even when another source returned an itinerary for the same date. A production-build, provider-intercepted browser fixture now verifies both during partial and complete display (two polls, zero browser errors). Focused calendar/query/worker tests passed 57/57 and the production build passed after retrying Next.js's security reminder; the full `npm test` passes **657/657**. No live provider call occurred. This improves result visibility but does not establish Matrix runtime coverage or complete the reverse-endpoint goal / §17. [Evidence](docs/matrix-price-only-calendar-2026-11-23.md).
+
 ## Reverse-endpoint progress — 2026-11-23
 
-The calendar now supports ITA Matrix group-total price-only observations for exact unfiltered route/date/party/cabin queries. It validates the encoded Matrix source query and retains provider coverage provenance; filtered or mismatched totals are dropped. The UI labels these values as observations, not fare quotes, and directs follow-up searches to Matrix. Verification: focused calendar/query/worker tests 57/57, full suite 657/657, production build passed. No live Matrix request or Matrix-specific browser test was performed. This does not complete reverse-endpoint implementation or §17. See [dated evidence](docs/matrix-price-only-calendar-2026-11-23.md).
+The calendar now supports ITA Matrix group-total price-only observations for exact unfiltered route/date/party/cabin queries. It validates the encoded Matrix source query and retains provider coverage provenance; filtered or mismatched totals are dropped. The UI labels these values as observations, not fare quotes, and directs follow-up searches to Matrix. Verification: focused calendar/query/worker tests 57/57, full suite 657/657, production build passed. A production-build fixture browser check displays the Matrix observation beside an itinerary during partial and complete results. No live Matrix request was made. This does not complete reverse-endpoint implementation or §17. See [dated evidence](docs/matrix-price-only-calendar-2026-11-23.md).
 
 ## ITA Matrix streaming in fare calendars — 2026-11-23
 
