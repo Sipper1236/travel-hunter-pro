@@ -24,6 +24,12 @@ test('native one-way treats only an explicit source no-results message as a zero
  assert.deepEqual(result.offers,[]);assert.equal(result.sources[0].status,'ok');assert.equal(result.sources[0].nativeCoverage.noResultsConfirmed,true);
  assert.match(result.sources[0].reason,/explicitly displayed no matching flights/);
 });
+test('native one-way accepts an explicit visible no-results page without waiting for a missing RPC',async()=>{
+ const started=performance.now();
+ const result=await searchGoogleOneWay(oneWay,{...options({mode:'one-way-no-rpc-no-flights',directState:{adults:1,children:0,origin:oneWay.origin,destination:oneWay.destination,date:oneWay.date}})});
+ assert.deepEqual(result.offers,[]);assert.equal(result.sources[0].status,'ok');assert.equal(result.sources[0].nativeCoverage.nativeRpcRequests,0);assert.equal(result.sources[0].nativeCoverage.nativeRpcResponses,0);assert.equal(result.sources[0].nativeCoverage.noResultsConfirmed,true);
+ assert.ok(performance.now()-started<5000,'Explicit page evidence should complete without waiting for the RPC timeout.');
+});
 test('native one-way rejects an empty RPC when Google does not display an explicit no-results message',async()=>{
  await assert.rejects(searchGoogleOneWay(oneWay,{...options({mode:'one-way-empty',directState:{adults:1,children:0,origin:oneWay.origin,destination:oneWay.destination,date:oneWay.date}})}),error=>error.providerCode==='native_one_way_evidence_incomplete');
 });
