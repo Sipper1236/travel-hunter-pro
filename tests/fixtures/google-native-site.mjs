@@ -13,7 +13,7 @@ function leg(from,to,date,returning=false){
 }
 function dataFor(state,stage,mode){
  if(['no-flights','empty-frame'].includes(mode))return [];
- const out=leg(state.origin,state.destination,state.date),back=leg(state.destination,state.origin,state.returnDate,true);
+ const out=leg(state.origin,state.destination,state.date),back=leg(state.destination,state.origin,state.returnDate??state.date,true);
  if(mode==='wrong-return'&&stage==='booking')back[4]=back[2][0][20]=[2099,4,29];
  if(stage!=='booking'){const data=[];data[3]=[[[stage==='outbound'?out:back,[[null,1200]]]]];return data;}
  const seller=[];seller[0]=2;seller[1]=[['AC','Air Canada']];seller[3]=[['AC','860'],['AC','861']];seller[6]=['test-phone','test-phone'];seller[7]=[[null,1200],'test-price-reference'];
@@ -35,7 +35,11 @@ export async function installGoogleNativeFixture(page,{mode,onRequest,directStat
   const request=route.request(),url=new URL(request.url());
   if(mode==='direct-refresh'&&url.pathname==='/travel/flights/booking')return route.fulfill({contentType:'text/html',body:html.replace('const state={adults:1,children:0}','const state='+JSON.stringify(directState)).replace('</script>','lookup(\'booking\');</script>')});
   if(mode==='navigate-return'&&url.pathname==='/travel/flights/search'){const state=JSON.parse(url.searchParams.get('fixtureState'));return route.fulfill({contentType:'text/html',body:html.replace('const state={adults:1,children:0}', 'const state='+JSON.stringify(state)).replace('</script>',"paint('return');</script>")});}
-  if(url.pathname==='/travel/flights')return route.fulfill({status:mode==='rate'?429:200,headers:mode==='rate'?{'Retry-After':'120'}:{},contentType:'text/html',body:mode==='challenge'?'Unusual traffic. Verify you are human.':mode==='no-flights'?html.replace('<script>','<script>window.googleFixtureNoFlights=true;'):mode==='navigate-return'?html.replace('<script>','<script>window.googleFixtureNavigate=true;'):mode==='request-bound'?html.replace("search.onclick=()=>lookup('outbound');","search.onclick=()=>{for(let i=0;i<13;i++)void lookup('outbound');};"):html});
+  if(url.pathname==='/travel/flights'){
+   const state=directState??{adults:1,children:0};
+   const body=mode==='challenge'?'Unusual traffic. Verify you are human.':mode==='no-flights'?html.replace('<script>','<script>window.googleFixtureNoFlights=true;'):mode==='navigate-return'?html.replace('<script>','<script>window.googleFixtureNavigate=true;'):mode==='request-bound'?html.replace("search.onclick=()=>lookup('outbound');","search.onclick=()=>{for(let i=0;i<13;i++)void lookup('outbound');};"):mode==='one-way'?html.replace('const state={adults:1,children:0}',`const state=${JSON.stringify(state)}`).replace('</script>',"lookup('outbound');</script>"):html;
+   return route.fulfill({status:mode==='rate'?429:200,headers:mode==='rate'?{'Retry-After':'120'}:{},contentType:'text/html',body});
+  }
   if(url.pathname.startsWith(service)){
    const {state,stage}=request.postDataJSON();onRequest?.({state,stage});
    if(/birthDate|guardianId|travelers/.test(request.postData()))return route.fulfill({status:400,body:'Test rejects private identities in source requests.'});

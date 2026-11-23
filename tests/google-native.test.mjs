@@ -1,9 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {searchGoogleRoundTrip} from '../lib/google-native.mjs';
+import {searchGoogleOneWay,searchGoogleRoundTrip} from '../lib/google-native.mjs';
 import {googleFixtureBrowserFactory,googleTestTimezones} from './fixtures/google-native-site.mjs';
 const query={origin:'YHZ',destination:'LHR',date:'2099-04-15',returnDate:'2099-04-20',tripType:'round-trip',cabin:'economy',adults:2,children:1,childrenAges:[15],filters:{}};
 const options=(fixture={})=>({policy:null,browserFactory:googleFixtureBrowserFactory(fixture),loadTimezones:googleTestTimezones,timeoutMs:10000});
+const oneWay={origin:'YHZ',destination:'LHR',date:'2099-04-15',tripType:'one-way',cabin:'economy',adults:1,children:0,filters:{}};
+test('native one-way browser returns exact segment evidence and labels the price as unrefreshed',async()=>{
+ const {tripType,...defaultedOneWay}=oneWay;
+ const result=await searchGoogleOneWay(defaultedOneWay,{...options({mode:'one-way',directState:{adults:1,children:0,origin:oneWay.origin,destination:oneWay.destination,date:oneWay.date}})});
+ assert.equal(result.offers.length,1);assert.equal(result.offers[0].price,1200);assert.equal(result.offers[0].currency,'CAD');
+ assert.equal(result.offers[0].segments[0].flight_number,'860');assert.equal(result.offers[0].segments[0].departure_time_utc,'2099-04-15T11:00:00Z');
+ assert.match(result.offers[0].bookingStatus,/not been rechecked/);assert.match(result.offers[0].fees,/not independently verified/);
+ assert.equal(result.sources[0].nativeCoverage.nativeRpcRequests,1);assert.equal(result.sources[0].nativeCoverage.nativeRpcResponses,1);
+ assert.equal(result.sources[0].nativeCoverage.validatedCandidates,1);assert.equal(result.sources[0].nativeCoverage.nativeRpcLatency.samples,1);
+});
+test('native one-way refuses source access checks and unsupported party sizes',async()=>{
+ await assert.rejects(searchGoogleOneWay(oneWay,{...options({mode:'challenge'}),policy:{reserveSource:()=>({waitMs:0}),deferSource(){}}}),error=>error.sourceStatus==='blocked');
+ await assert.rejects(searchGoogleOneWay({...oneWay,adults:2},options()),error=>error.sourceStatus==='unsupported_party');
+ await assert.rejects(searchGoogleOneWay(oneWay,{...options({mode:'rate'}),policy:{reserveSource:()=>({waitMs:0}),deferSource(){}}}),error=>error.sourceStatus==='rate_limited');
+});
 test('native browser sends the full source party and returns only a completely selected group return',async()=>{
  const requests=[];const result=await searchGoogleRoundTrip(query,options({onRequest:request=>requests.push(request)}));
  assert.equal(result.offers.length,1);assert.equal(result.offers[0].price,1200);assert.equal(result.offers[0].googleBookingMode,'phone');
