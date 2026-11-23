@@ -70,7 +70,7 @@ test('multi-room direct observations preserve exact allocations and do not claim
  }finally{await rm(home,{recursive:true,force:true});}
 });
 test('official hotel results reuse only exact fresh Reservit observations from the durable provider cache',async()=>{
- const directory=await mkdtemp(join(tmpdir(),'official-hotel-cache-')),db=join(directory,'jobs.sqlite'),store=createJobStore(db);let discoveries=0,reads=0,quotes=0;
+ const directory=await mkdtemp(join(tmpdir(),'official-hotel-cache-')),db=join(directory,'jobs.sqlite'),store=createJobStore({path:db});let discoveries=0,reads=0,quotes=0;
  const discover=async()=>{discoveries++;return {candidates:[{website:'https://hotel.example.com/'}],coverage:{discovered:1,checkedLimit:1}};};
  const read=async()=>{reads++;return new Response(html(),{headers:{'content-type':'text/html'}});};
  const quote=async(q,property)=>{quotes++;return searchReservit(q,property,{stateHome:join(directory,'api-anything'),fetcher:async()=>Response.json({bestPrice:'C$ 800.00',bestPrice_unFormatted:800})});};

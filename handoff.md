@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Detailed Handoff (updated 2026-11-23)
 
+## 2026-11-23 continuation — hotel worker status schema
+
+Hotel worker validation now rejects fabricated statuses such as `booked`; any status on priced results must be `complete` or `partial`. Focused hotel/Booking.com/Reservit/Flight + Hotel suites passed 71/71; full `npm test` passed 726/726, build passed, audit found 0 vulnerabilities, and Markdown links passed for 140 files. Fixed a test isolation issue by constructing the cache store with `{path: db}`. No live source request. [Evidence](docs/hotel-worker-status-guard-2026-11-23.md).
+
 ## 2026-11-23 continuation — comparison worker status schema
 
 Comparison worker validation now rejects invented terminal states. Segment mode requires a status emitted by the producer or wrapper; party mode allows no status or the wrapper's `budget_exhausted`. Regressions reproduced acceptance of `booked` and a missing segment result status. Focused suites passed 62/62; full `npm test` passed 725/725, build passed, audit found 0 vulnerabilities, and Markdown links passed for 139 files. No source request. [Evidence](docs/comparison-worker-status-guard-2026-11-23.md).

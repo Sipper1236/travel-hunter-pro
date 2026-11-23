@@ -1,5 +1,6 @@
 # Travel Hunter Pro documentation index
 
+- [Hotel worker status schema (2026-11-23)](hotel-worker-status-guard-2026-11-23.md) — known search outcomes, no booking claims, and a cache-test isolation correction.
 - [Comparison worker status schema (2026-11-23)](comparison-worker-status-guard-2026-11-23.md) — mode-specific terminal status validation at the durable worker boundary.
 - [Package worker status schema (2026-11-23)](package-worker-status-guard-2026-11-23.md) — rejects unverified-currency outputs at the durable worker boundary while preserving explicit normalizer behavior.
 - [Hotel worker query envelope (2026-11-23)](hotel-worker-query-envelope-2026-11-23.md) — rejects unexpected hotel query fields and cross-checks resolved city identifiers.

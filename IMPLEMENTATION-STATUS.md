@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Hotel worker status schema — 2026-11-23
+
+Hotel result validation now rejects invented top-level status labels and restricts priced results to the producer's `complete`/`partial` outcomes. Focused hotel/Booking.com/Reservit/Flight + Hotel tests passed 71/71; full `npm test` passed 726/726; build passed; audit found 0 vulnerabilities; Markdown links passed for 140 files. The official-hotel cache test now opens its intended temporary SQLite path rather than the default job database. No provider request. [Evidence](docs/hotel-worker-status-guard-2026-11-23.md).
+
 ## Comparison worker status schema — 2026-11-23
 
 Comparison persistence now constrains top-level statuses to those emitted by its mode-specific producer and requires segment-mode terminal status. Focused suites passed 62/62; full `npm test` passed 725/725; build passed; audit found 0 vulnerabilities; Markdown links passed for 139 files. No provider call. This is strict-schema progress, not live ticket eligibility, inventory, or seller evidence. [Evidence](docs/comparison-worker-status-guard-2026-11-23.md).

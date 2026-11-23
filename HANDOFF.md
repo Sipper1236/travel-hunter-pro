@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Hotel worker status schema — 2026-11-23
+
+Hotel worker results now reject invented top-level statuses such as `booked`; priced results can carry only `complete` or `partial`. Focused hotel/Booking.com/Reservit/Flight + Hotel suites passed 71/71; full `npm test` passed 726/726. Build passed, audit found 0 vulnerabilities, and Markdown links passed for 140 files. This run also fixed a cache-test isolation bug where a temporary DB path was passed with the wrong `createJobStore` signature. No source request. [Evidence](docs/hotel-worker-status-guard-2026-11-23.md).
+
 ## Comparison worker status schema — 2026-11-23
 
 The comparison result guard now rejects invented top-level statuses; segment-mode outputs require one of the producer's known outcomes, while party-split outputs may omit status or report `budget_exhausted`. Regressions reproduced acceptance of `booked` and missing segment status. Focused comparison suites passed 62/62; full `npm test` passed 725/725. Build passed, audit found 0 vulnerabilities, and Markdown links passed for 139 files. No provider request. [Evidence](docs/comparison-worker-status-guard-2026-11-23.md).

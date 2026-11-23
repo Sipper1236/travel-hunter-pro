@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — hotel worker status schema
+
+Hotel persistence rejects unrecognized statuses and prevents priced results from carrying a failure or booking state. Focused hotel/Booking.com/Reservit/Flight + Hotel tests passed 71/71; full `npm test` passed 726/726, build passed, audit found 0 vulnerabilities, and Markdown links passed for 140 files. No provider request. The cache test now uses an isolated DB path. Broader hotel availability and checkout acceptance remain open. [Evidence](docs/hotel-worker-status-guard-2026-11-23.md).
+
 ## 2026-11-23 continuation — comparison worker status schema
 
 Comparison worker status now follows the exact output modes: segment results require a known terminal outcome; party results allow no status or the wrapper's budget-exhausted status. Focused suites passed 62/62; full `npm test` passed 725/725, build passed, audit found 0 vulnerabilities, and Markdown links passed for 139 files. No provider request. This advances only P0 schema enforcement. [Evidence](docs/comparison-worker-status-guard-2026-11-23.md).

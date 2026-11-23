@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## P0 hotel worker status schema — 2026-11-23
+
+Hotel worker persistence now rejects unrecognized top-level statuses such as `booked`; if offers are present, any top-level status must be `complete` or `partial`. Focused hotel, Booking.com, Reservit, and Flight + Hotel suites passed 71/71; full `npm test` passed 726/726; build passed; audit found 0 vulnerabilities; Markdown links passed for 140 files. Corrected the official-hotel cache test to use its intended temporary database via `createJobStore({path: db})`. No provider request. [Evidence](docs/hotel-worker-status-guard-2026-11-23.md).
+
 ## P0 comparison worker status schema — 2026-11-23
 
 Comparison worker persistence now constrains top-level status to the exact outcomes emitted by the producer for each mode. Segment comparisons require status; party comparisons permit omission or the wrapper's `budget_exhausted`. Test-first regressions reproduced invented `booked` and missing segment status acceptance; focused suites passed 62/62, full `npm test` passed 725/725, build passed, audit found 0 vulnerabilities, and Markdown links passed for 139 files. No provider request. [Evidence](docs/comparison-worker-status-guard-2026-11-23.md).

@@ -33,6 +33,10 @@ test('hotel worker rejects unrecognized query-envelope fields while allowing des
  assert.match(hotelWorkerResultError(injected,input,now),/unrecognized query field/);
 });
 
+test('hotel worker rejects invented top-level result statuses',()=>{
+ assert.match(hotelWorkerResultError({...result(),status:'booked'},input,now),/unknown hotel result status/);
+});
+
 test('priced hotel offers require matching observed source coverage',()=>{
  const valid=result();
  assert.match(hotelWorkerResultError({...valid,sourceResults:[]},input,now),/lacks valid provider source status/);
