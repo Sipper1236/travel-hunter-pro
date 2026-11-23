@@ -2,7 +2,7 @@
 
 ## Ignav live adapter check — 2026-11-23
 
-One read-only direct adapter request ran with the configured Ignav credential: YHZ→LAX, 2027-01-15, one-way, one adult, economy, Canada market. It returned `ok` in 7,438 ms with 58 flight rows received, 25 accepted and 33 rejected. A follow-up owner-bound job through an isolated production server and durable worker completed in 3,056 ms, persisted progress, and reported 25 accepted; because cache provenance was not recorded, that job does not prove a second provider request. No itinerary, price, seller, or booking details were printed or captured. Browser rendering, fare freshness, seller availability, and broader source coverage remain open. See [the dated evidence note](ignav-live-adapter-check-2026-11-23.md).
+One read-only direct adapter request ran with the configured Ignav credential: YHZ→LAX, 2027-01-15, one-way, one adult, economy, Canada market. It returned `ok` in 7,438 ms with 58 flight rows received, 25 accepted and 33 rejected. A follow-up owner-bound job through an isolated production server and durable worker completed in 3,056 ms, persisted progress, and reported 25 accepted. Code inspection confirms the new job's empty route checkpoint dispatches the Ignav adapter through shared HTTP transport, so this was a provider-backed request rather than a cached flight result. No itinerary, price, seller, or booking details were printed or captured. Browser rendering, p95 latency, fare freshness, seller availability, and broader source coverage remain open. See [the dated evidence note](ignav-live-adapter-check-2026-11-23.md).
 
 ## ACV adult multi-room update — 2026-11-23
 
