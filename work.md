@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## Reverse-endpoint progress — ITA Matrix live pipeline recheck — 2026-11-23
+
+One bounded live ITA Matrix API search for YYZ→LHR, one-way 2027-02-12, one adult/economy/CAD returned 10 records and accepted 10 complete itinerary offers in 41,688 ms. An identical follow-up through `searchProviders` returned the durable Matrix cache hit, again with 10 accepted results, and passed the normal flight worker-result validator. No prices or payloads were retained. This proves one live route/query plus cross-process cache integration only; the cold response is slow, not p95, and no seller checkout or current access/rate terms were verified. [Evidence](docs/matrix-live-recheck-2026-11-23.md). Broader reverse-endpoint implementation and §17 remain incomplete.
+
 ## Reverse-endpoint progress — exact Google one-way response cache — 2026-11-23
 
 Google's native one-way results-page adapter now reuses exact, fresh, validated itineraries from the durable provider cache for Google-only and all-source searches. Cache identity includes exact airport route/date, party, cabin, normalized filters, and fixed Canadian locale/CAD. Only nonempty, full-itinerary CAD results with the exact Google URL and fresh observation timestamps are stored; tampered entries are deleted and hits preserve the source timestamp. Maximum TTL is 60 seconds, bounded by quote freshness. Fixture/store regressions pass 20/20 with provider tests; the full suite passes 690/690 and the build passes after retrying past Next.js 16.4.3's security reminder. No live hit or speed benchmark was measured. This does not resolve Google's web-app RPC permission/stability or seller-refresh gaps. [Evidence](docs/google-oneway-response-cache-2026-11-23.md). Reverse-endpoint implementation and §17 remain incomplete.

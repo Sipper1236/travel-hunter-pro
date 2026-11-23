@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## ITA Matrix live adapter recheck — 2026-11-23
+
+A bounded read-only YYZ–LHR one-way CAD request for 2027-02-12 returned 10 Matrix records and 10 accepted itineraries in 41,688 ms. An identical follow-up through `searchProviders` reported a durable cache hit with 10 accepted records; the normal flight worker validator returned `null`. This verifies one live query shape through the endpoint, provider pipeline and cache, but the cold response is slow and is not p95. No price or provider payload was retained. Matrix endpoint scope/rate terms, seller verification and broader live coverage remain open. [Evidence](docs/matrix-live-recheck-2026-11-23.md).
+
 ## Google native one-way exact-query cache — 2026-11-23
 
 Validated Google one-way itinerary observations now reuse the durable provider cache for up to 60 seconds, capped by the original quote-freshness deadline. The key binds exact route, date, party, cabin, locale/currency and filters. Only nonempty results that still pass exact-query, Google URL, CAD, freshness and full-itinerary validation are stored; tampered/invalid cache rows are deleted, and hits retain their original observation times. This is wired for Google-only and all-source flight searches. Focused provider/cache tests pass 20/20, full `npm test` passes 690/690, and `npm run build` passes on retry after Next.js 16.4.3's security reminder. No live cache-hit timing was measured. Provider use scope, live stability, seller refresh and broader reverse-endpoint acceptance remain open. [Evidence](docs/google-oneway-response-cache-2026-11-23.md).

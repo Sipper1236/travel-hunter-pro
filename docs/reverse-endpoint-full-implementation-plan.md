@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## ITA Matrix current live adapter/cache check — 2026-11-23
+
+One read-only YYZ–LHR one-way CAD search (2027-02-12, one adult/economy) returned 10 records and 10 accepted itineraries in 41,688 ms. An identical `searchProviders` request reused the durable Matrix cache and passed the normal worker result validator. No prices or response body were recorded. The cold call is materially slower than the aspirational first-result goal; this single sample is not p95. [Evidence](matrix-live-recheck-2026-11-23.md).
+
 ## Google native one-way cache — 2026-11-23
 
 Exact fresh Google native one-way itinerary results now use the existing durable provider cache for Google-only and all-source searches. Identity binds route/date/party/cabin/filter and the fixed Canada/CAD market. Reuse requires a nonempty exact result with the generated Google URL and every offer still passing CAD, itinerary and freshness validation. Invalid cache rows are deleted; hits keep the original observation time. The 60-second maximum TTL is capped by offer freshness. Full tests pass 690/690 and build passes after the Next.js security-reminder retry. This is fixture/store evidence; no live Google cache-hit speed claim is made. [Evidence](google-oneway-response-cache-2026-11-23.md).

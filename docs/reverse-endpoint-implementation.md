@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## ITA Matrix live adapter/cache recheck — 2026-11-23
+
+A current bounded YYZ–LHR one-way CAD request for 2027-02-12 returned 10 records and 10 accepted complete itineraries in 41,688 ms. A separate identical call through `searchProviders` reported a durable Matrix cache hit and the flight worker-result validator accepted the result. No fares or payloads were retained. This confirms one live adapter/pipeline/cache path; the cold response is slow and does not establish p95, seller freshness or broad coverage. [Evidence](matrix-live-recheck-2026-11-23.md).
+
 ## Google native one-way exact-query cache — 2026-11-23
 
 Validated Google one-way itinerary results now reuse the durable provider cache when Google is selected alone or inside all-source fan-out. The key binds exact route/date/party/cabin/filters and Canada/CAD; reads repeat query, generated URL, full-itinerary and freshness validation. Only nonempty results are cached, hits preserve `observedAt`, and the 60-second TTL cannot exceed original quote freshness. Cache tampering and empty/stale observations fail closed. Focused provider/cache tests pass 20/20; full `npm test` passes 690/690; `npm run build` passes after retrying past the Next.js 16.4.3 security reminder. This is fixture/store evidence without a live speed measurement; endpoint scope, live stability and seller refresh stay open. [Evidence](google-oneway-response-cache-2026-11-23.md).

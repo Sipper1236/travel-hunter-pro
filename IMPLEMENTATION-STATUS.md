@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## ITA Matrix live adapter recheck — 2026-11-23
+
+One read-only YYZ–LHR one-way request for 2027-02-12, one adult/economy/CAD returned 10 records and 10 accepted itineraries in 41,688 ms. An identical follow-up through `searchProviders` returned `cached: true`, retained 10 accepted itineraries and passed `flightWorkerResultError` (`null`). This demonstrates one live API response through the normal pipeline and durable Matrix cache reuse across separate Node processes. The cold upstream response is slow, and the sample cannot establish p95 or broader reliability. No prices or payloads were retained. Current use scope/rate terms, seller refresh and `work.md` §17 evidence remain open. [Evidence](docs/matrix-live-recheck-2026-11-23.md).
+
 ## Google native one-way exact-query cache — 2026-11-23
 
 The provider dispatcher now uses the durable SQLite cache for exact, validated Google native one-way results in Google-only and all-source searches. It caches only nonempty fresh itinerary observations and binds the key to the route, date, party, cabin, Canadian locale/currency and filters. The result is revalidated on read, its original observation timestamp is preserved, and its 60-second lifetime is capped by quote freshness. Regression tests cover repeated searches, all-source fan-out, changed query identity, tampered cache data, and empty/stale results. Focused tests pass 20/20; full suite passes 690/690. Production build passes on retry following the Next.js 16.4.3 security reminder. No live cache latency measurement was made; Google RPC permission/stability and seller refresh remain open. [Evidence](docs/google-oneway-response-cache-2026-11-23.md).
