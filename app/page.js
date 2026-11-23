@@ -60,6 +60,7 @@ export default function Home() {
     setOrigin(query.origin);setDestination(query.destination);setOriginType(query.originType ?? 'place');setDestinationType(query.destinationType ?? 'place');setSelectedAirports({origin:null,destination:null});setSelectedCities({});setCityChoices(null);
     if(query.travelers){setIdentified(true);setTravelers(query.travelers);}else{setIdentified(false);setAdults(String(query.adults));setChildren(String(query.children));setChildrenAges(query.childrenAges);}setCabin(query.cabin);setTripType(query.tripType);
     setDate(cell?.date ?? query.start);setReturnDate(cell?.returnDate ?? (query.tripType==='round-trip'?(query.returnStart ?? addDays(query.start,query.nightsMin ?? query.nights)):''));
+    if(query.source)setSource(query.source);
     setFlightFilters(query.filters);setMatrixOptions({maxExtraLegsRelativeToMinimum:1,allowAirportChanges:true,expandDetailedItineraries:false,...(query.matrixOptions??{})});
   }
 

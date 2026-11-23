@@ -12,7 +12,7 @@ const waitFor=async predicate=>{const end=Date.now()+30000;while(!predicate()){i
 test('calendar worker reuses an exact Ignav response after restart through the persistent job store',async()=>{
  const directory=await mkdtemp(join(tmpdir(),'calendar-cache-worker-')),path=join(directory,'jobs.sqlite'),query={origin:'YHZ',destination:'BCN',originAirports:['YHZ'],destinationAirports:['BCN'],start:'2099-04-15',end:'2099-04-15',tripType:'one-way',cabin:'economy',adults:1,children:0,childrenAges:[],searchLimit:1,filters:{},source:'ignav'};
  const children=[];let store,worker;
- const launch=()=>startSearchWorker({store,pollMs:10,spawn:()=>{const child=fork(new URL('../scripts/flight-job-runner.mjs',import.meta.url),[],{execArgv:['--import',new URL('./fixtures/calendar-transport.mjs',import.meta.url).href],env:{...process.env,IGNAV_API_KEY:'test-only-no-real-key',TRAVEL_JOB_DB:path,TRAVEL_SOURCE_GAP_MS:'0'},stdio:['ignore','ignore','ignore','ipc']});children.push(child);return child;}});
+ const launch=()=>startSearchWorker({store,pollMs:10,spawn:()=>{const child=fork(new URL('../scripts/flight-job-runner.mjs',import.meta.url),[],{execArgv:['--import',new URL('./fixtures/calendar-transport.mjs',import.meta.url).href],env:{...process.env,IGNAV_API_KEY:'test-only-no-real-key',TRAVEL_IGNAV_CALENDAR_GRID:'0',TRAVEL_JOB_DB:path,TRAVEL_SOURCE_GAP_MS:'0'},stdio:['ignore','ignore','ignore','ipc']});children.push(child);return child;}});
  const run=async requestKey=>{const job=store.submit(query,requestKey,{kind:'calendar'});await waitFor(()=>['complete','error'].includes(store.get(job.id).status));const done=store.get(job.id);assert.equal(done.status,'complete',JSON.stringify(done.error));return done.result;};
  try{
   store=createJobStore({path});worker=launch();
@@ -23,6 +23,18 @@ test('calendar worker reuses an exact Ignav response after restart through the p
   assert.equal(second.dates[0].providerCoverage.find(row=>row.provider==='Ignav')?.cacheStatus,'hit');
   assert.equal(second.dates[0].offer.observedAt,first.dates[0].offer.observedAt);
  }finally{if(worker){worker.stop();worker=null;store=null;}else store?.close();for(const child of children)if(child.exitCode===null)child.kill('SIGKILL');await rm(directory,{recursive:true,force:true});}
+});
+test('actual worker validates Ignav cheapest-dates as fast price-only calendar observations',async()=>{
+ const directory=await mkdtemp(join(tmpdir(),'ignav-grid-worker-')),path=join(directory,'jobs.sqlite'),store=createJobStore({path}),children=[];let worker;
+ const query={origin:'YHZ',destination:'BCN',originAirports:['YHZ'],destinationAirports:['BCN'],start:'2099-04-15',end:'2099-04-16',tripType:'round-trip',nights:5,cabin:'economy',adults:2,children:0,childrenAges:[],searchLimit:2,filters:{},source:'ignav'};
+ try{
+  const job=store.submit(query,'ignav_grid_worker_123',{kind:'calendar'});
+  worker=startSearchWorker({store,pollMs:10,spawn:()=>{const child=fork(new URL('../scripts/flight-job-runner.mjs',import.meta.url),[],{execArgv:['--import',new URL('./fixtures/calendar-transport.mjs',import.meta.url).href],env:{...process.env,IGNAV_API_KEY:'test-only-no-real-key',TRAVEL_IGNAV_CALENDAR_GRID:'1',TRAVEL_JOB_DB:path,TRAVEL_SOURCE_GAP_MS:'0'},stdio:['ignore','ignore','ignore','ipc']});children.push(child);return child;}});
+  await waitFor(()=>['complete','error'].includes(store.get(job.id).status));const done=store.get(job.id);assert.equal(done.status,'complete',JSON.stringify(done.error));
+  assert.deepEqual(done.result.dates.map(cell=>[cell.status,cell.date,cell.returnDate,cell.priceObservations[0]?.price]),[['price_only_observed','2099-04-15','2099-04-20',500],['price_only_observed','2099-04-16','2099-04-21',500]]);
+  assert.deepEqual(done.result.dates.map(cell=>cell.providerCoverage.find(row=>row.provider==='Ignav')?.wireResponses),[1,0]);
+  assert.equal(done.result.coverage.fareRequestsStarted,2);assert.equal(done.result.dates.some(cell=>cell.offer),false);
+ }finally{worker?.stop();for(const child of children)if(child.exitCode===null)child.kill('SIGKILL');await rm(directory,{recursive:true,force:true});}
 });
 test('actual worker prices native Google regional return/night combinations with the complete teen family',async()=>{
  const directory=await mkdtemp(join(tmpdir(),'google-calendar-worker-')),path=join(directory,'jobs.sqlite'),store=createJobStore({path}),children=[];let worker;
@@ -41,7 +53,7 @@ test('actual calendar runner reuses fresh dates after pause, preserves ages/cabi
  const directory=await mkdtemp(join(tmpdir(),'calendar-worker-')),path=join(directory,'jobs.sqlite'),store=createJobStore({path}),children=[];let worker,refuse=false;
  try{
   const job=store.submit(input,'calendar_123',{kind:'calendar'});
-  worker=startSearchWorker({store,pollMs:10,spawn:()=>{const child=fork(new URL('../scripts/flight-job-runner.mjs',import.meta.url),[],{execArgv:['--import',new URL('./fixtures/calendar-transport.mjs',import.meta.url).href],env:{...process.env,IGNAV_API_KEY:'test-only-no-real-key',TRAVEL_JOB_DB:path,TRAVEL_SOURCE_GAP_MS:'100',CALENDAR_TEST_REFUSAL:refuse?'1':'0'},stdio:['ignore','ignore','ignore','ipc']});children.push(child);return child;}});
+  worker=startSearchWorker({store,pollMs:10,spawn:()=>{const child=fork(new URL('../scripts/flight-job-runner.mjs',import.meta.url),[],{execArgv:['--import',new URL('./fixtures/calendar-transport.mjs',import.meta.url).href],env:{...process.env,IGNAV_API_KEY:'test-only-no-real-key',TRAVEL_IGNAV_CALENDAR_GRID:'0',TRAVEL_JOB_DB:path,TRAVEL_SOURCE_GAP_MS:'100',CALENDAR_TEST_REFUSAL:refuse?'1':'0'},stdio:['ignore','ignore','ignore','ipc']});children.push(child);return child;}});
   await waitFor(()=>store.get(job.id).progress?.fareRequestsStarted===2);store.pause(job.id);await waitFor(()=>children[0].exitCode!==null);store.resume(job.id);
   await waitFor(()=>['complete','error'].includes(store.get(job.id).status));const done=store.get(job.id);assert.equal(done.status,'complete',JSON.stringify(done.error));
   assert.deepEqual(done.result.dates.map(d=>[d.price,d.returnDate]),[[500,'2099-04-20'],[500,'2099-04-21']]);assert.deepEqual(done.result.query.childrenAges,[10,15]);assert.ok(done.result.dates.every(d=>d.offer.cabin==='business'));
@@ -57,7 +69,7 @@ test('durable calendar runner searches each resolved regional airport pair and r
  const regional={origin:'Atlantic Canada',destination:'Southern California',originType:'region',destinationType:'region',originAirports:['YHZ','YUL'],destinationAirports:['LAX','SNA'],start:'2099-04-15',end:'2099-04-15',tripType:'one-way',nights:null,cabin:'economy',adults:1,children:0,childrenAges:[],searchLimit:4,filters:{}};
  try{
   const job=store.submit(regional,'calendar_region_123',{kind:'calendar'});
-  worker=startSearchWorker({store,pollMs:10,spawn:()=>{const child=fork(new URL('../scripts/flight-job-runner.mjs',import.meta.url),[],{execArgv:['--import',new URL('./fixtures/calendar-transport.mjs',import.meta.url).href],env:{...process.env,IGNAV_API_KEY:'test-only-no-real-key',TRAVEL_JOB_DB:path,TRAVEL_SOURCE_GAP_MS:'0'},stdio:['ignore','ignore','ignore','ipc']});children.push(child);return child;}});
+  worker=startSearchWorker({store,pollMs:10,spawn:()=>{const child=fork(new URL('../scripts/flight-job-runner.mjs',import.meta.url),[],{execArgv:['--import',new URL('./fixtures/calendar-transport.mjs',import.meta.url).href],env:{...process.env,IGNAV_API_KEY:'test-only-no-real-key',TRAVEL_IGNAV_CALENDAR_GRID:'0',TRAVEL_JOB_DB:path,TRAVEL_SOURCE_GAP_MS:'0'},stdio:['ignore','ignore','ignore','ipc']});children.push(child);return child;}});
   await waitFor(()=>['complete','error'].includes(store.get(job.id).status));const done=store.get(job.id);assert.equal(done.status,'complete',JSON.stringify(done.error));
   assert.deepEqual(done.result.query.originAirports,['YHZ','YUL']);assert.deepEqual(done.result.query.destinationAirports,['LAX','SNA']);assert.equal(done.result.coverage.pairQueriesPlanned,4);assert.equal(done.result.coverage.pairQueriesChecked,4);assert.equal(done.result.coverage.fullyScanned,true);
   assert.equal(done.result.dates[0].offer.from,'YHZ');assert.equal(done.result.dates[0].offer.to,'LAX');assert.equal(done.result.dates[0].route.origin,'YHZ');assert.equal(done.result.dates[0].route.destination,'LAX');
@@ -69,7 +81,7 @@ test('durable calendar runner preserves independent departure and return ranges'
  const regional={origin:'Atlantic Canada',destination:'Southern California',originType:'region',destinationType:'region',originAirports:['YHZ'],destinationAirports:['LAX'],start:'2099-04-15',end:'2099-04-16',tripType:'round-trip',nights:null,returnStart:'2099-04-20',returnEnd:'2099-04-21',cabin:'economy',adults:1,children:0,childrenAges:[],searchLimit:4,filters:{}};
  try{
   const job=store.submit(regional,'calendar_region_123',{kind:'calendar'});
-  worker=startSearchWorker({store,pollMs:10,spawn:()=>{const child=fork(new URL('../scripts/flight-job-runner.mjs',import.meta.url),[],{execArgv:['--import',new URL('./fixtures/calendar-transport.mjs',import.meta.url).href],env:{...process.env,IGNAV_API_KEY:'test-only-no-real-key',TRAVEL_JOB_DB:path,TRAVEL_SOURCE_GAP_MS:'0'},stdio:['ignore','ignore','ignore','ipc']});children.push(child);return child;}});
+  worker=startSearchWorker({store,pollMs:10,spawn:()=>{const child=fork(new URL('../scripts/flight-job-runner.mjs',import.meta.url),[],{execArgv:['--import',new URL('./fixtures/calendar-transport.mjs',import.meta.url).href],env:{...process.env,IGNAV_API_KEY:'test-only-no-real-key',TRAVEL_IGNAV_CALENDAR_GRID:'0',TRAVEL_JOB_DB:path,TRAVEL_SOURCE_GAP_MS:'0'},stdio:['ignore','ignore','ignore','ipc']});children.push(child);return child;}});
   await waitFor(()=>['complete','error'].includes(store.get(job.id).status));const done=store.get(job.id);assert.equal(done.status,'complete',JSON.stringify(done.error));
   assert.deepEqual(done.result.dates.map(row=>[row.date,row.returnDate]),[['2099-04-15','2099-04-20'],['2099-04-15','2099-04-21'],['2099-04-16','2099-04-20'],['2099-04-16','2099-04-21']]);assert.ok(done.result.dates.every(row=>row.offer?.inbound.departureDate===row.returnDate));assert.equal(done.result.coverage.pairQueriesPlanned,4);assert.equal(done.result.coverage.pairQueriesChecked,4);assert.equal(done.result.coverage.fullyScanned,true);
   assert.equal(done.result.dates[0].offer.from,'YHZ');assert.equal(done.result.dates[0].offer.to,'LAX');assert.equal(done.result.dates[0].route.origin,'YHZ');assert.equal(done.result.dates[0].route.destination,'LAX');
@@ -81,7 +93,7 @@ test('durable calendar runner prices regional night ranges in the actual worker'
  const regional={origin:'Atlantic Canada',destination:'Southern California',originType:'region',destinationType:'region',originAirports:['YHZ'],destinationAirports:['LAX'],start:'2099-04-15',end:'2099-04-16',tripType:'round-trip',nights:null,nightsMin:5,nightsMax:6,cabin:'economy',adults:1,children:0,childrenAges:[],searchLimit:4,filters:{}};
  try{
   const job=store.submit(regional,'calendar_region_123',{kind:'calendar'});
-  worker=startSearchWorker({store,pollMs:10,spawn:()=>{const child=fork(new URL('../scripts/flight-job-runner.mjs',import.meta.url),[],{execArgv:['--import',new URL('./fixtures/calendar-transport.mjs',import.meta.url).href],env:{...process.env,IGNAV_API_KEY:'test-only-no-real-key',TRAVEL_JOB_DB:path,TRAVEL_SOURCE_GAP_MS:'0'},stdio:['ignore','ignore','ignore','ipc']});children.push(child);return child;}});
+  worker=startSearchWorker({store,pollMs:10,spawn:()=>{const child=fork(new URL('../scripts/flight-job-runner.mjs',import.meta.url),[],{execArgv:['--import',new URL('./fixtures/calendar-transport.mjs',import.meta.url).href],env:{...process.env,IGNAV_API_KEY:'test-only-no-real-key',TRAVEL_IGNAV_CALENDAR_GRID:'0',TRAVEL_JOB_DB:path,TRAVEL_SOURCE_GAP_MS:'0'},stdio:['ignore','ignore','ignore','ipc']});children.push(child);return child;}});
   await waitFor(()=>['complete','error'].includes(store.get(job.id).status));const done=store.get(job.id);assert.equal(done.status,'complete',JSON.stringify(done.error));
   assert.deepEqual(done.result.dates.map(row=>[row.date,row.returnDate]),[['2099-04-15','2099-04-20'],['2099-04-15','2099-04-21'],['2099-04-16','2099-04-21'],['2099-04-16','2099-04-22']]);assert.ok(done.result.dates.every(row=>row.offer?.inbound.departureDate===row.returnDate));assert.equal(done.result.coverage.pairQueriesPlanned,4);assert.equal(done.result.coverage.pairQueriesChecked,4);assert.equal(done.result.coverage.fullyScanned,true);
   assert.equal(done.result.dates[0].offer.from,'YHZ');assert.equal(done.result.dates[0].offer.to,'LAX');assert.equal(done.result.dates[0].route.origin,'YHZ');assert.equal(done.result.dates[0].route.destination,'LAX');

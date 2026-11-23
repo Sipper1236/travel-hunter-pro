@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Ignav cheapest-dates calendar fast path — 2026-11-23
+
+The Ignav calendar can now request a bounded departure-date grid through `/fares/cheapest-dates`, reuse that response across exact date cells, and surface validated CAD values as price-only observations. Fixed-stay round trips map to exact return dates; filtered/identified/child-party queries retain exact itinerary searches. Wire responses are reported separately while conservative logical date slots remain charged to the existing request budget. A real worker fixture confirms two dates from one intercepted provider response; a production-build browser fixture displays the Ignav observation with an itinerary and Matrix observation, then confirms exact-search source handoff. `npm test` passes **684/684**, and the production build succeeds after retrying past the Next.js 16.4.3 security reminder. No live call or latency claim was made. [Evidence](ignav-cheapest-dates-calendar-2026-11-23.md). Provider access and schema evidence, other-source integrations, and `work.md` §17 remain open.
+
 ## Production UI progressive-results recheck — 2026-11-23
 
 The production browser check now has a current-tree sample: partial flight and Matrix price-only fixture results rendered before the final result, with **339 ms** from durable progress timestamp to visible UI across three status polls. All provider/job calls were intercepted, external requests were blocked, and there were no browser errors. This does not measure provider latency or establish p95. [Evidence](flight-streaming-production-ui-2026-11-23.md).

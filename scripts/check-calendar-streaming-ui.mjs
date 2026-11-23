@@ -27,7 +27,9 @@ try{
    result=await searchFareCalendar(input,{searcher:async query=>({offers:[fare(query,400)],sources:[{provider:'Ignav',status:'ok',received:1}]})});
    result.query.source='all';
    const matrixCell=result.dates[0];
-   matrixCell.priceObservations=[{provider:'ITA Matrix',price:507,currency:'CAD',priceScope:'Matrix-reported group total',travelers:`${input.adults} adult`,cabin:'economy',origin:input.origin,destination:input.destination,departureDate:matrixCell.date,...(matrixCell.returnDate?{returnDate:matrixCell.returnDate}:{}),observedAt:new Date().toISOString(),itineraryVerified:false,sourceUrl:buildMatrixUrl({origin:input.origin,destination:input.destination,departureDate:matrixCell.date,...(matrixCell.returnDate?{returnDate:matrixCell.returnDate}:{}),passengers:{adults:input.adults},cabin:'COACH',currency:'CAD'})}];
+   const ignavObservation={id:'ignav-calendar-fixture',provider:'Ignav',source:'Ignav cheapest-dates API',from:input.origin,to:input.destination,date:matrixCell.date,calendarStart:input.start,calendarEnd:input.end,tripType:input.tripType,returnDate:matrixCell.returnDate,price:600,currency:'CAD',observedAt:new Date().toISOString(),priceScope:'round-trip 5-night stay · 1 adult · economy · itinerary details not returned',sourceQuery:{origin:input.origin,destination:input.destination,start:input.start,end:input.end,nights:5,cabin:'economy',adults:1,children:0,childrenAges:[],maxStops:null,market:'CA',currency:'CAD'},itineraryVerified:false,bookingStatus:'Price-only calendar observation; no itinerary, seller availability, baggage or final charges verified.'};
+   matrixCell.priceObservations=[{provider:'ITA Matrix',price:507,currency:'CAD',priceScope:'Matrix-reported group total',travelers:`${input.adults} adult`,cabin:'economy',origin:input.origin,destination:input.destination,departureDate:matrixCell.date,...(matrixCell.returnDate?{returnDate:matrixCell.returnDate}:{}),observedAt:new Date().toISOString(),itineraryVerified:false,sourceUrl:buildMatrixUrl({origin:input.origin,destination:input.destination,departureDate:matrixCell.date,...(matrixCell.returnDate?{returnDate:matrixCell.returnDate}:{}),passengers:{adults:input.adults},cabin:'COACH',currency:'CAD'})},ignavObservation];
+   matrixCell.providerCoverage.push({provider:'Ignav',operation:'cheapest-dates',status:'ok',origin:input.origin,destination:input.destination,wireResponses:1});
    const omittedAirports=Array.from({length:34},(_,index)=>({code:`A${String.fromCharCode(65+Math.floor(index/26))}${String.fromCharCode(65+index%26)}`,name:`Omitted Airport ${index+1}`}));
    result.locationCoverage={destination:{type:'region',method:'UNSD M49 Europe country membership',airports:[{code:'FRA',name:'Frankfurt Airport'}],uncheckedAirports:omittedAirports,uncheckedAirportCount:omittedAirports.length,moreAvailable:true,popularityExclusionLimit:3,popularityRankedCandidates:627,popularityExclusionShortfall:0,popularityExcludedAirports:[{code:'LHR',name:'London Heathrow Airport',passengers:83884572}]}};
    preview=structuredClone(result);preview.locationCoverage.destination.uncheckedAirports=preview.locationCoverage.destination.uncheckedAirports.slice(0,20);preview.locationCoverage.destination.uncheckedAirportsSampled=true;preview.partial=true;preview.status='running';preview.limitation='Live prices are provisional until all airport pairs finish.';preview.dates[0].received=0;
@@ -49,6 +51,7 @@ try{
  const flight=page.locator('form').nth(1);
  await page.getByLabel('From',{exact:true}).fill('YHZ');await page.getByLabel('To',{exact:true}).fill('LHR');
  await page.getByLabel('Trip type').selectOption('round-trip');
+ await page.locator('#flightSource').selectOption('google');
  await flight.getByLabel('Departure',{exact:true}).fill('2027-04-15');await flight.getByLabel('Return',{exact:true}).fill('2027-04-20');
  await flight.locator('input[type=number]').nth(0).fill('1');await flight.locator('input[type=number]').nth(1).fill('0');
  await page.getByLabel('Search date options').selectOption('calendar');
@@ -60,16 +63,19 @@ try{
  await calendar.locator('div').filter({hasText:'Fare calendar: running'}).filter({hasText:'1 of 4 provider responses received'}).first().waitFor();
  const liveAnnouncement=calendar.locator('[role="status"]');
  await liveAnnouncement.first().waitFor({state:'attached'});
- assert.match(await liveAnnouncement.first().textContent(),/^Fare calendar update: 1 provider response received; 1 date has matching itinerary quotes and 1 price-only calendar value\. Search in progress\.$/);
+ assert.match(await liveAnnouncement.first().textContent(),/^Fare calendar update: 1 provider response received; 1 date has matching itinerary quotes and 2 price-only calendar values\. Search in progress\.$/);
  assert.equal(await liveAnnouncement.count(),1,'Streaming results should expose one concise live announcement, without per-poll job announcements.');
  const day=calendar.locator('.calendar-day').first();
  await day.locator('strong').first().waitFor();
  assert.match(await day.locator('strong').first().innerText(),/CAD\s*500\.00/);
  assert.match(await day.innerText(),/Best fresh fare seen so far/);
- const matrixPrice=day.locator('[aria-label="Price-only calendar observation"]');
+ const matrixPrice=day.locator('[aria-label="Price-only calendar observation"]').filter({hasText:'ITA Matrix price-only calendar value'});
  await matrixPrice.getByText('CAD 507.00',{exact:true}).waitFor();
  await matrixPrice.getByText(/ITA Matrix price-only calendar value/).waitFor();
- await matrixPrice.getByText(/not a fare quote/).waitFor();
+ await matrixPrice.locator('p.note').filter({hasText:'not a fare quote'}).waitFor();
+ const ignavPrice=day.locator('[aria-label="Price-only calendar observation"]').filter({hasText:'Ignav price-only calendar value'});
+ await ignavPrice.getByText('CAD 600.00',{exact:true}).waitFor();
+ await ignavPrice.locator('p.note').filter({hasText:'not a fare quote'}).waitFor();
  await day.getByText('2 validated fare observations received so far',{exact:true}).waitFor();
  await day.locator('.observed-offers').getByText('CAD 510.00',{exact:true}).waitFor();
  assert.equal(await day.locator('.observed-offers > ol > li').count(),2,'every validated fare received so far is rendered while the search is still running');
@@ -83,12 +89,14 @@ try{
  assert.doesNotMatch(await day.innerText(),/Best fresh fare seen so far/);
  await calendar.getByText(/1 of 1 provider responses received/).waitFor();
  await matrixPrice.getByText('CAD 507.00',{exact:true}).waitFor();
- await page.waitForFunction(element=>element.textContent==='Fare calendar search complete: 1 provider response received; 1 date has matching itinerary quotes and 1 price-only calendar value.',await liveAnnouncement.first().elementHandle());
+ await page.waitForFunction(element=>element.textContent==='Fare calendar search complete: 1 provider response received; 1 date has matching itinerary quotes and 2 price-only calendar values.',await liveAnnouncement.first().elementHandle());
  await page.waitForFunction(element=>element.textContent.includes('ABH'),await location.elementHandle());
  assert.match(await location.innerText(),/Known omitted airport codes:/,'completed UI lists every code returned by the resolver');
  assert.doesNotMatch(await location.innerText(),/Known omitted airport codes \(sample\)/);
  await location.getByText('Popularity policy excludes up to 3 traffic-ranked airports (627 ranked; shortfall 0): LHR (London Heathrow Airport).',{exact:true}).waitFor();
+ await ignavPrice.getByRole('button',{name:'Search 2027-04-15 flights'}).click();
+ await page.waitForFunction(()=>document.querySelector('#flightSource')?.value==='ignav');
  assert.equal(errors.length,0,errors.join('; '));
- console.log(JSON.stringify({ui:'calendar-progressive-results-with-matrix-price-only',previewOffers:[500,510],matrixPriceOnly:507,finalPrice:400,statusPolls:polls,providerRequestsIntercepted:true,pageErrors:errors.length}));
+ console.log(JSON.stringify({ui:'calendar-progressive-results-with-matrix-and-ignav-price-only',previewOffers:[500,510],matrixPriceOnly:507,ignavPriceOnly:600,exactFollowupSource:'ignav',finalPrice:400,statusPolls:polls,providerRequestsIntercepted:true,pageErrors:errors.length}));
  await context.close();
 }finally{await browser.close();}

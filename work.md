@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## Reverse-endpoint progress — Ignav date-grid calendar — 2026-11-23
+
+Eligible Ignav calendars now use `/fares/cheapest-dates` to cover a departure range with one structured response per exact route/trip/party/cabin shape. Fixed-stay round trips preserve each exact return date. The calendar and worker validate CAD, route, date, query scope and freshness; the UI labels these as price-only and follows up with an exact Ignav search. Filters, children and identified travelers stay on exact itinerary search. A worker fixture confirms one provider wire response can populate two date cells while logical request budgeting remains unchanged. A production-build browser fixture shows the Ignav and Matrix price-only observations next to an itinerary, switches the exact follow-up to Ignav, blocks external traffic and records zero page errors. `npm test` passes 684/684; `npm run build` passes after retrying Next.js 16.4.3's security reminder. No live request, endpoint entitlement check, or speed benchmark was made. [Evidence](docs/ignav-cheapest-dates-calendar-2026-11-23.md). Reverse-endpoint implementation and §17 acceptance remain open.
+
 ## Progressive-results production UI recheck — 2026-11-23
 
 The current production build rendered a persisted partial flight result before the final fixture result. `TRAVEL_CHECK_URL=http://127.0.0.1:3117 node scripts/check-flight-streaming-ui.mjs` observed 339 ms from persisted progress to visible UI, three status polls, correct partial/final replacement, zero browser errors, and all provider/job traffic intercepted with external requests blocked. One fixture-only sample; no live provider call or p95 claim. The temporary server was stopped. [Evidence](docs/flight-streaming-production-ui-2026-11-23.md).

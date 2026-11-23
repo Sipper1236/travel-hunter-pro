@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Ignav date-grid calendar fast path — 2026-11-23
+
+Implemented the Ignav `/fares/cheapest-dates` path for eligible unfiltered count-party calendars, including fixed-stay round trips. The worker repeats exact query, currency, freshness and source-coverage validation; date values remain clearly price-only and the UI follow-up selects Ignav exact search. Active filters, child parties, identified travelers and other unsupported shapes fall back to exact itinerary search. A worker-level intercepted transport test verifies one wire response across two calendar cells. The production-build UI fixture displays the date observation beside fare/Matrix results and verifies source handoff with zero page errors and blocked external requests. `npm test`: 684/684; `npm run build`: passes after the required retry following Next.js 16.4.3's security reminder. `npm audit --audit-level=low` reports one moderate Next.js advisory; its suggested forced 16.4.6 update is outside the declared range and was not applied. No live provider request was made, so current schema/access entitlement/latency remain unverified. Reverse-endpoint completion and work.md §17 remain open. [Evidence](docs/ignav-cheapest-dates-calendar-2026-11-23.md).
+
 ## Progressive-results production UI check — 2026-11-23
 
 Ran the existing Chromium check against the current production build on loopback port 3117. The persisted partial flight card and separate Matrix price-only observation appeared before the final fixture result. Persisted-to-visible time was **339 ms** across three status polls; browser errors were 0, API/job calls were intercepted, and external requests were blocked. This verifies a single fixture rendering path only, not provider response timing or p95. The short-lived server was stopped. [Evidence](docs/flight-streaming-production-ui-2026-11-23.md).

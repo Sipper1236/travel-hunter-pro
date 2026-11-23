@@ -30,6 +30,38 @@ test('Ignav calendar observations reuse the durable exact-query cache across wor
   assert.equal(second.dates[0].providerCoverage.find(row=>row.provider==='Ignav')?.cacheStatus,'hit');
  }finally{firstStore?.close();secondStore?.close();await rm(directory,{recursive:true,force:true});}
 });
+test('Ignav cheapest-dates endpoint covers a departure range with exact price-only calendar cells',async()=>{
+ const observedAt=new Date().toISOString(),calls=[];
+ const query={origin:'YHZ',destination:'BCN',originAirports:['YHZ'],destinationAirports:['BCN'],start:'2099-04-15',end:'2099-04-16',tripType:'one-way',adults:2,children:0,childrenAges:[],cabin:'business',filters:{},source:'ignav',searchLimit:2};
+ const searchIgnavCalendar=async input=>{calls.push(input);return {query:{origin:input.origin,destination:input.destination,start:input.start,end:input.end,nights:null,cabin:input.cabin,adults:input.adults,childrenAges:input.childrenAges,maxStops:null},observedAt,received:2,dates:[{date:'2099-04-15',returnDate:null,price:801.25,currency:'CAD',status:'unverified'},{date:'2099-04-16',returnDate:null,price:855,currency:'CAD',status:'unverified'}]};};
+ const result=await searchFareCalendar(query,{providerOptions:{searchIgnavCalendar}});
+ assert.equal(calls.length,1,'one provider grid request should cover both departure dates');
+ assert.deepEqual(result.dates.map(cell=>[cell.status,cell.price,cell.priceObservations.map(row=>row.price)]),[['price_only_observed',null,[801.25]],['price_only_observed',null,[855]]]);
+ assert.deepEqual(result.dates.map(cell=>cell.priceObservations[0].provider),['Ignav','Ignav']);
+ assert.deepEqual(result.dates.map(cell=>cell.providerCoverage.find(row=>row.provider==='Ignav')?.wireResponses),[1,0]);
+ assert.equal(result.coverage.fareRequestsStarted,2,'logical date slots remain budgeted even when one wire grid covers both');
+ assert.equal(calendarWorkerResultError(result),null);
+ const tampered=structuredClone(result);tampered.dates[0].priceObservations[0].sourceQuery.destination='YYZ';
+ assert.match(calendarWorkerResultError(tampered),/Ignav calendar observation/);
+});
+test('Ignav round-trip date grids reuse one request with exact fixed stay dates',async()=>{
+ const observedAt=new Date().toISOString(),calls=[];
+ const query={origin:'YYZ',destination:'LHR',originAirports:['YYZ'],destinationAirports:['LHR'],start:'2099-05-10',end:'2099-05-11',tripType:'round-trip',nights:5,adults:1,children:0,childrenAges:[],cabin:'economy',filters:{},source:'ignav',searchLimit:2};
+ const searchIgnavCalendar=async input=>{calls.push(input);return {query:{origin:input.origin,destination:input.destination,start:input.start,end:input.end,nights:input.nights,cabin:input.cabin,adults:input.adults,childrenAges:input.childrenAges,maxStops:null},observedAt,dates:[{date:'2099-05-10',returnDate:'2099-05-15',price:700,currency:'CAD',status:'unverified'},{date:'2099-05-11',returnDate:'2099-05-16',price:725,currency:'CAD',status:'unverified'}]};};
+ const result=await searchFareCalendar(query,{providerOptions:{searchIgnavCalendar}});
+ assert.equal(calls.length,1);
+ assert.equal(calls[0].nights,5);
+ assert.deepEqual(result.dates.map(cell=>[cell.date,cell.returnDate,cell.priceObservations[0]?.price]),[['2099-05-10','2099-05-15',700],['2099-05-11','2099-05-16',725]]);
+ assert.equal(calendarWorkerResultError(result),null);
+});
+test('Ignav cheapest-dates declines active filters and keeps the exact-query adapter',async()=>{
+ let gridCalls=0,exactCalls=0;
+ const query={origin:'YHZ',destination:'CDG',originAirports:['YHZ'],destinationAirports:['CDG'],start:'2099-06-02',end:'2099-06-02',tripType:'one-way',adults:1,children:0,childrenAges:[],cabin:'economy',filters:{maxStops:1},source:'ignav',searchLimit:1};
+ const result=await searchFareCalendar(query,{providerOptions:{searchIgnavCalendar:async()=>{gridCalls++;throw Error('filtered query must not use cheapest-dates');},searchIgnav:async()=>{exactCalls++;return {offers:[],sources:[{provider:'Ignav',status:'ok',received:0,accepted:0}]};}}});
+ assert.equal(gridCalls,0);
+ assert.equal(exactCalls,1);
+ assert.equal(result.dates[0].priceObservations.length,0);
+});
 test('Google one-way calendar uses one bounded price grid and keeps observations separate from itinerary fares',async()=>{
  const seen=[];const observedAt=new Date().toISOString();
  const sourceUrl='https://www.google.com/travel/flights?'+new URLSearchParams({q:'Flights from YHZ to LHR on 2099-04-15 one way',hl:'en-CA',gl:'CA',curr:'CAD'});
