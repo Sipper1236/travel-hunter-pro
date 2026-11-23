@@ -9,6 +9,7 @@ import {searchOfficialStays} from '../lib/official-hotel-search.mjs';
 import {validateStay} from '../lib/booking-browser.mjs';
 import {SourceRequestError} from '../lib/source-errors.mjs';
 import {compareFlightHotel} from '../lib/flight-hotel.mjs';
+import {createJobStore} from '../lib/job-store.mjs';
 const destination={city:'Example',cityId:'Q123',countryCode:'CA',countryName:'Canada',airport:'YUL',cityUrl:'https://www.wikidata.org/wiki/Q123',coordinates:{latitude:45,longitude:-73}};
 const html=(extra={},booking='<a href="https://secure.reservit.com/engine/booking/58/123/dates">Book direct</a>')=>`<title>Test Hotel · 4-star hotel</title><script type="application/ld+json">${JSON.stringify({'@type':'Hotel',name:'Test Hotel',starRating:{ratingValue:4},address:{addressLocality:'Example',addressCountry:'CA'},...extra})}</script>${booking}`;
 const inspect=(body=html(),candidate={})=>inspectOfficialHotel(body,{pageUrl:'https://hotel.example.com/',candidate,destination,minStars:4});
@@ -67,6 +68,18 @@ test('multi-room direct observations preserve exact allocations and do not claim
   const flight={query:{travelers:[{id:'adult-a',birthDate:'2064-01-01'},{id:'adult-b',birthDate:'2052-02-01'},{id:'child',birthDate:'2088-04-16',guardianId:'adult-a'}]},offer:{to:'YUL',price:1000,currency:'CAD',observedAt:new Date().toISOString(),arrivalDate:q.checkin,inbound:{departureDate:q.checkout}}};
   const comparison=compareFlightHotel(flight,result.offers[0],q);assert.equal(comparison.hotelAmount,700);assert.equal(comparison.subtotal,1700);assert.equal(comparison.rooms,2);assert.equal(comparison.simultaneousRoomsVerified,false);
  }finally{await rm(home,{recursive:true,force:true});}
+});
+test('official hotel results reuse only exact fresh Reservit observations from the durable provider cache',async()=>{
+ const directory=await mkdtemp(join(tmpdir(),'official-hotel-cache-')),db=join(directory,'jobs.sqlite'),store=createJobStore(db);let discoveries=0,reads=0,quotes=0;
+ const discover=async()=>{discoveries++;return {candidates:[{website:'https://hotel.example.com/'}],coverage:{discovered:1,checkedLimit:1}};};
+ const read=async()=>{reads++;return new Response(html(),{headers:{'content-type':'text/html'}});};
+ const quote=async(q,property)=>{quotes++;return searchReservit(q,property,{stateHome:join(directory,'api-anything'),fetcher:async()=>Response.json({bestPrice:'C$ 800.00',bestPrice_unFormatted:800})});};
+ try{
+  const run=q=>searchOfficialStays(q,{destination,discover,read,quote,providerCache:store});
+  const first=await run(query);assert.equal(first.offers.length,1);assert.equal(first.sourceResults[0].cacheStatus,undefined);
+  const again=await run(query);assert.equal(again.offers[0].observedAt,first.offers[0].observedAt);assert.equal(again.sourceResults[0].cacheStatus,'hit');assert.equal(discoveries,1);assert.equal(reads,1);assert.equal(quotes,1);
+  const anotherParty=await run({...query,adultAges:[36,47]});assert.equal(anotherParty.offers.length,1);assert.equal(discoveries,2);assert.equal(quotes,2);
+ }finally{store.close();await rm(directory,{recursive:true,force:true});}
 });
 test('source stops on refusal, retains prior observations and publishes partial results',async()=>{
  let reads=0;const updates=[];const r=await searchOfficialStays(query,{destination,discover:async()=>({candidates:[{website:'https://one.example.com'},{website:'https://two.example.com'},{website:'https://three.example.com'}],coverage:{discovered:3}}),read:async()=>{if(++reads===2)throw new SourceRequestError('Blocked',{status:'blocked'});return new Response(html());},quote:async()=>({offers:[{name:'Test Hotel'}],status:'observed'}),onProgress:p=>updates.push(p)});

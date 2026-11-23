@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Official Reservit hotel exact-query cache — 2026-11-23
+
+Wired hotel workers to the durable provider-response cache and added exact-query reuse for complete positive official hotel results. Cache keys cover the full hotel query and verified destination/property selection. Cache reads use the existing worker-result gate plus current quote freshness checks; failed, partial, stale, and empty results bypass storage. A hit keeps original observations and avoids repeated discovery, property-page reads, and Reservit rate calls. Focused official-hotel/worker-result tests pass 23/23, including cross-process worker reuse. Full `npm test` passes 704/704 and the build passes on retry after the security reminder. One moderate Next.js audit advisory remains. Fixture-only, with no live speed claim. [Evidence](docs/reservit-response-cache-2026-11-23.md).
+
 ## Expedia Travel Redirect exact-query cache — 2026-11-23
 
 Added a 30-second durable cache for positive, exact Expedia partner results, capped by offer freshness. The hashed key binds both effective credentials plus route/date/trip/party/child ages/cabin/filters and Canada/CAD. Reads repeat query/source-count/itinerary/selection/CAD/freshness and Expedia seller-host checks; invalid cache entries are deleted. Exact seller refresh remains a live partner request. Focused Expedia/provider tests pass 25/25; full `npm test` passes 703/703 and `npm run build` passes. Audit still reports one moderate Next.js advisory. Partner credentials are not configured locally; no live result or speed benefit is claimed. [Evidence](docs/expedia-response-cache-2026-11-23.md).

@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Official Reservit hotel exact-query cache — 2026-11-23
+
+The official hotel search path now reuses only complete, positive, fresh exact-query results through the durable SQLite provider cache. Cache identity includes destination/property context, exact stay, adult and child ages, room count/allocations, and search limits. A hit avoids another discovery/page read/Reservit rate call, preserves the original observed time, and marks source coverage as cached; the existing worker validator rechecks the query and offer, including room-level quote freshness. Partial/failed/empty results are excluded. Focused hotel/worker tests pass 23/23, including reuse across actual worker processes. Full `npm test` passes 704/704; build passes on retry after the Next.js security reminder. `npm audit` reports one moderate Next.js advisory. Fixture-only; no live speedup is claimed. See [evidence](docs/reservit-response-cache-2026-11-23.md).
+
 ## Expedia Travel Redirect exact-query cache — 2026-11-23
 
 Normal Expedia partner listings results can now reuse only complete, fresh, positive CAD offers for an exact route/date/trip/party/age/cabin/filter query and the same hashed partner credential pair. Cache life is at most 30 seconds and capped by quote freshness. Cache reads recheck source counts, the exact selected flights, offer completeness, and an HTTPS Expedia handoff URL; invalid entries are evicted. Seller refresh still calls the partner to reprice the exact flights. Focused Expedia/provider tests pass 25/25; full `npm test` passes 703/703 and `npm run build` passes. `npm audit --audit-level=low` still reports one moderate Next.js advisory. This is fixture-only because Expedia partner credentials are absent locally. [Evidence](docs/expedia-response-cache-2026-11-23.md).

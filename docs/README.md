@@ -1,6 +1,7 @@
 # Travel Hunter Pro documentation index
 
 - [Reverse-endpoint implementation plan and inventory](reverse-endpoint-implementation.md) — current adapter/API inventory, access and entitlement gates, full adapter contract, and latency/streaming targets.
+- [Reservit exact-query hotel response cache (2026-11-23)](reservit-response-cache-2026-11-23.md) — durable exact-query cache for complete fresh official hotel observations, with fixture evidence and live-source limits.
 - [Skyscanner exact-query cache (2026-11-23)](skyscanner-response-cache-2026-11-23.md) — short durable cache for completed exact CAD results, integrity checks, fixture evidence, and missing partner-credential limits.
 - [Expedia Travel Redirect exact-query cache (2026-11-23)](expedia-response-cache-2026-11-23.md) — short credential-scoped cache for complete Expedia partner results; exact seller refresh bypass and unconfigured live access remain explicit.
 - [Reverse-endpoint full implementation map](reverse-endpoint-full-implementation-plan.md) — provider-by-provider endpoint map, end-to-end completion contract, fast request path, priorities, and current evidence/open access gates.
