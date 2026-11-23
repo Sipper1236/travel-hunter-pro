@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Price-only flight observation fields — 2026-11-23
+
+Price-only flight result rows now use an allowed-key boundary and cannot attach unsupported booking/seller claims. Optional values and other result trees still need strict schemas. [Evidence](flight-worker-price-observation-schema-2026-11-23.md).
+
 ## Flight worker completion semantics — 2026-11-23
 
 `complete: true` is now rejected when selected provider responses or planned route pairs remain partial/unsearched. This reports completion only inside the submitted bounds, not exhaustive market coverage. [Evidence](flight-worker-completion-semantics-2026-11-23.md).

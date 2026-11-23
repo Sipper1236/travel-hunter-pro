@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Detailed Handoff (updated 2026-11-23)
 
+## 2026-11-23 continuation — flight price-only observation fields
+
+Flight-worker price-only observations now reject unknown field names, including `booked` and `sellerVerified`, while preserving the Matrix and Omkar fields currently emitted. Existing validation still requires matching route/dates, CAD amount, observation time, source URL, and explicit `itineraryVerified: false`. Focused tests passed 56/56 and full suite 740/740; build, audit, and controlled browser checks passed. Optional value schemas and other result types remain open. [Evidence](docs/flight-worker-price-observation-schema-2026-11-23.md).
+
 ## 2026-11-23 continuation — flight completion semantics
 
 The flight result validator now rejects a `complete` result if any source failed, was partial/suppressed, or any planned selected airport pair remains unchecked. Regressions reproduced both a source-error result labeled complete and incomplete regional pair coverage. Focused suites passed 35/35 and full suite 740/740; isolated build, audit, and controlled browser check passed. This is a bounded job-completion status, not worldwide coverage or seller availability. [Evidence](docs/flight-worker-completion-semantics-2026-11-23.md).

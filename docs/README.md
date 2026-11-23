@@ -1,5 +1,7 @@
 # Travel Hunter Pro documentation index
 
+- [Flight price-observation schema (2026-11-23)](flight-worker-price-observation-schema-2026-11-23.md) — rejects unsupported booking and seller claims on price-only observations.
+
 - [Flight worker completion semantics (2026-11-23)](flight-worker-completion-semantics-2026-11-23.md) — blocks completed status when source work or planned regional pairs remain incomplete.
 
 - [Flight worker source-row schema (2026-11-23)](flight-worker-source-row-schema-2026-11-23.md) — provider-row key allowlist and explicit remaining nested-schema gaps.

@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Flight price-observation schema — 2026-11-23
+
+Unknown price-only observation keys are rejected. Matrix/Omkar fixtures and full suite passed (56/56 focused; 740/740 overall), with build, audit, and controlled browser checks green. Complete optional-field and all-worker schemas remain open. [Evidence](docs/flight-worker-price-observation-schema-2026-11-23.md).
+
 ## Flight worker completion semantics — 2026-11-23
 
 Completed results must now have successful nonsuppressed source rows and complete planned route coverage. Full suite passed 740/740; isolated build and controlled browser check passed; audit found 0 vulnerabilities. This does not indicate exhaustive inventory or seller-verified offers. [Evidence](docs/flight-worker-completion-semantics-2026-11-23.md).

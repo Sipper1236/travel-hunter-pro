@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Flight price-observation schema — 2026-11-23
+
+Price-only flight observations reject unknown keys such as `booked` and `sellerVerified`, while current Matrix/Omkar fields remain allowed and the observation stays explicitly unverified. Focused suites passed 56/56, full suite 740/740, and build/audit/browser checks passed. Optional field-value schemas and other worker outputs remain open. [Evidence](docs/flight-worker-price-observation-schema-2026-11-23.md).
+
 ## Flight worker completion semantics — 2026-11-23
 
 The worker now rejects `complete: true` with failed/partial/suppressed source rows or unfinished selected airport-pair coverage. The flag remains bounded to the disclosed query and does not imply exhaustive market coverage or seller availability. Focused tests passed 35/35; full suite 740/740; build, audit, and controlled browser check passed. [Evidence](docs/flight-worker-completion-semantics-2026-11-23.md).

@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — price-only worker fields
+
+Flight price-only observations now reject unsupported metadata claims while preserving current Matrix/Omkar evidence. Full suite 740/740; build, audit, and browser checks passed. Complete nested schemas and the larger goal remain open. See [evidence](docs/flight-worker-price-observation-schema-2026-11-23.md).
+
 ## 2026-11-23 continuation — bound completed-search status
 
 Flight results cannot be marked complete when selected provider work or planned airport pairs are unfinished. Full suite 740/740, build, audit, and browser checks passed. This does not claim exhaustive coverage or seller confirmation; the broader work remains active. See [evidence](docs/flight-worker-completion-semantics-2026-11-23.md).

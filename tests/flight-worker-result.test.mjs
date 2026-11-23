@@ -130,6 +130,8 @@ test('unverified Matrix group prices remain price observations and never become 
  const observation={id:'matrix-1',provider:'ITA Matrix',origin:'YHZ',destination:'LHR',departureDate:'2099-04-15',price:600,currency:'CAD',priceScope:'Matrix-reported group total',travelers:'1 adult',cabin:'economy',observedAt:new Date().toISOString(),sourceUrl:'https://matrix.itasoftware.com/search',linkLabel:'Open Matrix search',itineraryVerified:false,details:'Full flight details unavailable.'};
  const value=result({offers:[],priceObservations:[observation],sources:[{provider:'ITA Matrix',status:'ok',received:1,accepted:0,priceObservations:1}]});
  assert.equal(flightWorkerResultError(value,input),null);
+ assert.match(flightWorkerResultError({...value,priceObservations:[{...observation,sellerVerified:true}]},input),/unsupported.*observation|observation.*field/i);
+ assert.match(flightWorkerResultError({...value,priceObservations:[{...observation,booked:true}]},input),/unsupported.*observation|observation.*field/i);
  assert.ok(flightWorkerResultError({...value,priceObservations:[{...observation,itineraryVerified:true}]},input));
  assert.match(flightWorkerResultError({...value,sources:[]},input),/no matching successful source status/);
  assert.match(flightWorkerResultError({...value,sources:[{provider:'ITA Matrix',status:'ok',received:1,accepted:0,priceObservations:0}]},input),/no matching successful source status/);

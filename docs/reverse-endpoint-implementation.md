@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## Price-only flight observation fields — 2026-11-23
+
+Flight-worker price-only observations now reject unknown metadata keys and must remain unverified; valid Matrix/Omkar price observations retain their source evidence. [Evidence](flight-worker-price-observation-schema-2026-11-23.md).
+
 ## Flight worker completion semantics — 2026-11-23
 
 The result guard now requires all source rows and selected airport-pair queries to finish before it accepts `complete: true`. Coverage stays explicitly bounded; no exhaustive or seller-verified claim follows from this flag. [Evidence](flight-worker-completion-semantics-2026-11-23.md).
