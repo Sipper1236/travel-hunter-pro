@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Google flexible-return calendar grids — 2026-11-23
+
+The opt-in Google date-grid adapter now supports variable return-date ranges for one-adult economy calendars without active filters or identified travelers. It obtains one fixed-return grid per eligible return date, covering eligible departure dates, then maps results to exact route/date pairs. Logical budget accounting still charges each requested pair; `wireResponses` records actual grid calls. A regression verifies four exact pairs covered by two grids, worker provenance rejection for a tampered query date, and preflight refusal below the logical budget. Focused calendar/query/worker tests pass **58/58** and provider-capability/calendar/query/worker tests pass **65/65**. Full `npm test` passes **659/659**; production build passed after retrying the Next.js security reminder. No live Google call was made. [Evidence](docs/google-flexible-return-calendar-2026-11-23.md).
+
 ## Mixed itinerary and Matrix price-only calendar display — 2026-11-23
 
 Fixed a calendar rendering branch that hid price-only provider observations whenever the same date also had a validated itinerary. Itinerary offers and price-only observations now render independently. The production-build browser fixture displays both an Ignav itinerary and a Matrix group-total observation during partial progress and final completion; it uses intercepted fixture traffic and reports two polls and zero page errors. Focused calendar/query/worker tests pass **57/57**; full `npm test` passes **657/657**; the build passed after the Next.js reminder retry. No live provider request was made. Details: [Matrix calendar evidence](docs/matrix-price-only-calendar-2026-11-23.md).

@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Google flexible-return calendar grids — 2026-11-23
+
+Enabled the opt-in Google `GetCalendarPicker` path for variable return-date calendars. For each exact return date, it shares one response across departure dates up to that return, preserving exact route/date pairing and the original grid query date. It still obeys the search budget (logical pair count) and separately records actual `wireResponses`. Worker validation checks the original source-query date and fixed return date. Support remains one adult, economy, no identified travelers, no active filters, with the existing RPC opt-in. Focused calendar/query/worker tests pass **58/58**; capability-inclusive focused tests pass **65/65**; full suite passes **659/659**. The production build passed after retrying the Next.js security reminder. No live Google request was made. See [evidence](docs/google-flexible-return-calendar-2026-11-23.md).
+
 ## Mixed itinerary and Matrix price-only calendar display — 2026-11-23
 
 Calendar cells now render validated itinerary results and independent price-only observations at the same time. Previously, a cell with `offer` entered a mutually exclusive branch and hid `priceObservations`. The production-build browser fixture reproduces the mixed state, sees the CAD 507 Matrix total beside the provisional itinerary offers during progress and after completion, and reports two polls, intercepted provider/job requests and zero browser errors. Focused calendar/query/worker tests pass **57/57**; production build passes after retrying the Next.js security reminder. A full `npm test` passes **657/657**. No live Matrix request was made; see [evidence](docs/matrix-price-only-calendar-2026-11-23.md).

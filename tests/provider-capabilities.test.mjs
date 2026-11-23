@@ -39,3 +39,11 @@ test('native Google return access is separate from one-way access and preserves 
  assert.equal(providerCapabilities({...query,childrenAges:[11]},{calendar:true,configured:enabled}).find(row=>row.id==='google').status,'unsupported_party');
  assert.equal(providerCapabilities({...query,cabin:'business'},{calendar:true,configured:enabled}).find(row=>row.id==='google').eligible,false);
 });
+test('opted-in Google calendar RPC exposes exact-return price grids without claiming native itinerary coverage',()=>{
+ const query={source:'google',origin:'YHZ',destination:'LHR',tripType:'round-trip',start:'2099-04-15',end:'2099-04-16',returnStart:'2099-04-20',returnEnd:'2099-04-21',cabin:'economy',adults:1,children:0,filters:{}};
+ const disabled=configuredProviders({});assert.equal(providerCapabilities(query,{calendar:true,configured:disabled}).find(row=>row.id==='google').status,'unconfigured');
+ const enabled=configuredProviders({TRAVEL_GOOGLE_CALENDAR_RPC:'1'}),row=providerCapabilities(query,{calendar:true,configured:enabled}).find(item=>item.id==='google');
+ assert.equal(row.eligible,true);assert.match(row.reason,/price-only values/);assert.doesNotMatch(row.reason,/complete itinerary/);
+ assert.equal(providerCapabilities({...query,filters:{airlinesInclude:['AC']}},{calendar:true,configured:enabled}).find(item=>item.id==='google').status,'unconfigured');
+ assert.equal(providerCapabilities({...query,adults:2},{calendar:true,configured:enabled}).find(item=>item.id==='google').eligible,false);
+});

@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Google flexible-return calendar grids — 2026-11-23
+
+Added opt-in variable-return date-grid handling: one Google fixed-return grid per eligible return date is shared across departure dates, while budget and durable source-date validation remain exact for every logical pair. Fixture-backed calendar tests pass 58/58 and capability-inclusive tests pass 65/65; full suite passes 659/659; build passes after retrying Next.js's security reminder. No live endpoint request was made. Scope remains one adult, economy, no filters or identified travelers. See [evidence](google-flexible-return-calendar-2026-11-23.md).
+
 ## Mixed itinerary and price-only calendar display — 2026-11-23
 
 Fixed the UI so a calendar cell can show a validated itinerary and a separate Matrix price-only total together. A production-build fixture browser check verifies partial and complete rendering (two polls; provider requests intercepted; zero page errors). Focused suite 57/57 and production build pass; full `npm test` passes **657/657**. This is fixture-backed UI evidence only. See [Matrix evidence](matrix-price-only-calendar-2026-11-23.md).
@@ -18,7 +22,7 @@ All-source calendar providers now run in a bounded two-provider pool for each ex
 
 ## Latest implementation evidence — Google multi-airport calendars (2026-11-23)
 
-The opt-in Google Flights date-grid adapter supports multiple exact airport pairs per calendar, including bounded region resolutions, when Google is selected alone or with regular adapters in an all-source query. It keeps one structured date-grid response per exact route and date range, while request budget remains charged per logical route/date slot and coverage separately counts actual `wireResponses`. All-source Google price observations require exact successful Google route coverage. Exact route/date/return/CAD and price-only validation remain. Scope is one adult/economy, no active filters or identified travelers, one-way or fixed-return round trip. Calendar/query/worker tests **54/54**, full tests **654/654**, and build passed after retrying past Next's security reminder. The generic fixture calendar UI stream check passed with provider calls intercepted, but it does not exercise Google in all-source mode. Multi-route and all-source backend evidence is fixture-only; no live Google request was made. The opt-in status, source access scope, and complete §17 acceptance remain open. [Details](google-calendar-multi-airport-2026-11-23.md).
+The opt-in Google Flights date-grid adapter supports multiple exact airport pairs per calendar, including bounded region resolutions, when Google is selected alone or with regular adapters in an all-source query. Fixed-return grids cover a date range for one route; variable-return grids use one fixed-return response per return date and reuse it across eligible departures. The request budget remains charged per logical route/date/return slot, while coverage separately counts actual `wireResponses`. Exact route/date/return/CAD validation and price-only classification remain. Scope is one adult/economy, no active filters or identified travelers. Earlier live evidence covers one fixed-return single-route query; variable-return and multi-route/all-source evidence is fixture-only. See [multi-airport evidence](google-calendar-multi-airport-2026-11-23.md) and [variable-return evidence](google-flexible-return-calendar-2026-11-23.md). The opt-in status, source access scope, and complete §17 acceptance remain open.
 
 ## Latest implementation evidence — Matrix calendar streaming (2026-11-23)
 

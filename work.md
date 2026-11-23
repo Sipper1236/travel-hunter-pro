@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## Reverse-endpoint progress — Google flexible-return grids — 2026-11-23
+
+The opt-in Google structured date-grid path now handles one-adult economy round-trip calendars with variable return-date ranges and no active filters or identified travelers. It requests one fixed-return grid for each eligible return date, reuses it across eligible departures, and preserves exact date-pair/URL provenance. The request budget still accounts for every logical pair and `wireResponses` separately counts actual grid RPCs. Focused calendar/query/worker tests pass 58/58, capability-inclusive tests 65/65, full `npm test` passes 659/659, and production build passes after retrying the Next.js security reminder. No live Google call was made. This does not establish endpoint reliability or complete §17. [Evidence](docs/google-flexible-return-calendar-2026-11-23.md).
+
 ## Reverse-endpoint progress — mixed calendar results — 2026-11-23
 
 Fixed the calendar UI so a Matrix group-total price-only observation is visible even when another source returned an itinerary for the same date. A production-build, provider-intercepted browser fixture now verifies both during partial and complete display (two polls, zero browser errors). Focused calendar/query/worker tests passed 57/57 and the production build passed after retrying Next.js's security reminder; the full `npm test` passes **657/657**. No live provider call occurred. This improves result visibility but does not establish Matrix runtime coverage or complete the reverse-endpoint goal / §17. [Evidence](docs/matrix-price-only-calendar-2026-11-23.md).

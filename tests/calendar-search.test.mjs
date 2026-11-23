@@ -33,9 +33,26 @@ test('Google fixed-return calendar reuses one price grid per selected airport pa
  assert.deepEqual(result.dates.map(cell=>cell.providerCoverage.map(row=>row.wireResponses)),[[1,1],[0,0]],'wire response coverage counts one shared date grid per airport pair');
  assert.equal(result.dates[0].returnDate,'2099-04-20');assert.equal(result.dates[1].price,null);
  assert.equal(calendarWorkerResultError(result),null);
- let calls=0;
- await assert.rejects(searchFareCalendar({...base,originAirports:['YHZ'],searchLimit:4,returnStart:'2099-04-20',returnEnd:'2099-04-21'},{providerOptions:{searchGoogleCalendar:async()=>{calls++;return {priceObservations:[],noPriceDates:[],coverage:{}};},searchGoogle:async()=>({offers:[],sources:[{provider:'Google Flights',status:'ok'}]})}}),/No selected provider supports/);
- assert.equal(calls,0,'a variable return range cannot use a fixed-return price grid');
+});
+
+test('Google flexible-return calendars reuse one exact-return grid across eligible departures',async()=>{
+ const seen=[],observedAt=new Date().toISOString();
+ const flexible={origin:'YHZ',destination:'LHR',originAirports:['YHZ'],destinationAirports:['LHR'],start:'2099-04-15',end:'2099-04-16',tripType:'round-trip',adults:1,children:0,childrenAges:[],cabin:'economy',filters:{},source:'google',searchLimit:4,returnStart:'2099-04-20',returnEnd:'2099-04-21'};
+ const searchGoogleCalendar=async query=>{
+  seen.push(query);
+  const sourceUrl='https://www.google.com/travel/flights?'+new URLSearchParams({q:`Flights from ${query.origin} to ${query.destination} on ${query.start} through ${query.returnDate}`,hl:'en-CA',gl:'CA',curr:'CAD'});
+  return {observedAt,priceObservations:Array.from({length:(Date.parse(query.end)-Date.parse(query.start))/86400000+1},(_,index)=>{const date=addDays(query.start,index);return {provider:'Google Flights',source:'Google Flights price calendar RPC',from:query.origin,to:query.destination,date,calendarStart:query.start,calendarEnd:query.end,tripType:'round-trip',returnDate:query.returnDate,price:700+seen.length+index,currency:'CAD',observedAt,sourceUrl,priceScope:`round-trip one adult economy; return ${query.returnDate}; itinerary details not returned`,itineraryVerified:false,bookingStatus:'Price-only calendar observation; no round-trip itinerary, seller availability, baggage or final charges verified.'};}),noPriceDates:[],coverage:{datesReturned:2,endpointResponses:1}};
+ };
+ const result=await searchFareCalendar(flexible,{providerOptions:{searchGoogleCalendar}});
+ assert.equal(seen.length,2);assert.deepEqual(seen.map(query=>[query.start,query.end,query.returnDate]),[['2099-04-15','2099-04-16','2099-04-20'],['2099-04-15','2099-04-16','2099-04-21']]);
+ assert.deepEqual(result.dates.map(cell=>[cell.date,cell.returnDate,cell.priceObservations.map(row=>row.sourceQueryDate)]),[['2099-04-15','2099-04-20',['2099-04-15']],['2099-04-15','2099-04-21',['2099-04-15']],['2099-04-16','2099-04-20',['2099-04-15']],['2099-04-16','2099-04-21',['2099-04-15']]]);
+ assert.equal(result.coverage.fareRequestsStarted,4);assert.equal(result.coverage.providerResponsesReceived,4);
+ assert.deepEqual(result.dates.map(cell=>cell.providerCoverage.map(row=>row.wireResponses)),[[1],[1],[0],[0]],'two wire grids cover four logical departure/return combinations');
+ assert.equal(calendarWorkerResultError(result),null,'durable validation checks the exact per-pair Google source URL and return date');
+ const tampered=structuredClone(result);tampered.dates[0].priceObservations[0].sourceQueryDate='2099-04-16';tampered.dates[0].priceObservations[0].sourceUrl='https://www.google.com/travel/flights?'+new URLSearchParams({q:'Flights from YHZ to LHR on 2099-04-16 through 2099-04-20',hl:'en-CA',gl:'CA',curr:'CAD'});
+ assert.match(calendarWorkerResultError(tampered),/Google calendar observation is missing its price-only limits/,'the worker rejects source-query dates outside the requested calendar');
+ await assert.rejects(searchFareCalendar({...flexible,searchLimit:3},{providerOptions:{searchGoogleCalendar}}),/needs at least 4 provider\/date searches/);
+ assert.equal(seen.length,2,'a too-small budget is refused before provider work');
 });
 
 test('Google price grid is skipped when active filters need itinerary evidence',async()=>{
