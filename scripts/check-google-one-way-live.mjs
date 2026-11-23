@@ -30,10 +30,10 @@ try{
  await completion;
  const sources=await page.locator('.results .source').allInnerTexts(),offerCards=await page.locator('article.offer').count();
  const sourceStatus=sources[0]?.match(/^Google Flights \/ search: ([a-z_]+)/)?.[1]??'missing';
- const nativeObservationLabel=Boolean(sources[0]?.includes('bounded Google results-page observations'));
- console.log(JSON.stringify({site:'loopback website and durable worker',route:`${origin}-${destination}`,date,party:'one adult',cabin:'economy',source:'Google Flights native one-way',jobStatus:'complete',sourceStatus,offerCards,nativeObservationLabel,msToFirstOfferCard:firstCard,msToComplete:Math.round(performance.now()-started),pageErrors:errors.length,pricesRecorded:false}));
+ const outcomeLabel=Boolean(sources[0]?.includes('bounded Google results-page observations')||sources[0]?.includes('Google explicitly displayed no matching flights'));
+ console.log(JSON.stringify({site:'loopback website and durable worker',route:`${origin}-${destination}`,date,party:'one adult',cabin:'economy',source:'Google Flights native one-way',jobStatus:'complete',sourceStatus,offerCards,outcomeLabel,msToFirstOfferCard:firstCard,msToComplete:Math.round(performance.now()-started),pageErrors:errors.length,pricesRecorded:false}));
  assert.equal(sources.length,1,'The Google-only live query must report exactly one source.');
  assert.equal(sourceStatus,'ok','The native Google source must complete successfully.');
- assert.equal(nativeObservationLabel,true,'The result must retain the unrefreshed Google page-observation label.');
+ assert.equal(outcomeLabel,true,'Results must be labeled as page observations or as an explicit source no-results statement.');
  assert.deepEqual(errors,[],'The website must finish without browser errors.');
 }finally{await browser.close();}

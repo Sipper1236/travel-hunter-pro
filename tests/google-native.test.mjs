@@ -19,6 +19,14 @@ test('native one-way refuses source access checks and unsupported party sizes',a
  await assert.rejects(searchGoogleOneWay({...oneWay,adults:2},options()),error=>error.sourceStatus==='unsupported_party');
  await assert.rejects(searchGoogleOneWay(oneWay,{...options({mode:'rate'}),policy:{reserveSource:()=>({waitMs:0}),deferSource(){}}}),error=>error.sourceStatus==='rate_limited');
 });
+test('native one-way treats only an explicit source no-results message as a zero-result completion',async()=>{
+ const result=await searchGoogleOneWay(oneWay,{...options({mode:'one-way-no-flights',directState:{adults:1,children:0,origin:oneWay.origin,destination:oneWay.destination,date:oneWay.date}})});
+ assert.deepEqual(result.offers,[]);assert.equal(result.sources[0].status,'ok');assert.equal(result.sources[0].nativeCoverage.noResultsConfirmed,true);
+ assert.match(result.sources[0].reason,/explicitly displayed no matching flights/);
+});
+test('native one-way rejects an empty RPC when Google does not display an explicit no-results message',async()=>{
+ await assert.rejects(searchGoogleOneWay(oneWay,{...options({mode:'one-way-empty',directState:{adults:1,children:0,origin:oneWay.origin,destination:oneWay.destination,date:oneWay.date}})}),error=>error.providerCode==='native_one_way_evidence_incomplete');
+});
 test('native browser sends the full source party and returns only a completely selected group return',async()=>{
  const requests=[];const result=await searchGoogleRoundTrip(query,options({onRequest:request=>requests.push(request)}));
  assert.equal(result.offers.length,1);assert.equal(result.offers[0].price,1200);assert.equal(result.offers[0].googleBookingMode,'phone');
