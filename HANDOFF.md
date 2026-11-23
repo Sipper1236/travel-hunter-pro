@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Google native one-way exact-query cache — 2026-11-23
+
+Validated Google one-way itinerary observations now reuse the durable provider cache for up to 60 seconds, capped by the original quote-freshness deadline. The key binds exact route, date, party, cabin, locale/currency and filters. Only nonempty results that still pass exact-query, Google URL, CAD, freshness and full-itinerary validation are stored; tampered/invalid cache rows are deleted, and hits retain their original observation times. This is wired for Google-only and all-source flight searches. Focused provider/cache tests pass 20/20, full `npm test` passes 690/690, and `npm run build` passes on retry after Next.js 16.4.3's security reminder. No live cache-hit timing was measured. Provider use scope, live stability, seller refresh and broader reverse-endpoint acceptance remain open. [Evidence](docs/google-oneway-response-cache-2026-11-23.md).
+
 ## Google calendar RPC — 2026-11-23
 
 The native Google calendar path is enabled in local `.env.local` and `.env.example` for unfiltered one-adult economy round trips. A live fixed-return YYZ–LHR range populated two departures from one grid response; a five-night range needed two grids because the return dates differed. Both passed the calendar worker validator. One-way grid use is disabled because the shape is unsupported; a live one-day one-way query instead returned ten validated itinerary observations through exact search. Fatal provider failures now appear on the exact attempted date/route, while following dates remain unscanned. No prices or RPC captures were kept. Full tests pass 686/686 and the production build passes after retrying past Next.js's reminder. The moderate dependency advisory remains.

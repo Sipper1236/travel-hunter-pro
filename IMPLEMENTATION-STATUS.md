@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Google native one-way exact-query cache — 2026-11-23
+
+The provider dispatcher now uses the durable SQLite cache for exact, validated Google native one-way results in Google-only and all-source searches. It caches only nonempty fresh itinerary observations and binds the key to the route, date, party, cabin, Canadian locale/currency and filters. The result is revalidated on read, its original observation timestamp is preserved, and its 60-second lifetime is capped by quote freshness. Regression tests cover repeated searches, all-source fan-out, changed query identity, tampered cache data, and empty/stale results. Focused tests pass 20/20; full suite passes 690/690. Production build passes on retry following the Next.js 16.4.3 security reminder. No live cache latency measurement was made; Google RPC permission/stability and seller refresh remain open. [Evidence](docs/google-oneway-response-cache-2026-11-23.md).
+
 ## Google calendar RPC and one-way fallback — 2026-11-23
 
 The native Google round-trip calendar grid is now enabled through `TRAVEL_GOOGLE_CALENDAR_RPC=1` in local config and `.env.example`. Its scope stays one adult/economy/no filters; date amounts remain price-only. A live two-departure fixed-stay query returned two exact date cells; a fixed-return query filled two dates from one grid response. Both passed worker validation. Google one-way calendar searches use exact flight search because the one-way grid is unsupported; a bounded one-day live query returned ten validated itinerary observations. A fatal-source coverage regression records the attempted date separately from later unscanned dates. Full `npm test`: 686/686; production build passes after retrying past the Next.js reminder. No prices or RPC captures were retained. Current rate/terms and broader schema evidence remain open. [Evidence](docs/ignav-cheapest-dates-calendar-2026-11-23.md).
