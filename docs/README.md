@@ -1,6 +1,7 @@
 # Travel Hunter Pro documentation index
 
 - [GitHub repository release audit (2026-11-23)](github-repository-release-audit-2026-11-23.md) — public repository preparation, dependency update, clean-install verification, UI check results, and remaining release gates.
+- [Booking.com Demand API bounded pagination (2026-11-23)](booking-demand-bounded-pagination-2026-11-23.md) — strict two-page/60-property ceiling, opaque continuation tokens, per-page evidence, failure retention, fixture tests, and missing partner-credential limits.
 
 - [Reverse-endpoint implementation plan and inventory](reverse-endpoint-implementation.md) — current adapter/API inventory, access and entitlement gates, full adapter contract, and latency/streaming targets.
 - [Reservit exact-query hotel response cache (2026-11-23)](reservit-response-cache-2026-11-23.md) — durable exact-query cache for complete fresh official hotel observations, with fixture evidence and live-source limits.

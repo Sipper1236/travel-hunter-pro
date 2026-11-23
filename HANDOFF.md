@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Booking.com Demand API bounded pagination — 2026-11-23
+
+Implemented one opaque v3.3 `next_page` continuation, capped at two 30-property search pages and 60 properties. Each page receives a separate details request and observation timestamp; duplicate property IDs are removed. The result and worker validator reconcile page/offer counts and expose a partial outcome if later search/details work fails, while keeping provider tokens out of result data. Focused Booking adapter/worker tests passed 29/29; full `npm test` passed 715/715, production build passed, audit found 0 vulnerabilities, and Markdown links passed for 133 files. Production Chromium confirmed the partial-coverage notice with provider calls intercepted and no browser errors. No live Demand API call was made because partner credentials are absent. P4 and `work.md` §17 remain Partial. See [evidence](docs/booking-demand-bounded-pagination-2026-11-23.md).
+
 ## ACV structured 40-result continuation — 2026-11-23
 
 Added a bounded two-page structured path for supported Air Canada Vacations widget queries. It merges only exact sequential offsets 0 and 20, preserves per-page request/response and observation evidence, checks page totals/IDs against rendered cards, and repeats those checks in the durable worker. Incomplete or mismatched evidence falls back to the bounded rendered-card path; access denials, rate limits, and cancellation still stop the job. The UI now reports pages checked and the provider-reported listing count. Full suite passed 710/710 and focused package suites passed 45/45 after the final refusal-preservation guard. Production build passed on the final code state; audit found 0 vulnerabilities. Production Chromium package-coverage fixture and responsive checks also passed with provider traffic intercepted.

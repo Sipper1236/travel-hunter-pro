@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## Reverse-endpoint continuation — Booking.com Demand pagination — 2026-11-23
+
+The read-only v3.3 Demand adapter now follows at most one opaque `metadata.next_page` token, checking at most two 30-property pages. Each page's property details are validated before requesting its continuation; exact query evidence is checked separately; earlier accepted offers survive a later page/search-details failure and the result reports partial coverage. Invalid/oversized/control-character tokens are not sent, and provider tokens never appear in result coverage. The worker independently reconciles the page counters, observation timestamps, accepted offers, and partial-failure state. The official [pagination guide](https://developers.booking.com/demand/docs/development-guide/pagination) says the next request uses only the returned token as `page`; the implementation follows that contract and caps continuation to one page. Focused tests passed 29/29; full `npm test` passed 715/715, production build passed, audit found 0 vulnerabilities, Markdown links passed for 133 files, and controlled production Chromium verified the partial-coverage notice with provider calls intercepted. Partner credentials remain absent, so no live call, inventory, or latency evidence exists. P4 and §17 remain Partial; see [dated evidence](docs/booking-demand-bounded-pagination-2026-11-23.md).
+
 ## Reverse-endpoint continuation — ACV structured pagination — 2026-11-23
 
 The Air Canada Vacations ordinary-widget adapter now validates up to two sequential structured package pages (offsets 0 and 20) for already-supported party shapes, bounded to 40 results. Page merging and worker validation bind the exact query, provider listing, inclusive row ranges, stable per-search total, unique package IDs, per-page observation timestamps, package evidence links, and visible result count. Incomplete/mismatched page evidence falls back to the existing bounded card parser; provider access refusals, rate limits and cancellation remain errors. Coverage text reports the number of checked pages and separates returned rows from the provider-reported total.
@@ -1168,6 +1172,10 @@ Current P0 flight-offer completeness evidence (2026-11-13 20:31 UTC): `flightOff
 ### P6 acceptance update — 2026-11-23
 
 ACV package pagination now has a bounded two-page structured implementation and a contract-level/worker-level regression suite, but it does not pass the live acceptance condition yet: the post-change adapter could not load the provider form and therefore produced no new website-to-worker result. Two earlier ordinary-widget queries established the offset-0/offset-20 response shape only. Complete offset-aware segment chronology, seller availability, room/property identity, mandatory local charges, and checkout-confirmed totals remain open. Keep the Vacation package criterion above unchecked; see [the dated pagination evidence](docs/acv-structured-pagination-2026-11-23.md).
+
+### P4 Booking.com Demand pagination update — 2026-11-23
+
+The v3.3 adapter now follows a maximum of one opaque continuation token, up to two 30-row pages, and preserves validated earlier-page offers when a later page or its details call fails. The worker independently checks page and offer evidence. Exact current partner behavior remains unverified because credentials are absent. Focused adapter and worker tests passed 29/29; the controlled UI fixture verifies the partial-coverage message. This does not establish live properties, simultaneous room inventory, final charges or checkout price; keep P4 Partial. See [the dated pagination evidence](docs/booking-demand-bounded-pagination-2026-11-23.md).
 
 ## 18. Recommended implementation order
 

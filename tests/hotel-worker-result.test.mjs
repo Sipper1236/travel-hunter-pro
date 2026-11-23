@@ -5,12 +5,18 @@ import {hotelWorkerResultError} from '../lib/hotel-worker-result.mjs';
 const input={city:'Montréal',checkin:'2027-04-15',checkout:'2027-04-20',adults:2,adultAges:[35,39],childrenAges:[12],rooms:1,minStars:4,hotelSource:'booking-demand'};
 const destination={city:'Montréal',cityId:'Q340',countryCode:'CA',bookingCityId:123};
 const now=Date.parse('2026-11-13T12:00:00Z');
-function offer(overrides={}){return {name:'Example Hotel',stars:4,priceText:'CAD 210.00',displayPriceText:'CAD 200.00',currency:'CAD',source:'Booking.com Demand API',provider:'booking',url:'https://www.booking.com/hotel/ca/example.html',observedAt:new Date(now).toISOString(),stay:{checkin:'2027-04-15',checkout:'2027-04-20',nights:5,rooms:1,adults:2,adultAges:[35,39],childrenAges:[12]},occupancyEvidence:{status:'provider_product_allocation_match',roomsRequested:1,requestedRoomAllocations:[{adultAges:[35,39],childrenAges:[12]}],productsMatchedRequestedAllocations:true,productTotalsMatchExpectedTotal:true,expectedTotalCents:21000,productTotalsCents:[21000],expectedTotalIncludesNonConditionalCharges:true},locationEvidence:{status:'verified',city:'Montréal',countryCode:'CA',cityId:'Q340',bookingCityId:123,hotelName:'Example Hotel',propertyKey:'www.booking.com/hotel/ca/example.html',observedAt:new Date(now).toISOString()},...overrides};}
+function offer(overrides={}){return {name:'Example Hotel',stars:4,priceText:'CAD 210.00',displayPriceText:'CAD 200.00',currency:'CAD',source:'Booking.com Demand API',provider:'booking',providerPage:1,url:'https://www.booking.com/hotel/ca/example.html',observedAt:new Date(now).toISOString(),stay:{checkin:'2027-04-15',checkout:'2027-04-20',nights:5,rooms:1,adults:2,adultAges:[35,39],childrenAges:[12]},occupancyEvidence:{status:'provider_product_allocation_match',roomsRequested:1,requestedRoomAllocations:[{adultAges:[35,39],childrenAges:[12]}],productsMatchedRequestedAllocations:true,productTotalsMatchExpectedTotal:true,expectedTotalCents:21000,productTotalsCents:[21000],expectedTotalIncludesNonConditionalCharges:true},locationEvidence:{status:'verified',city:'Montréal',countryCode:'CA',cityId:'Q340',bookingCityId:123,hotelName:'Example Hotel',propertyKey:'www.booking.com/hotel/ca/example.html',observedAt:new Date(now).toISOString()},...overrides};}
 function result(offers=[offer()],query=input){
+ const demandOnly=offers.length>0&&offers.every(item=>item.source==='Booking.com Demand API');
  const sourceResults=offers.flatMap(item=>{
   if(item.source==='Booking.com via api-anything'&&query.rooms>1)return Array.from({length:query.rooms},(_,index)=>({provider:'Booking.com browser search',room:index+1,status:'observed',observations:1,acceptedForSameProperty:1}));
   return [{provider:item.source==='Booking.com via api-anything'?'Booking.com browser search':item.source==='Booking.com Demand API'?'Booking.com Demand API':item.source==='Official hotel website via API Anything / Reservit'?'Official hotel / Reservit':String(item.provider??'unknown'),status:'observed',observations:1,propertiesReceived:1,accepted:1}];
  });
+ if(demandOnly){
+  const pages=Math.max(...offers.map(item=>item.providerPage??1)),pageObservations=Array.from({length:pages},(_,index)=>{const page=index+1,pageOffers=offers.filter(item=>item.providerPage===page);return {page,propertiesReturned:pageOffers.length,accepted:pageOffers.length,observedAt:pageOffers[0]?.observedAt??new Date(now).toISOString()};});
+  const demandSource={provider:'Booking.com Demand API',status:'observed',propertiesReceived:offers.length,accepted:offers.length,pagesChecked:pages,pageObservations,paginationStatus:'complete'};
+  return {status:'complete',query:{...query,destination},sourceResults:[demandSource],offers,received:offers.length,rejected:0,coverage:{limit:60,pageSize:30,pagesChecked:pages,propertiesReturned:offers.length,providerReportedTotal:offers.length,moreAvailable:false,paginationStatus:'complete'}};
+ }
  return {status:'complete',query:{...query,destination},sourceResults,offers};
 }
 
@@ -70,6 +76,17 @@ test('hotel worker requires the selected source identity and Booking.com occupan
  assert.match(hotelWorkerResultError(result([noOccupancy]),input,now),/occupancy evidence/);
  const wrongOccupancy=offer({occupancyEvidence:{...offer().occupancyEvidence,requestedRoomAllocations:[{adultAges:[35,39],childrenAges:[11]}]}});
  assert.match(hotelWorkerResultError(result([wrongOccupancy]),input,now),/occupancy evidence|allocations/);
+});
+
+test('hotel worker verifies Demand API page counters, per-page timestamps and partial failures',()=>{
+ const valid=result();assert.equal(hotelWorkerResultError(valid,input,now),null);
+ assert.match(hotelWorkerResultError({...valid,coverage:{...valid.coverage,propertiesReturned:2}},input,now),/pagination coverage/);
+ assert.match(hotelWorkerResultError({...valid,sourceResults:[{...valid.sourceResults[0],pageObservations:[{...valid.sourceResults[0].pageObservations[0],accepted:0}]}]},input,now),/source counts|page observation/);
+ assert.match(hotelWorkerResultError({...valid,offers:[offer({observedAt:new Date(now+1000).toISOString()})]},input,now),/page observation/);
+ assert.match(hotelWorkerResultError({...valid,status:'partial'},input,now),/marked partial/);
+ const partial={...valid,status:'partial',coverage:{...valid.coverage,moreAvailable:true,paginationStatus:'page_failed'},sourceResults:[{...valid.sourceResults[0],paginationStatus:'page_failed',paginationErrorStatus:'rate_limited',reason:'A later result page or its property details could not be verified; earlier validated offers are retained.'}]};
+ assert.equal(hotelWorkerResultError(partial,input,now),null);
+ assert.match(hotelWorkerResultError({...partial,sourceResults:[{...partial.sourceResults[0],paginationErrorStatus:undefined}]},input,now),/source counts/);
 });
 
 test('hotel worker accepts an official Reservit result only for an official search with supplied adult ages',()=>{

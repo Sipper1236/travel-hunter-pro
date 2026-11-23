@@ -6,11 +6,20 @@ const query={airport:'YUL',bookerCountry:'ca',checkin:'2027-04-15',checkout:'202
 const destination={city:'Montréal',cityId:'Q340',countryCode:'CA',countryName:'Canada',airport:'YUL',cityUrl:'https://www.wikidata.org/wiki/Q340'};
 const property=(overrides={})=>({id:101,accommodation_status:'open',name:{'en-ca':'Test Hotel'},rating:{stars:4,stars_type:'official'},location:{city:-2140479,country:'ca'},url:'https://www.booking.com/hotel/ca/test-hotel.html',...overrides});
 const offerRow=(overrides={})=>({id:101,currency:'CAD',price:{book:200,total:210,extra_charges:{included:10,excluded:0}},products:[{id:'101_1',number_of_adults:2,children:[12],price:{total:210,extra_charges:{conditional:[]}}}],url:'https://www.booking.com/hotel/ca/test-hotel.html',...overrides});
-function fixtureFetcher({autocomplete=[{id:-2140479,type:'city',name:'Montréal'}],rows=[offerRow()],details=[property()],nextPage=null,onRequest=()=>{}}={}){
+const propertyRow=id=>offerRow({id,url:`https://www.booking.com/hotel/ca/test-hotel-${id}.html`});
+const propertyDetail=id=>property({id,url:`https://www.booking.com/hotel/ca/test-hotel-${id}.html`,name:{'en-ca':`Test Hotel ${id}`}});
+function fixtureFetcher({autocomplete=[{id:-2140479,type:'city',name:'Montréal'}],rows=[offerRow()],details=[property()],nextPage=null,searchPages=null,failSearchPage=null,failDetailsPage=null,onRequest=()=>{}}={}){
+ let detailPage=0;
  return async(url,options)=>{
   const path=new URL(url).pathname;const body=JSON.parse(options.body);onRequest(path,body,options);
-  const data=path.endsWith('/common/autocomplete')?autocomplete:path.endsWith('/accommodations/search')?rows:details;
-  return new Response(JSON.stringify({data,metadata:{next_page:nextPage}}),{status:200,headers:{'content-type':'application/json'}});
+  const pageIndex=body.page?1:0,searchPage=searchPages?.[pageIndex];
+  if(path.endsWith('/accommodations/search')&&failSearchPage===pageIndex+1)return new Response('{}',{status:429});
+  if(path.endsWith('/accommodations/details')&&failDetailsPage===++detailPage)return new Response('{}',{status:429});
+  const data=path.endsWith('/common/autocomplete')?autocomplete:path.endsWith('/accommodations/search')?(searchPage?.rows??rows):details;
+  const responseNextPage=searchPage&&Object.hasOwn(searchPage,'nextPage')?searchPage.nextPage:nextPage;
+  const metadata={...(responseNextPage!==null&&responseNextPage!==undefined?{next_page:responseNextPage}:{})};
+  if(searchPage?.totalResults!==undefined)metadata.total_results=searchPage.totalResults;
+  return new Response(JSON.stringify({data,metadata}),{status:200,headers:{'content-type':'application/json'}});
  };
 }
 
@@ -48,8 +57,35 @@ test('Demand API fee text never claims conditional details when amounts are miss
  assert.match(itemizedResult.offers[0].taxText,/Excluded: none reported/);
  assert.match(itemizedResult.offers[0].taxText,/Conditional: charge ID 3, per stay, condition 28: CAD 25\.00; provider marks chargeable online no/);
 });
-test('Demand API search is bounded to the first 30 rows and reports unsearched pagination',async()=>{
- const result=await searchBooking(query,{token:'token',affiliateId:'12',destination,fetcher:fixtureFetcher({nextPage:'opaque-next-page'})});assert.deepEqual(result.coverage,{limit:30,moreAvailable:true});assert.equal(result.sourceResults[0].requestCount,3);
+test('Demand API follows one opaque next-page token and verifies up to 60 exact property results',async()=>{
+ const calls=[],firstRows=Array.from({length:30},(_,index)=>propertyRow(index+1)),secondRows=Array.from({length:30},(_,index)=>propertyRow(index+31)),details=Array.from({length:60},(_,index)=>propertyDetail(index+1));let clock=Date.parse('2026-11-07T12:00:00Z');
+ const result=await searchBooking(query,{token:'token',affiliateId:'12',destination,clock:()=>{const instant=clock;clock+=1000;return instant;},fetcher:fixtureFetcher({searchPages:[{rows:firstRows,nextPage:'opaque-next-page',totalResults:60},{rows:secondRows,nextPage:null,totalResults:60}],details,onRequest:(path,body)=>calls.push({path,body})})});
+ const firstRequest={...validateHotelSearch(query),city:-2140479};delete firstRequest.airport;
+ assert.equal(result.offers.length,60);assert.deepEqual(calls.filter(call=>call.path.endsWith('/accommodations/search')).map(call=>call.body),[firstRequest,{page:'opaque-next-page'}]);
+ assert.deepEqual(calls.filter(call=>call.path.endsWith('/accommodations/details')).map(call=>call.body.accommodations.length),[30,30]);
+ assert.deepEqual(result.coverage,{limit:60,pageSize:30,pagesChecked:2,propertiesReturned:60,providerReportedTotal:60,moreAvailable:false,paginationStatus:'complete'});
+ assert.equal(result.sourceResults[0].requestCount,5);assert.equal(result.sourceResults[0].pagesChecked,2);assert.equal(result.sourceResults[0].propertiesReceived,60);
+ assert.notEqual(result.offers[0].observedAt,result.offers[30].observedAt);assert.deepEqual([result.offers[0].providerPage,result.offers[30].providerPage],[1,2]);
+});
+test('Demand API keeps verified first-page offers when a bounded next-page request is throttled',async()=>{
+ const result=await searchBooking(query,{token:'token',affiliateId:'12',destination,fetcher:fixtureFetcher({searchPages:[{rows:[offerRow()],nextPage:'opaque-next-page',totalResults:2}],failSearchPage:2})});
+ assert.equal(result.status,'partial');assert.equal(result.offers.length,1);assert.deepEqual(result.coverage,{limit:60,pageSize:30,pagesChecked:1,propertiesReturned:1,providerReportedTotal:2,moreAvailable:true,paginationStatus:'page_failed'});
+ assert.equal(result.sourceResults[0].status,'observed');assert.equal(result.sourceResults[0].paginationErrorStatus,'rate_limited');
+});
+test('Demand API treats next-page tokens as opaque, caps two pages, and never echoes a token',async()=>{
+ const calls=[],result=await searchBooking(query,{token:'token',affiliateId:'12',destination,fetcher:fixtureFetcher({searchPages:[{rows:[offerRow()],nextPage:'token-two'},{rows:[offerRow({id:102,url:'https://www.booking.com/hotel/ca/second-hotel.html'})],nextPage:'token-three'}],details:[property(),property({id:102,url:'https://www.booking.com/hotel/ca/second-hotel.html',name:{'en-ca':'Second Hotel'}})],onRequest:(path,body)=>calls.push({path,body})})});
+ assert.equal(calls.filter(call=>call.path.endsWith('/accommodations/search')).length,2);assert.equal(result.coverage.pagesChecked,2);assert.equal(result.coverage.moreAvailable,true);assert.equal(result.coverage.paginationStatus,'page_limit');assert.equal(JSON.stringify(result).includes('token-two'),false);assert.equal(JSON.stringify(result).includes('token-three'),false);
+});
+test('Demand API retains first-page offers if second-page property details fail',async()=>{
+ const result=await searchBooking(query,{token:'token',affiliateId:'12',destination,fetcher:fixtureFetcher({searchPages:[{rows:[offerRow()],nextPage:'token-two'},{rows:[offerRow({id:102,url:'https://www.booking.com/hotel/ca/second-hotel.html'})],nextPage:null}],details:[property(),property({id:102,url:'https://www.booking.com/hotel/ca/second-hotel.html',name:{'en-ca':'Second Hotel'}})],failDetailsPage:2})});
+ assert.equal(result.status,'partial');assert.equal(result.offers.length,1);assert.equal(result.offers[0].providerPage,1);assert.equal(result.coverage.paginationStatus,'details_failed');assert.equal(result.coverage.moreAvailable,false);assert.equal(result.sourceResults[0].paginationErrorStatus,'rate_limited');
+});
+test('Demand API refuses malformed continuation tokens without sending them',async()=>{
+ for(const token of [{unexpected:'object'},'x'.repeat(8193),'bad\ncontinuation']){
+  const calls=[],result=await searchBooking(query,{token:'token',affiliateId:'12',destination,fetcher:fixtureFetcher({searchPages:[{rows:[offerRow()],nextPage:token}],onRequest:(path,body)=>calls.push({path,body})})});
+  assert.equal(calls.filter(call=>call.path.endsWith('/accommodations/search')).length,1);assert.equal(result.offers.length,1);assert.equal(result.coverage.moreAvailable,true);assert.equal(result.coverage.paginationStatus,'invalid_token');
+  const serialized=JSON.stringify(result);assert.equal(serialized.includes(typeof token==='string'?token:JSON.stringify(token)),false);
+ }
 });
 test('autocomplete mismatch and ambiguous destination IDs are never guessed',async()=>{
  for(const suggestions of [[{id:123,type:'city',name:'Toronto'}],[{id:1,type:'city',name:'Montréal'},{id:2,type:'city',name:'Montréal'}],[{id:1,type:'region',name:'Montréal'}]]){

@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Booking.com Demand API bounded pagination — 2026-11-23
+
+The v3.3 adapter now follows one opaque provider continuation token for up to two 30-row accommodation pages. It verifies each page's properties through the details endpoint, caps result coverage at 60, and preserves earlier validated offers if later search/details work fails. Opaque tokens are not returned or logged. Focused adapter and worker checks pass 29/29; the full suite passes 715/715, the production build passes, and audit reports zero vulnerabilities. No live request was possible because partner credentials are absent; do not claim live result coverage. [Evidence](booking-demand-bounded-pagination-2026-11-23.md).
+
 ## Expedia Travel Redirect exact-query cache — 2026-11-23
 
 The ordinary Expedia partner adapter can reuse only complete positive CAD results for an exact route/date/trip/party/age/cabin/filter query and the same hashed credential pair. The durable cache is capped at 30 seconds and quote freshness. Cache reads verify the exact source/flight selection, source counts, and an HTTPS Expedia handoff host; invalid entries are evicted. Seller refresh still queries the partner directly. Focused Expedia/provider tests pass 25/25; full suite passes 703/703 and build passes. One moderate Next.js audit finding remains. Partner credentials are absent locally, so live behavior and latency remain unverified. [Evidence](expedia-response-cache-2026-11-23.md).

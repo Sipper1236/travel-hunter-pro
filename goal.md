@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — Booking.com Demand pagination
+
+Implemented a bounded two-page v3.3 Demand API search (30 rows per page, 60 max) using only the opaque provider `next_page` token. Each page's details and observation time stay separate; the worker validates page counts, offers, and partial-failure evidence. Earlier valid offers remain if later page work fails. Focused adapter/worker suites passed 29/29; full suite passed 715/715; build passed; audit found zero vulnerabilities; Markdown links passed. Production Chromium showed the continuation failure notice with no provider calls or browser errors. No live API credentials are configured; no live result or latency claim. P4 and §17 remain Partial. See [evidence](docs/booking-demand-bounded-pagination-2026-11-23.md).
+
 ## 2026-11-23 continuation — ACV structured pagination
 
 Extended the ordinary-widget ACV adapter to validate one or two sequential 20-result pages for supported party shapes, up to the user-selected 40-result limit. The worker repeats query, page-range, total, identity, observation, link and rendered-card checks. Two prior normal-widget requests confirmed the live offset-0/20 shape and dynamic `totalAvailable` values; a post-change adapter attempt could not load the provider form and submitted no search. Full suite passed 710/710 and focused package suites passed 45/45 after the refusal-handling guard. Production build passed on the final code state; audit found 0 vulnerabilities. Production browser coverage-message and responsive fixture checks passed with provider traffic intercepted. Current website-to-worker evidence is still open. See [ACV pagination evidence](docs/acv-structured-pagination-2026-11-23.md).
