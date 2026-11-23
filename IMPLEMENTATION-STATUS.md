@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Successful-response quota exhaustion guard — 2026-11-23
+
+Shared HTTP transport now persists a provider cooldown when a successful response says the request quota is exhausted and provides a valid future reset. It preserves the active response and blocks later jobs through the existing durable SQLite provider policy. A compatibility regression discovered by the full suite was corrected for numeric `now` overrides. Tests: focused source-fetch 15/15; source-fetch plus Ignav 39/39; full suite 663/663. Build passed after retrying Next.js 16.4.3's security reminder. Audit remains one moderate Next.js vulnerability; the available fix is outside the declared dependency range. No live provider request was made. This does not close reverse-endpoint or §17 acceptance. See [evidence](docs/provider-quota-exhaustion-2026-11-23.md).
+
 ## Expedia-via-Omkar currency diagnostics — 2026-11-23
 
 A policy-gated, read-only YHZ–LAX one-way request for 2026-12-17 returned 85 flight rows and 273 fare options. No uppercase three-letter currency values were present in inspected fare metadata/display fields, and none of 223 timestamp pairs carried offsets. The adapter now separates missing/conflicting currency evidence, non-CAD currency and invalid amounts into sanitized rejection counters; `tests/omkar-expedia.test.mjs` passes **12/12**, full `npm test` passes **661/661**, and `npm run build` passes after retrying Next.js's security reminder. The last audit still reports one moderate Next.js advisory; its suggested fix is outside the declared range. No offer or price observation was accepted, no CAD was inferred, and no live request followed the diagnostic code change. Expedia partner access remains unconfigured. [Evidence](docs/omkar-expedia-currency-recheck-2026-11-23.md).
