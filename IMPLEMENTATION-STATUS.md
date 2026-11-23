@@ -6,6 +6,8 @@ Implemented a persistent exact-query Ignav cache through the ordinary API and du
 
 Focused tests: 40/40. Full `npm test`: 649/649. Production build: passed after retrying Next.js's security reminder. Rebuilt fixture browser check: passed in 369 ms, with the cached-result label asserted, provider/job traffic intercepted, zero browser errors and external requests blocked. No live warm-cache request was made; this is test evidence, not proof of a live provider cache hit. `npm audit --audit-level=low`: one moderate Next.js 16.4.3 vulnerability; available fix is outside the declared range. This does not close any provider-specific reverse-endpoint or overall `work.md` §17 criterion.
 
+**Integrity follow-up:** cached `result.query` must now exactly match the normalized route/date/trip/party/cabin/filter request before reuse; malformed source rows are rejected, evicted, and refreshed from the provider. Focused cache/store/provider tests **37/37**, full suite **650/650**, build passed after the Next.js reminder retry. No live warm hit was attempted.
+
 ## Ignav stale-result explanation — 2026-11-23
 
 Changed the visible Ignav source explanation to name stale/expired quotes and unusable fare/itinerary rows instead of exposing internal `quote_freshness`/`unusable` codes; raw reason counts remain available. Focused `tests/ignav.test.mjs`: 24/24; full `npm test`: 642/642. Build passed on retry after the Next.js security reminder. `npm audit --audit-level=low` still finds one moderate Next.js 16.4.3 issue; available fix is outside the declared range. [Evidence](docs/ignav-live-adapter-check-2026-11-23.md).

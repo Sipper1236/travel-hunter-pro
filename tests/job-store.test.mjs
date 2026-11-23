@@ -49,6 +49,9 @@ test('provider response cache preserves original results until TTL expiry and re
   assert.equal(store.getProviderResponse(key),null);
   assert.equal(store.setProviderResponse(key,result,now+5000),true);
   assert.deepEqual(store.getProviderResponse(key),result);
+  assert.equal(store.deleteProviderResponse(key),true);
+  assert.equal(store.getProviderResponse(key),null);
+  assert.equal(store.setProviderResponse(key,result,now+5000),true);
   now+=5000;assert.equal(store.getProviderResponse(key),null);
   assert.equal(store.setProviderResponse('unsafe',result,now+5000),false);
   assert.equal(store.setProviderResponse(key,result,now),false);
@@ -60,7 +63,8 @@ test('provider response cache survives worker connections and keeps only the new
  const directory=await mkdtemp(join(tmpdir(),'travel-provider-cache-')),path=join(directory,'jobs.sqlite');let store=createJobStore({path});
  try{
   const first='0'.repeat(64),last=(100).toString(16).padStart(64,'0');
-  for(let i=0;i<101;i++)assert.equal(store.setProviderResponse(i.toString(16).padStart(64,'0'),{n:i},Date.now()+60_000),true);
+  const base=Date.now();
+  for(let i=0;i<101;i++)assert.equal(store.setProviderResponse(i.toString(16).padStart(64,'0'),{n:i},base+i+60_000,base+i),true);
   store.close();store=createJobStore({path});
   assert.equal(store.getProviderResponse(first),null,'oldest cache entry should be evicted');
   assert.deepEqual(store.getProviderResponse(last),{n:100},'cache entries must persist across store connections');
