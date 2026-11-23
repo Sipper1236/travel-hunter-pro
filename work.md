@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## Reverse-endpoint progress — 2026-11-23
+
+The calendar now supports ITA Matrix group-total price-only observations for exact unfiltered route/date/party/cabin queries. It validates the encoded Matrix source query and retains provider coverage provenance; filtered or mismatched totals are dropped. The UI labels these values as observations, not fare quotes, and directs follow-up searches to Matrix. Verification: focused calendar/query/worker tests 57/57, full suite 657/657, production build passed. No live Matrix request or Matrix-specific browser test was performed. This does not complete reverse-endpoint implementation or §17. See [dated evidence](docs/matrix-price-only-calendar-2026-11-23.md).
+
 ## ITA Matrix streaming in fare calendars — 2026-11-23
 
 The calendar adapter now forwards validated partial Matrix itinerary updates into its exact-route/date preview. Matrix results can therefore appear before its provider operation finishes; the route/date remains incomplete until Matrix returns its final response. A new all-source regression blocks Matrix after its partial update and verifies the preview before release. Calendar/worker/query tests pass 56/56, full `npm test` passes 656/656, and the production build passes after retrying Next.js's security reminder. The generic production calendar UI fixture remains interception-only and does not prove live Matrix calendar behavior. No Matrix live request was made. [Evidence](docs/ita-matrix-calendar-streaming-2026-11-23.md). Reverse-endpoint scope and work.md §17 remain open.

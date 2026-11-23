@@ -1,5 +1,11 @@
 # Travel Hunter Pro — Current Handoff
 
+## ITA Matrix price-only calendar observations — 2026-11-23
+
+Unfiltered exact-route/date fare calendars can now retain an ITA Matrix-reported group total as a separate price-only observation. Acceptance verifies CAD, exact amount, party counts, cabin, one-way or fixed-return dates, observation time, and the encoded Matrix search state in the source URL. Any active filter suppresses this total because the observed group total does not prove filter compliance. The calendar explicitly labels it as not a fare quote and does not place it in the itinerary price field; “Search flights” returns to Matrix for Matrix observations. The durable worker repeats these checks and requires successful Matrix coverage for that route.
+
+Focused calendar/query/worker tests pass **57/57**, full `npm test` passes **657/657**, and `npm run build` passes. No live Matrix query or Matrix-specific browser card check was run for this change; the regression uses a provider fixture. Full repository acceptance and live/provider verification remain open. [Evidence](docs/matrix-price-only-calendar-2026-11-23.md).
+
 ## ITA Matrix streaming in fare calendars — 2026-11-23
 
 The calendar adapter now forwards validated partial Matrix itinerary updates into its exact-route/date preview. Matrix results can therefore appear before its provider operation finishes; the route/date remains incomplete until Matrix returns its final response. A new all-source regression blocks Matrix after its partial update and verifies the preview before release. Calendar/worker/query tests pass 56/56, full `npm test` passes 656/656, and the production build passes after retrying Next.js's security reminder. The generic production calendar UI fixture remains interception-only and does not prove live Matrix calendar behavior. No Matrix live request was made. [Evidence](docs/ita-matrix-calendar-streaming-2026-11-23.md). Reverse-endpoint scope and work.md §17 remain open.

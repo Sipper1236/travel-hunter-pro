@@ -1,5 +1,11 @@
 # Implementation status against work.md
 
+## ITA Matrix price-only calendar observations — 2026-11-23
+
+The calendar now accepts exact ITA Matrix group-total observations for unfiltered, exact-route/date searches. The normalizer verifies CAD cents, `Matrix-reported group total` scope, exact party and cabin, observation timestamp, trip dates, and the decoded Matrix `search` URL state (route, dates, cabin, options, and passenger categories). It drops observations when any filter is active or the query provenance differs. The calendar stores these under `priceObservations`, leaves the itinerary `price` empty, labels the value as a non-quote, and sends the follow-up search to Matrix. Worker validation repeats provenance checks and requires eligible Matrix capability plus successful exact-route Matrix coverage.
+
+Verification: focused calendar/query/worker suites **57/57**; full `npm test` **657/657**; `npm run build` passed. No live Matrix request or Matrix-specific browser UI regression was run. This is fixture-backed integration evidence only; live latency/availability and provider terms are unverified. See [dated evidence](docs/matrix-price-only-calendar-2026-11-23.md). Reverse-endpoint and work.md §17 acceptance remain open.
+
 ## ITA Matrix streaming in fare calendars — 2026-11-23
 
 The calendar adapter now forwards validated partial Matrix itinerary updates into its exact-route/date preview. Matrix results can therefore appear before its provider operation finishes; the route/date remains incomplete until Matrix returns its final response. A new all-source regression blocks Matrix after its partial update and verifies the preview before release. Calendar/worker/query tests pass 56/56, full `npm test` passes 656/656, and the production build passes after retrying Next.js's security reminder. The generic production calendar UI fixture remains interception-only and does not prove live Matrix calendar behavior. No Matrix live request was made. [Evidence](docs/ita-matrix-calendar-streaming-2026-11-23.md). Reverse-endpoint scope and work.md §17 remain open.

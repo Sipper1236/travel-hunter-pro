@@ -4,6 +4,7 @@ import {searchFareCalendar} from '../lib/calendar-search.mjs';
 import {calendarWorkerResultError} from '../lib/calendar-worker-result.mjs';
 import {validateCalendarQuery,calendarStorageKey,addDays,calendarSources,calendarProviders} from '../lib/calendar-query.mjs';
 import {SourceRequestError} from '../lib/source-errors.mjs';
+import {buildMatrixUrl} from '../lib/ita-matrix.mjs';
 const input={origin:'YHZ',destination:'BCN',start:'2099-04-15',end:'2099-04-16',tripType:'round-trip',nights:5,adults:2,children:2,childrenAges:[10,15],cabin:'business',filters:{maxStops:0,maxPrice:1200,airlinesInclude:['AC'],airlinesExclude:['BA'],sort:'price_high'}};
 const leg=(from,to,day,n='100',carrier='AC',depart='08:00:00',arrive='16:00:00')=>({marketing_carrier_code:carrier,flight_number:n,departure_airport:from,arrival_airport:to,departure_time_utc:`${day}T${depart}Z`,arrival_time_utc:`${day}T${arrive}Z`,departure_time_local:`${day}T${depart}`,arrival_time_local:`${day}T${arrive}`});
 const offer=(q,price=500,extra={})=>({provider:'Ignav',source:'Ignav live fare API',price,currency:'CAD',observedAt:new Date(Date.now()).toISOString(),travelers:'Actual query party',bookingStatus:'Observed; seller not rechecked',fees:'Inclusions unverified',cabin:q.cabin,from:q.origin,to:q.destination,departureDate:q.date,arrivalDate:q.date,departureTime:'08:00',arrivalTime:'16:00',durationMinutes:480,airlines:['AC'],via:[],segments:[leg(q.origin,q.destination,q.date)],ignavId:'fare_12345678',itineraryKey:'exact-flights',...(q.tripType==='round-trip'?{inbound:{from:q.destination,to:q.origin,departureDate:q.returnDate,arrivalDate:q.returnDate,departureTime:'08:00',arrivalTime:'16:00',durationMinutes:480,via:[],segments:[leg(q.destination,q.origin,q.returnDate,'200')]}}:{}),...extra});
@@ -57,6 +58,26 @@ test('all-source fixed-return calendars include the Google price grid alongside 
  assert.equal(result.dates[0].providerCoverage.find(row=>row.provider==='Google Flights').operation,'GetCalendarPicker');
  assert.equal(result.coverage.fareRequestsStarted,3);assert.equal(result.coverage.providerResponsesReceived,3);
  assert.equal(calendarWorkerResultError(result),null);
+});
+
+test('all-source calendars retain exact unfiltered Matrix group prices as price-only observations',async()=>{
+ const query={origin:'YHZ',destination:'BCN',start:'2099-04-15',end:'2099-04-15',tripType:'one-way',adults:1,children:0,childrenAges:[],cabin:'economy',filters:{},source:'all',searchLimit:2};
+ const observedAt=new Date().toISOString();let matrixUrl;
+ const providerOptions={
+  searchGoogle:async()=>({offers:[],sources:[{provider:'Google Flights',status:'ok',received:0,accepted:0}]}),
+  searchMatrix:async matrixQuery=>{matrixUrl=buildMatrixUrl(matrixQuery);return {offers:[],priceObservations:[{id:'matrix-price-1',provider:'ITA Matrix',origin:query.origin,destination:query.destination,departureDate:query.start,price:507,currency:'CAD',priceScope:'Matrix-reported group total',travelers:'1 adult',cabin:'economy',observedAt,sourceUrl:matrixUrl,linkLabel:'Open Matrix search',itineraryVerified:false,details:'Matrix total; flight details could not be validated.'}],sources:[{provider:'ITA Matrix',status:'ok',received:1,accepted:0,priceObservations:1}]};},
+ };
+ const result=await searchFareCalendar(query,{providerOptions});
+ assert.equal(result.dates[0].status,'price_only_observed');assert.equal(result.dates[0].price,null);
+ assert.equal(result.dates[0].priceObservations.length,1);
+ assert.deepEqual((( {from,to,date,tripType,calendarStart,calendarEnd})=>({from,to,date,tripType,calendarStart,calendarEnd}))(result.dates[0].priceObservations[0]),{from:'YHZ',to:'BCN',date:query.start,tripType:'one-way',calendarStart:query.start,calendarEnd:query.end});
+ assert.equal(calendarWorkerResultError(result),null);
+ const tampered=structuredClone(result);tampered.dates[0].priceObservations[0].sourceUrl=buildMatrixUrl({origin:'YYZ',destination:'BCN',departureDate:query.start,cabin:'COACH',currency:'CAD',passengers:{adults:1}});
+ assert.match(calendarWorkerResultError(tampered),/Matrix price-only observation/,'the worker rejects a Matrix search link for another route');
+ const filtered=await searchFareCalendar({...query,filters:{airlinesInclude:['AC']}},{providerOptions});
+ assert.equal(filtered.dates[0].priceObservations.length,0,'Matrix total-only rows cannot establish airline-filter compliance');
+ const mismatched=await searchFareCalendar(query,{providerOptions:{...providerOptions,searchMatrix:async()=>({offers:[],priceObservations:[{id:'matrix-price-1',provider:'ITA Matrix',origin:'YYZ',destination:'BCN',departureDate:query.start,price:507,currency:'CAD',priceScope:'Matrix-reported group total',travelers:'1 adult',cabin:'economy',observedAt,sourceUrl:matrixUrl,itineraryVerified:false}],sources:[{provider:'ITA Matrix',status:'ok',received:1,accepted:0,priceObservations:1}]})}});
+ assert.equal(mismatched.dates[0].priceObservations.length,0,'wrong-route Matrix totals are discarded');
 });
 test('regional native Google selection receives the exact calendar filters before supplier work',async()=>{
  const seen=[],filters={maxStops:2,airlinesExclude:['WS'],countriesExclude:['US'],minLayover:60,maxLayover:240};

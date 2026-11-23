@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## Calendar price-only Matrix support — 2026-11-23
+
+All-source and Matrix-only calendars can retain an exact ITA Matrix group-total observation as price-only calendar data when its decoded source URL matches the exact route, dates, party, cabin, and Matrix search options. Filtered searches discard these totals. Durable result validation requires a successful Matrix route row and eligible Matrix capability. This does not create a flight offer or verify the itinerary/seller. Focused tests pass 57/57, full suite 657/657, and build passes; no live query or Matrix-specific browser check was made. See [evidence](matrix-price-only-calendar-2026-11-23.md). The source inventory and completion criteria below remain open.
+
 ## ITA Matrix streaming in fare calendars — 2026-11-23
 
 The calendar adapter now forwards validated partial Matrix itinerary updates into its exact-route/date preview. Matrix results can therefore appear before its provider operation finishes; the route/date remains incomplete until Matrix returns its final response. A new all-source regression blocks Matrix after its partial update and verifies the preview before release. Calendar/worker/query tests pass 56/56, full `npm test` passes 656/656, and the production build passes after retrying Next.js's security reminder. The generic production calendar UI fixture remains interception-only and does not prove live Matrix calendar behavior. No Matrix live request was made. [Evidence](ita-matrix-calendar-streaming-2026-11-23.md). Reverse-endpoint scope and work.md §17 remain open.
