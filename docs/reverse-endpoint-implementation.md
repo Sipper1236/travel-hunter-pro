@@ -2,7 +2,7 @@
 
 ## Calendar worker submitted-query binding — 2026-11-23
 
-The result guard now receives the original calendar job input and binds request fields, candidate airports, location evidence and exact derived route pairs before persistence. Focused calendar tests passed 67/67; full suite passed 723/723; build and audit passed. This is fixture-only and adds no live source coverage. [Evidence](calendar-worker-query-guard-2026-11-23.md).
+The result guard now receives the original calendar job input and binds request fields, known terminal status, candidate airports, location evidence and exact derived route pairs before persistence. Focused calendar tests passed 68/68; full suite passed 724/724; build and audit passed. This is fixture-only and adds no live source coverage. [Evidence](calendar-worker-query-guard-2026-11-23.md).
 
 ## Comparison worker exact-itinerary validation — 2026-11-23
 

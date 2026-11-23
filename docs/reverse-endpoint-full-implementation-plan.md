@@ -2,7 +2,7 @@
 
 ## Calendar worker query integrity — 2026-11-23
 
-Calendar worker results are now validated against the submitted job query, with explicit handling for resolver-selected airport sets and omitted candidates. Full tests passed 723/723; build and audit passed. No live fare evidence. [Evidence](calendar-worker-query-guard-2026-11-23.md).
+Calendar worker results are now validated against the submitted job query, known terminal statuses, resolver-selected airport sets and omitted candidates. Full tests passed 724/724; build and audit passed. No live fare evidence. [Evidence](calendar-worker-query-guard-2026-11-23.md).
 
 ## Comparison worker exact-itinerary validation — 2026-11-23
 

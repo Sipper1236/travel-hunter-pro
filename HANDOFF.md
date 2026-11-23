@@ -2,7 +2,7 @@
 
 ## Calendar worker submitted-query binding — 2026-11-23
 
-The calendar runner now supplies the original job input to the worker-result guard. The validator binds dates/stays, party, source, cabin, filters, Matrix settings, candidate airport sets and request budget; it rejects altered filters/destination and route pairs outside the selected airports. Region resolution remains valid only when the result carries matching location evidence. Focused calendar suites passed 67/67; full suite passed 723/723; build passed; audit found 0 vulnerabilities; Markdown links passed for 136 files. Fixture-only; no live source request. Regional coverage, seller availability and total costs remain open. [Evidence](docs/calendar-worker-query-guard-2026-11-23.md).
+The calendar runner now supplies the original job input to the worker-result guard. The validator binds dates/stays, party, source, cabin, filters, Matrix settings, candidate airport sets and request budget; it rejects altered filters/destination, unknown terminal statuses and route pairs outside the selected airports. Region resolution remains valid only when the result carries matching location evidence. Focused calendar suites passed 68/68; full suite passed 724/724; build passed; audit found 0 vulnerabilities; Markdown links passed for 136 files. Fixture-only; no live source request. Regional coverage, seller availability and total costs remain open. [Evidence](docs/calendar-worker-query-guard-2026-11-23.md).
 
 ## Comparison worker exact-itinerary validation — 2026-11-23
 

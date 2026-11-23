@@ -22,6 +22,11 @@ test('calendar worker result preserves the submitted filter constraints',async()
  assert.match(calendarWorkerResultError(result,submitted),/submitted calendar query/);
 });
 
+test('calendar worker result rejects unknown terminal status labels',async()=>{
+ const result=structuredClone(await observedCalendar());result.status='confirmed_booked';
+ assert.match(calendarWorkerResultError(result),/unknown calendar status/);
+});
+
 test('calendar worker accepts verified region resolution while preserving the submitted region query',async()=>{
  const submitted={origin:'Europe',originType:'auto',destination:'YYZ',destinationType:'place',destinationAirports:['YYZ'],start:'2099-04-15',end:'2099-04-15',tripType:'one-way',nights:null,cabin:'economy',adults:1,children:0,childrenAges:[],filters:{},source:'ignav',searchLimit:1};
  const result=await searchFareCalendar(submitted,{detectDestination:async()=>({type:'region',canonicalName:'Europe'}),resolveRegion:async()=>({method:'Fixture region resolver',airports:[{code:'FRA',name:'Frankfurt'}],uncheckedAirports:[],moreAvailable:false}),searcher:async()=>({sources:[{provider:'Ignav',status:'ok',received:0,accepted:0}],offers:[]})});

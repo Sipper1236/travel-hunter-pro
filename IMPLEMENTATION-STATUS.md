@@ -2,7 +2,7 @@
 
 ## Calendar worker submitted-query binding — 2026-11-23
 
-Calendar persistence now binds its result envelope to the exact submitted job constraints while allowing verified airport resolution and bounded candidate omissions. Focused worker/search tests passed 67/67; full `npm test` passed 723/723; build passed; audit found 0 vulnerabilities; Markdown links passed for 136 files. No live query. This closes a query-integrity gap only; source/seller evidence and regional minimums remain incomplete. [Evidence](docs/calendar-worker-query-guard-2026-11-23.md).
+Calendar persistence now binds its result envelope to the exact submitted job constraints, known terminal statuses, verified airport resolution and bounded candidate omissions. Focused worker/search tests passed 68/68; full `npm test` passed 724/724; build passed; audit found 0 vulnerabilities; Markdown links passed for 136 files. No live query. This closes a query-integrity gap only; source/seller evidence and regional minimums remain incomplete. [Evidence](docs/calendar-worker-query-guard-2026-11-23.md).
 
 ## Comparison worker exact-itinerary validation — 2026-11-23
 
