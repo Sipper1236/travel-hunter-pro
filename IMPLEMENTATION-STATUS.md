@@ -2,7 +2,7 @@
 
 ## Google one-way reverse-result audit — 2026-11-23
 
-The one-way `api-anything` wrapper only projects route-level price and time fields; it omits exact per-segment identity and response-side currency confirmation. The canonical validator rejects those rows rather than inventing a complete itinerary. Native selected round-trip RPC support does not cover one-way. The Google one-way structured result remains incomplete; implementation requires a verified raw segment mapping or a separately validated native one-way flow, plus CAD evidence and end-to-end worker/UI proof. No live request was made. See [gap evidence](docs/google-api-anything-one-way-gap-2026-11-23.md).
+The one-way `api-anything` wrapper only projects route-level price and time fields; it omits exact per-segment identity and response-side currency confirmation. A bounded tier-1 YHZ→LAX one-way `search` returned 5 rows in 1,328 ms; sanitized inspection confirmed those fields were absent. This is one upstream call, not end-to-end latency or p95 evidence. The canonical validator rejects those rows rather than inventing a complete itinerary. Native selected round-trip RPC support does not cover one-way. The Google one-way structured result remains incomplete; implementation requires a verified segment mapping or a separately validated native one-way flow, plus CAD evidence and end-to-end worker/UI proof. See [gap evidence](docs/google-api-anything-one-way-gap-2026-11-23.md).
 
 ## Bounded regional airport-pair overlap — 2026-11-23
 

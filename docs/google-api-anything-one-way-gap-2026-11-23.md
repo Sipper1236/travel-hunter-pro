@@ -19,9 +19,10 @@ The separate native browser adapter captures `GetShoppingResults` and `GetBookin
 
 ## Evidence
 
+- Bounded live `api-anything` `search` operation: YHZ→LAX, one-way, 2026-12-15, queried 2026-11-23 through `canadianFetch` at tier 1. HTTP/source result was `ok` in 1,328 ms with 5 rows. Sanitized schema inspection found only `airline`, `arrivalDate`, `arrivalTime`, `departureTime`, `durationMinutes`, `from`, `price`, `to`, and `via`; zero rows had segment arrays, flight-number fields, or a response-side currency field. No prices, booking tokens, or raw response were logged. This is one provider operation, not a p95 or end-to-end worker/UI measurement.
 - Local package docs: `node_modules/api-anything/sites/google-flights.md` and its bundled JSON projection. This describes package behavior; it is not independent Google documentation.
 - Code: `lib/search.mjs`, `lib/providers.mjs`, `lib/flight-offer.mjs`, `lib/google-native.mjs`, `lib/google-round-trip.mjs`.
 - Regression: `tests/search.test.mjs` — “does not promote Google route-level prices without flight-segment evidence.”
 - Dated native calendar evidence and limits: [Google flexible-return calendar evidence](google-flexible-return-calendar-2026-11-23.md) and [reverse-endpoint implementation map](reverse-endpoint-implementation.md).
 
-No live Google request was made for this audit. This note records an implementation gap; it does not claim the one-way adapter has been completed or that Google is unavailable for all query shapes.
+This live observation confirms the current API Anything projection gap for one exact query only; it does not establish broader Google availability or current fare coverage. The adapter remains incomplete for validated one-way itineraries.

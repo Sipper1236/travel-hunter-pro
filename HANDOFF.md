@@ -2,7 +2,7 @@
 
 ## Google one-way structured-result gap — 2026-11-23
 
-The current API Anything `search`/`top` projection supplies route-level price/time summaries but omits per-segment flight identity and response-side CAD confirmation. The app correctly refuses to promote these rows to complete flight offers. Google native selected round-trip support does not imply native one-way support; the experimental one-way calendar probe returned marker 4. No Google request was made for this audit. Keep Google one-way incomplete until a verified segment projection or a separately validated native one-way selection flow passes timezone, currency, freshness, worker and UI checks. [Gap evidence](docs/google-api-anything-one-way-gap-2026-11-23.md).
+The current API Anything `search`/`top` projection supplies route-level price/time summaries but omits per-segment flight identity and response-side CAD confirmation. One bounded API Anything `search` request for YHZ→LAX on 2026-12-15 returned 5 rows in 1,328 ms; sanitized field inspection confirmed the missing segment, flight-number, and currency fields. This is one upstream operation, not end-to-end latency or p95 evidence. The app correctly refuses to promote these rows to complete flight offers. Google native selected round-trip support does not imply native one-way support; the experimental one-way calendar probe returned marker 4. Keep Google one-way incomplete until a verified segment projection or a separately validated native one-way selection flow passes timezone, currency, freshness, worker and UI checks. [Gap evidence](docs/google-api-anything-one-way-gap-2026-11-23.md).
 
 ## Bounded regional airport-pair overlap — 2026-11-23
 

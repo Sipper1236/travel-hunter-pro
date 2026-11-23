@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## Reverse-endpoint audit — Google one-way API Anything projection — 2026-11-23
+
+A bounded tier-1 `api-anything` `search` request for YHZ→LAX, one-way, 2026-12-15 returned five rows in 1,328 ms. Sanitized schema inspection found only route-level price/time fields and no segment array, flight number, or response-side currency field. This is one upstream operation, not end-to-end latency or p95 evidence. Existing tests confirm those rows are withheld by complete-offer validation. Keep Google one-way incomplete until a segment mapping or native selection flow, CAD evidence, timezone/chronology validation, and worker/UI path are reproduced. Google remains an undocumented web-app RPC/API Anything integration; unattended-use scope and rate terms are not established. See [Google one-way gap evidence](docs/google-api-anything-one-way-gap-2026-11-23.md). This audit does not close any §17 criterion.
+
 ## Reverse-endpoint progress — bounded regional airport-pair overlap — 2026-11-23
 
 Two-region one-way adult-only count searches can now keep up to two exact airport pairs in flight. This reduces idle time between a route's slower selected sources and the next route while preserving each provider's shared pacing/cooldown, deterministic final route order, checkpoints, source-stop behavior, and explicit unsearched-pair coverage. Family, identified-traveler, round-trip, and ordinary city expansion paths stay sequential because they can use browser-backed sessions. Focused region/location/worker tests pass 36/36; no live call was made, so no real-provider speedup or p95 is claimed. Full suite/build/audit results are recorded in [regional-pair evidence](docs/regional-pair-streaming-2026-11-23.md). Reverse-endpoint completion and §17 remain open.
