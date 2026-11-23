@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Hotel worker query-envelope validation — 2026-11-23
+
+Hotel persistence rejects unknown result-query fields and mismatched resolved city IDs. The test-first injected-field regression passed after the fix; focused tests passed 14/14 and full `npm test` passed 725/725. Build passed, audit found 0 vulnerabilities, and Markdown links passed for 137 files. This is one strict-schema improvement, not full hotel acceptance. No live source call; availability, charges, and checkout totals remain open. [Evidence](docs/hotel-worker-query-envelope-2026-11-23.md).
+
 ## Calendar worker submitted-query binding — 2026-11-23
 
 Calendar persistence now binds its result envelope to the exact submitted job constraints, known terminal statuses, verified airport resolution and bounded candidate omissions. Focused worker/search tests passed 68/68; full `npm test` passed 724/724; build passed; audit found 0 vulnerabilities; Markdown links passed for 136 files. No live query. This closes a query-integrity gap only; source/seller evidence and regional minimums remain incomplete. [Evidence](docs/calendar-worker-query-guard-2026-11-23.md).

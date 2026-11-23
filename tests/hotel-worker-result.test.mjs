@@ -24,6 +24,15 @@ test('hotel worker accepts a fresh CAD quote matching destination, dates, guests
  assert.equal(hotelWorkerResultError(result(),input,now),null);
 });
 
+test('hotel worker rejects unrecognized query-envelope fields while allowing destination resolution metadata',()=>{
+ const resolved=result();resolved.query.cityId=destination.cityId;
+ assert.equal(hotelWorkerResultError(resolved,input,now),null);
+ const misresolved=result();misresolved.query.cityId='Q999';
+ assert.match(hotelWorkerResultError(misresolved,input,now),/city identifier does not match/);
+ const injected=result();injected.query.unrequestedSource='partner-sandbox';
+ assert.match(hotelWorkerResultError(injected,input,now),/unrecognized query field/);
+});
+
 test('priced hotel offers require matching observed source coverage',()=>{
  const valid=result();
  assert.match(hotelWorkerResultError({...valid,sourceResults:[]},input,now),/lacks valid provider source status/);

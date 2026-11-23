@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## P0 hotel worker query-envelope guard — 2026-11-23
+
+Hotel worker persistence now rejects unrecognized result-query keys and checks any resolved `cityId` against destination evidence. A test-first regression reproduced acceptance of an injected source field; focused tests passed 14/14 and full `npm test` passed 725/725. Build passed, audit found 0 vulnerabilities, and Markdown links passed for 137 files. Fixture-only, no provider call. This advances the strict-schema item but does not establish live hotel availability, occupancy eligibility, fees, or checkout totals. [Evidence](docs/hotel-worker-query-envelope-2026-11-23.md).
+
 ## P0 comparison worker exact-itinerary guard — 2026-11-23
 
 Fixed nested round-trip itinerary-key parsing and full exact-flight comparison, including operating carrier. Party-split plans now require connected segments, exact requested route/date, airport-local/UTC agreement, valid chronology, matching inbound summary and a key rebuilt from all nine signature fields. Regressions cover valid and tampered round trips, placeholder segments, unknown key fields, mismatched airport times and changed operators. Full `npm test` passed 721/721; build passed; audit found 0 vulnerabilities. Fixture-only; no provider or seller request. Current fares, issuance, simultaneous inventory, eligibility, baggage/fees and checkout totals remain unverified; §17 stays Partial. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).

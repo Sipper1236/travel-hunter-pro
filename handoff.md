@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Detailed Handoff (updated 2026-11-23)
 
+## 2026-11-23 continuation — hotel worker query envelope
+
+The durable hotel worker guard now rejects query fields outside the submitted schema and known destination-resolution metadata; resolved `cityId` must match the destination evidence. A test-first regression reproduced the previous acceptance of an injected field. Focused tests passed 14/14; full `npm test` passed 725/725, build passed, audit found 0 vulnerabilities, and Markdown links passed for 137 files. This remains fixture-only. Full source-specific hotel schemas, live availability, fees and checkout totals are open. [Evidence](docs/hotel-worker-query-envelope-2026-11-23.md).
+
 ## 2026-11-23 continuation — calendar worker submitted-query binding
 
 Fixed a worker boundary that validated calendars only against the query echoed by the result. The runner now supplies the original job input; the validator preserves requested filters, party, dates, stay settings, source, airport limit, budget, Matrix options and known terminal statuses. Selected airport pairs must come from submitted candidates; resolved city/region airports require matching location evidence, and removed candidates need omission coverage. Focused suites passed 68/68, full suite 724/724, build passed, audit found 0 vulnerabilities and Markdown links passed for 136 files. No live source call. Regional source coverage, price freshness beyond existing checks, seller availability and checkout remain open. [Evidence](docs/calendar-worker-query-guard-2026-11-23.md).

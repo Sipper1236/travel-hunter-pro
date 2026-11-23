@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — hotel worker query envelope
+
+Hotel result validation rejects unrecognized query fields and mismatched resolved city identifiers. The injected-field regression failed before the fix; focused tests passed 14/14 and full `npm test` passed 725/725 afterward. Build passed, audit found 0 vulnerabilities, Markdown links passed for 137 files. No provider call was made. This advances only the worker-schema portion; the live hotel and checkout acceptance criteria remain open. [Evidence](docs/hotel-worker-query-envelope-2026-11-23.md).
+
 ## 2026-11-23 continuation — calendar worker query binding
 
 Calendar result validation now compares its durable envelope to the original submitted job query, including filters, party, route labels, dates, source, stay, Matrix settings, budgets and terminal status. Airport candidates are constrained to the submitted list; region expansion requires matching location evidence and airport-pair reconstruction. Focused tests passed 68/68; full suite passed 724/724; build passed; audit found 0 vulnerabilities; 136 Markdown files passed local-link checks. No live fare query. Regional and seller acceptance criteria remain open. [Evidence](docs/calendar-worker-query-guard-2026-11-23.md).
