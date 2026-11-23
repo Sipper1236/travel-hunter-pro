@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — flight offer field schema
+
+Flight offers now reject unknown top-level fields such as an injected `sellerConfirmed` claim while retaining the current provider adapter metadata. Full suite 740/740, isolated Next.js build, audit (zero vulnerabilities), and controlled browser check passed. The local site is open at `http://127.0.0.1:3000`; its dev server and worker were already running. This does not recursively validate nested data or prove current fares, eligibility, or seller acceptance; the full goal remains active. See [evidence](docs/flight-offer-field-schema-2026-11-23.md).
+
 ## 2026-11-23 continuation — price-only worker fields
 
 Flight price-only observations now reject unsupported metadata claims while preserving current Matrix/Omkar evidence. Full suite 740/740; build, audit, and browser checks passed. Complete nested schemas and the larger goal remain open. See [evidence](docs/flight-worker-price-observation-schema-2026-11-23.md).

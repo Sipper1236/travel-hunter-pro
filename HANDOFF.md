@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Flight offer top-level field schema — 2026-11-23
+
+`flightOfferError` now rejects unknown top-level offer properties. The red regression reproduced acceptance of an injected `sellerConfirmed` claim; adapter fields in the current Google, Expedia, Ignav, Matrix, Skyscanner, Air Canada NDC, and Omkar flows remain allowed. Full `npm test` passed 740/740, an isolated Next.js 16.4.6 build passed, audit found zero vulnerabilities, and the controlled loopback `check:flight-default` passed with provider/job calls intercepted, no browser errors, and no application CSP violations. The local page returned HTTP 200 and was opened; its existing dev stack and worker were already live. No live fare/seller request occurred. This checks top-level names only; nested metadata values, seller confirmation, passenger eligibility, and all-in prices remain open. [Evidence](docs/flight-offer-field-schema-2026-11-23.md).
+
 ## Flight price-observation schema — 2026-11-23
 
 Price-only flight observations reject unknown keys such as `booked` and `sellerVerified`, while current Matrix/Omkar fields remain allowed and the observation stays explicitly unverified. Focused suites passed 56/56, full suite 740/740, and build/audit/browser checks passed. Optional field-value schemas and other worker outputs remain open. [Evidence](docs/flight-worker-price-observation-schema-2026-11-23.md).

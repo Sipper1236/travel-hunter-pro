@@ -1,5 +1,13 @@
 # Implementation status against work.md
 
+## Flight offer top-level field schema — 2026-11-23
+
+**Implemented:** The shared flight-offer validator rejects fields outside the current adapters' known top-level offer keys; the regression reproduces a previously accepted `sellerConfirmed: true` property.
+
+**Verified:** Focused provider/worker/calendar suites 195/195; full `npm test` 740/740; isolated Next.js 16.4.6 production build; `npm audit --audit-level=low` with zero vulnerabilities; loopback `check:flight-default` with provider and job endpoints intercepted, zero browser errors, and zero application CSP violations. Local page returned HTTP 200; existing dev server and worker were live and the site was opened. No live provider or seller call.
+
+**Still open:** This is a shallow top-level allowlist. Nested segments and provider metadata are not recursively schema-checked. It proves no live price, seller availability, eligibility, baggage, fees, or completed-booking state. `work.md` §17 remains incomplete. [Evidence](docs/flight-offer-field-schema-2026-11-23.md).
+
 ## Flight price-observation schema — 2026-11-23
 
 Unknown price-only observation keys are rejected. Matrix/Omkar fixtures and full suite passed (56/56 focused; 740/740 overall), with build, audit, and controlled browser checks green. Complete optional-field and all-worker schemas remain open. [Evidence](docs/flight-worker-price-observation-schema-2026-11-23.md).

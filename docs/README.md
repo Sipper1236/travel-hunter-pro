@@ -1,5 +1,7 @@
 # Travel Hunter Pro documentation index
 
+- [Flight offer top-level field schema (2026-11-23)](flight-offer-field-schema-2026-11-23.md) — rejects unknown offer properties while preserving the current adapter keys; records full test/build/audit/UI checks and the open recursive/live-verification limits.
+
 - [Flight price-observation schema (2026-11-23)](flight-worker-price-observation-schema-2026-11-23.md) — rejects unsupported booking and seller claims on price-only observations.
 
 - [Flight worker completion semantics (2026-11-23)](flight-worker-completion-semantics-2026-11-23.md) — blocks completed status when source work or planned regional pairs remain incomplete.

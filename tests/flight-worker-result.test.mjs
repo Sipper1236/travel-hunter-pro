@@ -39,6 +39,7 @@ test('flight worker offers cannot claim a completed booking or seller verificati
  assert.ok(flightWorkerResultError(result({offers:[offer({booked:true})]}),input));
  assert.ok(flightWorkerResultError(result({offers:[offer({sellerVerified:true})]}),input));
  assert.ok(flightWorkerResultError(result({offers:[offer({bookingStatus:'Booked and ticketed.'})]}),input));
+ assert.ok(flightWorkerResultError(result({offers:[offer({sellerConfirmed:true})]}),input));
  assert.equal(flightWorkerResultError(result({offers:[offer({bookingStatus:'Not booked; seller not rechecked.'})]}),input),null);
 });
 

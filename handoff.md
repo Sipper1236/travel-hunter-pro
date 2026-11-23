@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Detailed Handoff (updated 2026-11-23)
 
+## 2026-11-23 continuation — flight-offer field boundary
+
+Added a top-level allowlist to the shared flight-offer validator after a red regression showed an injected `sellerConfirmed` property passed. Current adapter fields remain accepted. Full suite passed 740/740, isolated production build passed, audit found zero vulnerabilities, and the controlled loopback browser check passed with provider/job calls intercepted and zero app errors/CSP violations. The local dev page was opened at `http://127.0.0.1:3000`; the dev stack and worker were already running. No live source call. Nested schemas and the larger `work.md` goal remain open. [Evidence](docs/flight-offer-field-schema-2026-11-23.md).
+
 ## 2026-11-23 continuation — flight price-only observation fields
 
 Flight-worker price-only observations now reject unknown field names, including `booked` and `sellerVerified`, while preserving the Matrix and Omkar fields currently emitted. Existing validation still requires matching route/dates, CAD amount, observation time, source URL, and explicit `itineraryVerified: false`. Focused tests passed 56/56 and full suite 740/740; build, audit, and controlled browser checks passed. Optional value schemas and other result types remain open. [Evidence](docs/flight-worker-price-observation-schema-2026-11-23.md).
