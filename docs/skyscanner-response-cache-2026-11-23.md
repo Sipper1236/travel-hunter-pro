@@ -9,7 +9,8 @@ Cache reads validate the normalized query, successful source row and offer count
 ## Verification
 
 - Focused `tests/skyscanner.test.mjs` and `tests/providers.test.mjs` cover exact reuse, original timestamp/session preservation, effective-account and date isolation, tampered-route eviction, partial-result bypass, and identified-traveler exclusion.
-- Focused tests: **33/33 passed**. Full `npm test`: **701/701 passed**.
+- A two-process worker regression proves the first process makes one fixture request and the second reuses the exact fresh SQLite entry with its original observation timestamp.
+- Focused tests: **34/34 passed**. Full `npm test`: **702/702 passed**.
 - `npm run build`: passed on retry after Next.js 16.4.3's security reminder. `npm audit --audit-level=low` reports one moderate Next.js advisory; the suggested forced 16.4.6 update is outside the declared dependency range and was not applied.
 - `git diff --check`: passed.
 - Fixture tests only; no Skyscanner provider request was made.

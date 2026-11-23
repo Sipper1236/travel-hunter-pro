@@ -2,7 +2,7 @@
 
 ## Skyscanner exact-query cache — 2026-11-23
 
-The configured-partner adapter now reuses only positive, completed, exact Skyscanner results for up to 30 seconds, capped by quote freshness. Cache identity covers the Canadian market, exact route/date/trip, adult and child-age counts, cabin, filters, poll budget/interval and a hash of the effective API key. Reads recheck the exact normalized query, successful source counts, session/itinerary identities, exact itinerary validation and freshness; corrupt rows are evicted. Partial/empty results and identified parties bypass the cache. Focused Skyscanner/provider tests pass 33/33. This is fixture evidence only: `SKYSCANNER_API_KEY` is not configured locally, so no live cache or latency result is claimed. [Evidence](docs/skyscanner-response-cache-2026-11-23.md).
+The configured-partner adapter now reuses only positive, completed, exact Skyscanner results for up to 30 seconds, capped by quote freshness. Cache identity covers the Canadian market, exact route/date/trip, adult and child-age counts, cabin, filters, poll budget/interval and a hash of the effective API key. Reads recheck the exact normalized query, successful source counts, session/itinerary identities, exact itinerary validation and freshness; corrupt rows are evicted. Partial/empty results and identified parties bypass the cache. A regression now proves reuse across two worker processes sharing the durable SQLite store. Focused Skyscanner/provider tests pass 34/34; full `npm test` passes 702/702. This is fixture evidence only: `SKYSCANNER_API_KEY` is not configured locally, so no live cache or latency result is claimed. [Evidence](docs/skyscanner-response-cache-2026-11-23.md).
 
 ## ITA Matrix cache integrity — 2026-11-23
 

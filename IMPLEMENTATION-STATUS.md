@@ -2,7 +2,7 @@
 
 ## Skyscanner exact-query cache — 2026-11-23
 
-Added a 30-second durable exact-query cache for successful, nonempty Skyscanner results, capped by offer freshness. It hashes the effective API key and includes route, dates, trip type, exact child ages, cabin, filters, polling budget/interval, CAD and Canada. Reads repeat normalized query, source-count, session/itinerary, offer and quote-freshness validation; invalid rows are deleted. Partial/empty results and identified travelers are ineligible. Focused Skyscanner/provider tests pass 33/33. The partner credential is not configured here; no live results or speedup are established. [Evidence](docs/skyscanner-response-cache-2026-11-23.md).
+Added a 30-second durable exact-query cache for successful, nonempty Skyscanner results, capped by offer freshness. It hashes the effective API key and includes route, dates, trip type, exact child ages, cabin, filters, polling budget/interval, CAD and Canada. Reads repeat normalized query, source-count, session/itinerary, offer and quote-freshness validation; invalid rows are deleted. Partial/empty results and identified travelers are ineligible. A separate-process regression proves shared SQLite reuse with the original observation timestamp and no second provider call. Focused Skyscanner/provider tests pass 34/34; full suite passes 702/702. The partner credential is not configured here; no live results or speedup are established. [Evidence](docs/skyscanner-response-cache-2026-11-23.md).
 
 ## ITA Matrix cache integrity — 2026-11-23
 
