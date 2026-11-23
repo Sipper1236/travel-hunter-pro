@@ -75,6 +75,26 @@ test('all-source fan-out forwards Matrix partial results before the final provid
  assert.deepEqual(result.priceObservations.map(row=>row.price),[500,510]);
 });
 
+test('all-source fan-out publishes Skyscanner partial offers before final polling completion',async()=>{
+ const events=[],sourceQuery={...query,source:'all',tripType:'one-way',childrenAges:[],cabin:'economy',filters:{airlinesInclude:['EA']}};
+ const resultQuery={origin:'YHZ',destination:'BCN',date:sourceQuery.date,cabin:'economy',tripType:'one-way',returnDate:null,adults:1,children:0,childrenAges:[],filters:sourceQuery.filters};
+ const partial={query:resultQuery,offers:[fare(170,'Skyscanner')],priceObservations:[],observedAt:new Date().toISOString(),complete:false,partial:true,sources:[{provider:'Skyscanner',status:'partial',received:1,accepted:1,polling:{pollsRequested:0,maxPolls:8,remainingPolls:8}}],limitations:[]};
+ const final={...partial,partial:false,complete:true,sources:[{provider:'Skyscanner',status:'ok',received:1,accepted:1,polling:{pollsRequested:1,maxPolls:8,remainingPolls:7}}]};
+ const searchOptions={maxConcurrentProviders:4,
+  searchGoogle:async()=>({offers:[],sources:[{provider:'Google Flights',status:'ok',received:0,accepted:0}]}),
+  searchIgnav:async()=>({offers:[],sources:[{provider:'Ignav',status:'ok',received:0,accepted:0}]}),
+  searchExpedia:async()=>({offers:[],sources:[{provider:'Expedia',status:'ok',received:0,accepted:0}]}),
+  searchSkyscanner:async(_input,options)=>{await options.onUpdate(partial);return final;},
+  searchAirCanada:async()=>({offers:[],sources:[{provider:'Air Canada NDC',status:'ok',received:0,accepted:0}]}),
+  searchMatrix:async()=>({offers:[],sources:[{provider:'ITA Matrix',status:'ok',received:0,accepted:0}]}),
+  searchOmkarExpedia:async()=>({offers:[],sources:[{provider:'Expedia via Omkar',status:'ok',received:0,accepted:0}]}),
+  onProviderResult:event=>events.push(event),
+ };
+ const searched=await searchProviders(sourceQuery,searchOptions),skyscannerEvents=events.filter(event=>event.sourceId==='skyscanner');
+ assert.equal(skyscannerEvents.length,2);assert.equal(skyscannerEvents[0].result.partial,true);assert.equal(skyscannerEvents[0].sourceIndex,3);assert.equal(skyscannerEvents[0].sourceCount,7);
+ assert.equal(skyscannerEvents[0].result.offers.length,1);assert.equal(skyscannerEvents[1].result.partial,undefined);assert.equal(searched.offers.length,1);
+});
+
 test('source accepted counts reflect the final shared-filtered results',async()=>{
  const withCarrier=(provider,carrier)=>({...fare(250,provider),segments:[segment('YHZ','BCN',carrier)]});
  const result=await searchProviders({...query,source:'ignav',filters:{airlinesInclude:['AC']}},{searchIgnav:async()=>({offers:[withCarrier('Ignav','AC'),withCarrier('Ignav','DL')],sources:[{provider:'Ignav',status:'ok',received:2,accepted:2}]})});

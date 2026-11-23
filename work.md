@@ -2,7 +2,7 @@
 
 ## Reverse-endpoint progress — bounded Skyscanner polling — 2026-11-23
 
-Skyscanner search and refresh now hard-cap at eight poll requests, reject invalid poll counts or intervals below the local one-second pacing floor, and report poll use and remaining capacity on partial/completed results. Fixture tests cover no-poll partial completion and reject attempts to exceed the budget before provider dispatch. Focused tests pass 14/14; full suite passes 675/675; build passes after retrying Next.js's security reminder. `SKYSCANNER_API_KEY` is absent, so live partner access, result shape, and account quota remain unverified. See [reverse-endpoint inventory](docs/reverse-endpoint-implementation.md); broader reverse-endpoint and §17 work remains open.
+Skyscanner search/refresh now cap at eight poll operations, reject invalid budgets or sub-one-second intervals, and report used/remaining budget. Complete, validated offers are emitted from incomplete search snapshots through all-source progress before polling finishes; later snapshots replace earlier route state. Focused Skyscanner/provider tests pass 31/31, full suite passes 677/677, and build passes after retrying Next.js's security reminder. `SKYSCANNER_API_KEY` is absent, so live partner access, result shape, quota, and first-result timing remain unverified. See [reverse-endpoint inventory](docs/reverse-endpoint-implementation.md); broader reverse-endpoint and §17 work remains open.
 
 ## Reverse-endpoint progress — all-source Matrix partial results — 2026-11-23
 

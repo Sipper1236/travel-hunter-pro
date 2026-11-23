@@ -36,6 +36,15 @@ test('Skyscanner poll budgets are capped and report remaining calls when the sea
  await assert.rejects(refreshSkyscanner({...input,sessionToken:'session-123',itineraryId:'it-1'},{apiKey:'key',maxPolls:9,fetcher:async()=>{calls++;return Response.json({});}}),/poll budget/);assert.equal(calls,0);
 });
 
+test('Skyscanner publishes validated incomplete results before the polling loop finishes',async()=>{
+ const updates=[],calls=[];const result=await searchSkyscanner(input,{loadTimezones:async()=>timeEvidence(),apiKey:'key',sleep:async()=>{},onUpdate:update=>updates.push(update),fetcher:async(_url,init)=>{
+  calls.push(init);return Response.json(calls.length===1?{...response('RESULT_STATUS_INCOMPLETE'),sessionToken:'early-session'}:response('RESULT_STATUS_COMPLETE'));
+ }});
+ assert.equal(updates.length,1);assert.equal(updates[0].partial,true);assert.equal(updates[0].complete,false);assert.equal(updates[0].offers.length,1);assert.equal(updates[0].offers[0].price,820.5);
+ assert.equal(updates[0].sources[0].status,'partial');assert.equal(updates[0].sources[0].polling.pollsRequested,0);assert.deepEqual(updates[0].query,{origin:'YHZ',destination:'BCN',date:'2099-04-15',cabin:'economy',tripType:'one-way',returnDate:null,adults:1,children:0,childrenAges:[],filters:{}});
+ assert.equal(result.complete,true);assert.equal(calls.length,2);
+});
+
 test('Skyscanner refresh reprices one itinerary within its original session', async () => {
   const calls = [];
   const result = await refreshSkyscanner({ ...input, sessionToken: 'session-123', itineraryId: 'it-1' }, { loadTimezones: async()=>timeEvidence(), apiKey: 'key', sleep: async () => {}, fetcher: async (url, init) => {

@@ -2,7 +2,7 @@
 
 ## Skyscanner poll budget and coverage — 2026-11-23
 
-`lib/skyscanner.mjs` rejects poll budgets outside 0–8 and poll intervals outside 1–10 seconds before any provider call. Search and exact-itinerary refresh results now disclose poll calls used, the cap, and remaining calls; when the cap is exhausted the source stays `partial`, never represented as complete. Focused Skyscanner tests pass 14/14; full `npm test` passes 675/675; production build passes after the Next.js reminder retry. Credential presence check shows `SKYSCANNER_API_KEY` missing, so no live partner validation was done. Rate-policy approval, partner entitlement, and live response behavior remain open.
+`lib/skyscanner.mjs` rejects poll budgets outside 0–8 and poll intervals outside 1–10 seconds before any provider call. Search and exact-itinerary refresh results disclose poll operations used, the cap, and remaining operations; exhausting the cap leaves the source `partial`. Fully validated itineraries from incomplete poll snapshots now flow through the provider progress callback, receive the normal airline/filter checks, and are replaced by later snapshots/final output. Focused Skyscanner/provider tests pass 31/31; full `npm test` passes 677/677; production build passes after the Next.js reminder retry. `SKYSCANNER_API_KEY` is missing locally, so live partner validation, allowed polling cadence, and real first-result timing remain open.
 
 ## All-source Matrix partial-result forwarding — 2026-11-23
 
