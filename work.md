@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## Reverse-endpoint progress — ACV structured package response cache — 2026-11-23
+
+The ACV package worker now reuses exact, positive, fresh responses from the ordinary widget's structured package-search operation. The short durable cache binds the full validated location/date/party/room/cabin/filter/page/budget query, preserves original offer observations, and avoids terms fetch, browser launch, and widget submission on a hit. Worker validation and quote freshness are rerun; DOM fallback, empty, invalid, stale, and incomplete-page responses bypass caching. Focused normalization/worker-contract suites pass 41/41; full `npm test` passes 705/705 and `npm run build` passes after the security-reminder retry. `npm audit` still reports one moderate Next.js advisory. Fixture evidence only; no live speedup claimed. See [cache evidence](docs/acv-structured-response-cache-2026-11-23.md). Broader reverse-endpoint and §17 work remains open.
+
 ## Reverse-endpoint progress — official Reservit exact-query cache — 2026-11-23
 
 Official hotel search now reuses exact complete fresh Reservit observations via the durable SQLite cache. Keys bind verified destination/property context, dates, exact adult/child ages, room allocations, and query limits; cache hits avoid repeated discovery, website reads, and rate calls. Reads retain the original observation time and rerun the worker's full hotel-result and room-quote freshness validation. Partial/failed/empty scans are uncached. Focused official hotel/worker tests pass 23/23, including actual reuse across worker processes; full suite passes 704/704. Build passed after the security reminder retry; one moderate Next.js audit advisory remains. Fixture-only; no live response or speedup claimed. Evidence: [Reservit cache](docs/reservit-response-cache-2026-11-23.md). Broader reverse-endpoint and §17 work remains open.

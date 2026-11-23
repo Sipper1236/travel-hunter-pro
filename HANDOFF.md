@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Air Canada Vacations structured package response cache — 2026-11-23
+
+Package workers now reuse exact positive, fresh results from the normal widget's structured `packages-search/search` response. The 30-second durable cache binds the normalized route/location, dates, exact party/room occupancy, cabin, filters and page/budget settings; a hit skips terms fetch, browser launch and widget search, preserves the original observation times, and emits cache-hit progress. Only worker-valid structured results cache; empty, stale, invalid, incomplete-page and DOM-fallback results bypass it. Focused normalization/worker-contract tests pass 41/41; full `npm test` passes 705/705 and the build passes after retrying past the security reminder. One moderate Next.js audit advisory remains. Fixture evidence only; no live speedup is claimed. See [evidence](docs/acv-structured-response-cache-2026-11-23.md).
+
 ## Official Reservit hotel exact-query cache — 2026-11-23
 
 The official hotel search path now reuses only complete, positive, fresh exact-query results through the durable SQLite provider cache. Cache identity includes destination/property context, exact stay, adult and child ages, room count/allocations, and search limits. A hit avoids another discovery/page read/Reservit rate call, preserves the original observed time, and marks source coverage as cached; the existing worker validator rechecks the query and offer, including room-level quote freshness. Partial/failed/empty results are excluded. Focused hotel/worker tests pass 23/23, including reuse across actual worker processes. Full `npm test` passes 704/704; build passes on retry after the Next.js security reminder. `npm audit` reports one moderate Next.js advisory. Fixture-only; no live speedup is claimed. See [evidence](docs/reservit-response-cache-2026-11-23.md).

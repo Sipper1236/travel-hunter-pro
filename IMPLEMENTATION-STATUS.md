@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Air Canada Vacations structured package response cache — 2026-11-23
+
+The package worker now checks a short durable exact-query cache for positive fresh structured responses from the normal ACV widget endpoint. Its hashed key covers the full validated location, date, passenger, room, cabin, filter, result-limit and budget query. Reads rerun `packageWorkerResultError` and freshness validation. Only the structured widget path caches; rendered-DOM fallbacks, incomplete page loads, empty and invalid results bypass it. Focused cache/contract suites pass 41/41; full `npm test` passes 705/705; the build passes after the security-reminder retry. Audit still reports one moderate Next.js issue. Fixture-only evidence; no live speed claim. [Evidence](docs/acv-structured-response-cache-2026-11-23.md).
+
 ## Official Reservit hotel exact-query cache — 2026-11-23
 
 Wired hotel workers to the durable provider-response cache and added exact-query reuse for complete positive official hotel results. Cache keys cover the full hotel query and verified destination/property selection. Cache reads use the existing worker-result gate plus current quote freshness checks; failed, partial, stale, and empty results bypass storage. A hit keeps original observations and avoids repeated discovery, property-page reads, and Reservit rate calls. Focused official-hotel/worker-result tests pass 23/23, including cross-process worker reuse. Full `npm test` passes 704/704 and the build passes on retry after the security reminder. One moderate Next.js audit advisory remains. Fixture-only, with no live speed claim. [Evidence](docs/reservit-response-cache-2026-11-23.md).

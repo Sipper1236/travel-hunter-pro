@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {normalizeVacationApiResponse,normalizeVacationListing} from '../lib/vacation-normalize.mjs';
+import {searchVacationWithCache,vacationResponseCacheKey} from '../lib/vacation-response-cache.mjs';
+import {createJobStore} from '../lib/job-store.mjs';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {join} from 'node:path';
+import {tmpdir} from 'node:os';
+import {validateVacationQuery} from '../lib/vacation-query.mjs';
 const query={origin:'YHZ',destinationLabel:'Barcelona, Spain',destinationAirport:'BCN',date:'2027-04-15',returnDate:'2027-04-25',adults:1,rooms:1,childrenAges:[]};
 const listingUrl='https://vacations.aircanada.com/en/packages/product-listing?departureLocation=YHZ&arrivalLocationName=Barcelona%2C+Spain&departingDateTime=15%2F04%2F2027&returnDateTime=25%2F04%2F2027&nb_adult=1&numberOfRooms=1&nb_child=0';
 const context={query,listingUrl,observedAt:'2026-10-29T01:00:00Z',currencyTermsText:'All prices are in Canadian currency, unless otherwise indicated'};
@@ -37,6 +43,18 @@ test('normalizes the ordinary widget JSON response with exact route, stay, hotel
  assert.equal(result.sourceEvidence.endpoint,'https://vacations-api.aircanada.com/packages-search/search');
  const actualAdultMarker=packageApiResponse();actualAdultMarker.results.packages[0].pricing.perPaxType[0].paxType='A';
  assert.equal(normalizeVacationApiResponse(actualAdultMarker,{...context,requestUrl:apiRequestUrl,sourceUrl:listingUrl,responseBytes:88189}).offers.length,1);
+});
+
+test('ACV structured package cache reuses only an exact fresh worker-valid widget result',async()=>{
+ const directory=await mkdtemp(join(tmpdir(),'vacation-response-cache-')),store=createJobStore(join(directory,'jobs.sqlite'));
+ const exactQuery=validateVacationQuery({...query,originLabel:'Halifax Stanfield Intl. Airport (YHZ)'}),freshContext={...context,query:exactQuery,observedAt:new Date().toISOString()};
+ const result=normalizeVacationApiResponse(packageApiResponse(),{...freshContext,requestUrl:apiRequestUrl,sourceUrl:listingUrl,responseBytes:88189});let calls=0;
+ try{
+  const search=async()=>{calls++;return result;};
+  const first=await searchVacationWithCache(exactQuery,{cache:store,search});assert.equal(first.offers.length,1);assert.equal(first.cacheStatus,undefined);
+  const second=await searchVacationWithCache(exactQuery,{cache:store,search});assert.equal(second.cacheStatus,'hit');assert.equal(second.offers[0].observedAt,first.offers[0].observedAt);assert.equal(calls,1);
+  assert.notEqual(vacationResponseCacheKey(exactQuery),vacationResponseCacheKey({...exactQuery,maxStops:0}));
+ }finally{store.close();await rm(directory,{recursive:true,force:true});}
 });
 
 test('normalizes adult multi-room packages only when every provider room allocation and weighted group total match',()=>{
