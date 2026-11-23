@@ -27,3 +27,7 @@ Run a browser-visible query against the local production stack to verify that pe
 ## Browser attempt — inconclusive
 
 A headless Chromium attempt used the visible flight form against an isolated local production app and waited up to 90 seconds for the completion announcement. The expected announcement was not observed. The harness did not preserve the submitted job ID or inspect the final job/card state after that timeout, and its `finally` cleanup removed the disposable database. Therefore this attempt does not establish whether the UI job completed, failed, or rendered cards; browser-visible end-to-end evidence remains open. Do not treat the locator timeout as a provider failure. The successful owner-bound HTTP/worker job above remains separate evidence.
+
+## Production-build fixture rendering check — 2026-11-23
+
+Ran the existing progressive-flight browser check against an isolated local production build. Provider/job responses were intercepted and supplied from test fixtures; no live provider requests or external browser requests were made. The UI rendered the persisted partial result before completion, then the updated final result. Persistence-to-UI took 479 ms across three status polls; browser errors: 0. This verifies the generic rendering path only, not that the inconclusive live Ignav attempt rendered or met a real-provider latency target.
