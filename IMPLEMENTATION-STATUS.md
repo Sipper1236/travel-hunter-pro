@@ -1967,3 +1967,6 @@ Streaming calendar UI has one concise polite announcement on result changes with
 
 One bounded, read-only direct adapter query used the configured Ignav credential for YHZ→LAX on 2027-01-15, one-way, one adult/economy, Canada market. It completed in 7,438 ms: 58 rows received, 25 accepted, 33 rejected. This confirms only this direct adapter call; no website/durable-worker job, exact price, seller availability, or freshness verification was performed. See [the dated evidence note](docs/ignav-live-adapter-check-2026-11-23.md). Keep end-to-end source validation open.
 
+# Ignav production worker-path check — 2026-11-23
+
+An owner-bound YHZ→LAX, 2027-01-15, one-way, one-adult/economy Ignav-only job was submitted through an isolated local production server with a disposable database. HTTP 202; completed in 3,056 ms; progress persisted; Ignav status `ok`, 25 accepted. The job did not expose cache provenance, so this is evidence for production HTTP/worker/result persistence, not a second confirmed live provider request. Browser-visible rendering remains unverified. [Evidence](docs/ignav-live-adapter-check-2026-11-23.md).

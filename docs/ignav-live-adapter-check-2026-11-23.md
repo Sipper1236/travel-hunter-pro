@@ -16,6 +16,10 @@ The request output was deliberately limited to status, counts, elapsed time, and
 
 The configured Ignav endpoint responded successfully to this exact query, and the adapter accepted 25 normalized rows under its current validation rules. The result is a direct adapter check, not a durable search job or website-rendering check. It does not establish itinerary completeness, current seller availability, price freshness, tax/baggage inclusion, or reliability for other routes, dates, party shapes, or filters.
 
+## Durable worker follow-up
+
+The same bounded query was then submitted to an isolated local production server using a disposable SQLite database and an owner-bound job token. The job endpoint returned HTTP 202; the worker completed in 3,056 ms, persisted progress, and reported Ignav `ok` with 25 accepted offers. Output was limited to status, elapsed time and aggregate counts. The job result did not expose whether it reused cached data, so this verifies the production HTTP-to-durable-worker integration and result persistence but does not prove that this second run made a fresh provider request. No browser was used, so website rendering remains unverified.
+
 ## Next verification
 
-Run a single bounded owner-bound worker search for the same supported query when the local stack is available, then confirm progressive persistence and browser rendering without printing fare details or secrets. Record source-specific latency and coverage from that job. Do not claim end-to-end completion from this direct call.
+Inspect cache provenance on the completed job and, when permitted, run a browser-visible query against the existing local stack to verify that persisted Ignav results render progressively. Keep any cache-hit result distinct from a fresh provider response. Record source-specific latency and coverage without printing fare details or secrets.

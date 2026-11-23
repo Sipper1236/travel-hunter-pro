@@ -2902,3 +2902,6 @@ Empty official-site results now require valid, bounded discovery evidence: suppo
 # Fresh Ignav adapter evidence — 2026-11-23
 
 One bounded, read-only direct adapter query used the configured Ignav credential for YHZ→LAX on 2027-01-15, one-way, one adult/economy, Canada market. It completed in 7,438 ms: 58 rows received, 25 accepted, 33 rejected. This was not a website or durable-worker run, and it does not prove prices, seller availability, or freshness. Evidence: [Ignav live adapter check](docs/ignav-live-adapter-check-2026-11-23.md). The provider integration and broader endpoint goal remain open.
+# Ignav production worker-path check — 2026-11-23
+
+Followed the direct Ignav adapter check with one owner-bound query through an isolated local production server, durable worker, and disposable SQLite database (YHZ→LAX, 2027-01-15, one-way, one adult/economy, source restricted to Ignav). The API accepted the job with HTTP 202; it completed in 3,056 ms, persisted progress, and reported Ignav `ok` with 25 accepted offers. Output contained only aggregate fields. Cache provenance was not captured, so this does not prove the second run made a live provider request. No browser was used; progressive website rendering remains open. Evidence: [Ignav check](docs/ignav-live-adapter-check-2026-11-23.md).
