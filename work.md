@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## P0 comparison worker status schema — 2026-11-23
+
+Comparison worker persistence now constrains top-level status to the exact outcomes emitted by the producer for each mode. Segment comparisons require status; party comparisons permit omission or the wrapper's `budget_exhausted`. Test-first regressions reproduced invented `booked` and missing segment status acceptance; focused suites passed 62/62, full `npm test` passed 725/725, build passed, audit found 0 vulnerabilities, and Markdown links passed for 139 files. No provider request. [Evidence](docs/comparison-worker-status-guard-2026-11-23.md).
+
 ## P0 package worker status schema — 2026-11-23
 
 The durable package worker now accepts only `observed` results. It rejects `currency_unverified` envelopes before persistence because they lack observed coverage/source evidence; the lower-level normalizer still emits that explicit status when currency is unverified. A test-first regression reproduced the prior acceptance; focused tests passed 25/25, full `npm test` passed 725/725, build passed, audit found 0 vulnerabilities, and Markdown links passed for 138 files. No provider request. [Evidence](docs/package-worker-status-guard-2026-11-23.md).

@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Comparison worker status schema — 2026-11-23
+
+Comparison persistence now constrains top-level statuses to those emitted by its mode-specific producer and requires segment-mode terminal status. Focused suites passed 62/62; full `npm test` passed 725/725; build passed; audit found 0 vulnerabilities; Markdown links passed for 139 files. No provider call. This is strict-schema progress, not live ticket eligibility, inventory, or seller evidence. [Evidence](docs/comparison-worker-status-guard-2026-11-23.md).
+
 ## Package worker status schema — 2026-11-23
 
 Durable package output now permits only observed results, so `currency_unverified` cannot bypass coverage and source-evidence requirements. The normalizer still exposes that state directly when currency is unverified. Focused tests passed 25/25; full `npm test` passed 725/725; build passed; audit found 0 vulnerabilities; Markdown links passed for 138 files. No provider call. This is a schema improvement, not live package acceptance. [Evidence](docs/package-worker-status-guard-2026-11-23.md).

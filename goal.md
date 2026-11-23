@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — comparison worker status schema
+
+Comparison worker status now follows the exact output modes: segment results require a known terminal outcome; party results allow no status or the wrapper's budget-exhausted status. Focused suites passed 62/62; full `npm test` passed 725/725, build passed, audit found 0 vulnerabilities, and Markdown links passed for 139 files. No provider request. This advances only P0 schema enforcement. [Evidence](docs/comparison-worker-status-guard-2026-11-23.md).
+
 ## 2026-11-23 continuation — package worker status schema
 
 The package worker boundary rejects unverified-currency results that lack an observed result envelope. The normalizer still reports unverified currency directly. Focused tests passed 25/25; full `npm test` passed 725/725, build passed, audit found 0 vulnerabilities, and Markdown links passed for 138 files. No live source call. Broader package and §17 acceptance remains open. [Evidence](docs/package-worker-status-guard-2026-11-23.md).

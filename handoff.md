@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Detailed Handoff (updated 2026-11-23)
 
+## 2026-11-23 continuation — comparison worker status schema
+
+Comparison worker validation now rejects invented terminal states. Segment mode requires a status emitted by the producer or wrapper; party mode allows no status or the wrapper's `budget_exhausted`. Regressions reproduced acceptance of `booked` and a missing segment result status. Focused suites passed 62/62; full `npm test` passed 725/725, build passed, audit found 0 vulnerabilities, and Markdown links passed for 139 files. No source request. [Evidence](docs/comparison-worker-status-guard-2026-11-23.md).
+
 ## 2026-11-23 continuation — package worker status schema
 
 Package worker validation now accepts only `observed` result envelopes. The test-first regression showed that a minimal `currency_unverified` envelope had been accepted without observed coverage or provider evidence. The lower-level normalizer still preserves its explicit unverified-currency result; the durable worker now rejects it. Focused tests passed 25/25; full `npm test` passed 725/725, build passed, audit found 0 vulnerabilities, and Markdown links passed for 138 files. No provider request was made. [Evidence](docs/package-worker-status-guard-2026-11-23.md).

@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Comparison worker status schema — 2026-11-23
+
+The comparison result guard now rejects invented top-level statuses; segment-mode outputs require one of the producer's known outcomes, while party-split outputs may omit status or report `budget_exhausted`. Regressions reproduced acceptance of `booked` and missing segment status. Focused comparison suites passed 62/62; full `npm test` passed 725/725. Build passed, audit found 0 vulnerabilities, and Markdown links passed for 139 files. No provider request. [Evidence](docs/comparison-worker-status-guard-2026-11-23.md).
+
 ## Package worker status schema — 2026-11-23
 
 The durable package worker now accepts only `observed` results. A red regression reproduced acceptance of a minimal `currency_unverified` envelope without coverage or source evidence. The lower-level normalizer still reports unverified currency when evidence is missing; the durable worker rejects that as a successful result. Focused package-worker and normalizer tests passed 25/25; full `npm test` passed 725/725. Build passed, audit found 0 vulnerabilities, and Markdown links passed for 138 files. No provider request. [Evidence](docs/package-worker-status-guard-2026-11-23.md).

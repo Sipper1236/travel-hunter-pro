@@ -13,6 +13,7 @@ const result=(overrides={})=>({query:validateComparisonQuery(input),coverage:{fa
 
 test('comparison worker retains a complete, fresh adult partition with an exact CAD total',()=>{
  assert.equal(comparisonWorkerResultError(result(),input),null);
+ assert.match(comparisonWorkerResultError(result({status:'booked'}),input),/status/);
 });
 
 test('comparison worker rejects mismatched totals, stale quotes, and changed query constraints',()=>{
@@ -65,8 +66,10 @@ test('separate-ticket plans cover every exact baseline segment once and reject c
  const makeTicket=(segment,segmentNumber,price)=>({direction:'outbound',segment:segmentNumber,segmentEnd:segmentNumber,adults:1,price,currency:'CAD',cabin:'economy',ignavId:`segment-${segmentNumber}`,observedAt,segments:[segment]});
  const segmentPlan={price:300,currency:'CAD',observedAt,expiresAt,segments:[],tickets:[makeTicket(first,1,100),makeTicket(second,2,200)]};
  const routeCoverage={scope:'same_exact_airport_pair_refresh',candidateItinerariesReturned:0,matchingAlternatives:0,alternativesShown:0,displayLimit:8,omittedMatchingAlternatives:0,providerCompletionKnown:false,providerReportedComplete:false,alternateAirportPairsPlanned:0,alternateAirportPairsAttempted:0,alternateAirportPairsAttemptedList:[],alternateAirportPairsSearched:0,alternateAirportPairsSearchedList:[],alternateAirportPairsStoppedList:[],alternateAirportPairsNotSearched:[],airportPairSearchLimit:8,exhaustive:false};
- const envelope={query:validateComparisonQuery(segmentInput),coverage:{fareRequestsStarted:3,requestBudget:4,responsesReused:0,interruptedRequests:0},plans:[segmentPlan],routeAlternatives:[],routeAlternativeCoverage:routeCoverage};
+ const envelope={status:'observed',query:validateComparisonQuery(segmentInput),coverage:{fareRequestsStarted:3,requestBudget:4,responsesReused:0,interruptedRequests:0},plans:[segmentPlan],routeAlternatives:[],routeAlternativeCoverage:routeCoverage};
  assert.equal(comparisonWorkerResultError(envelope,segmentInput),null);
+ const missingStatus={...envelope};delete missingStatus.status;
+ assert.match(comparisonWorkerResultError(missingStatus,segmentInput),/status/);
  const changed=structuredClone(envelope);changed.plans[0].tickets[1].segments[0].flight_number='999';
  assert.ok(comparisonWorkerResultError(changed,segmentInput));
 });
@@ -78,7 +81,7 @@ test('round-trip separate-ticket plans preserve every exact outbound and return 
  const keyFor=segments=>JSON.stringify(segments.map(s=>[s.marketing_carrier_code,s.flight_number,s.departure_airport,s.departure_time_local,s.departure_time_utc,s.arrival_airport,s.arrival_time_local,s.arrival_time_utc,null]));
  const segmentInput={mode:'segments',origin:'YHZ',destination:'BCN',date:'2099-04-15',tripType:'round-trip',returnDate:'2099-04-22',cabin:'economy',adults:1,children:0,childrenAges:[],searchLimit:4,itineraryKey:JSON.stringify([keyFor(outbound),keyFor(inbound)])};
  const exactTicket=(direction,index,value)=>({direction,segment:index+1,segmentEnd:index+1,adults:1,price:value,currency:'CAD',cabin:'economy',ignavId:`${direction}-${index+1}`,observedAt,expiresAt,segments:[(direction==='outbound'?outbound:inbound)[index]]});
- const envelope={query:validateComparisonQuery(segmentInput),coverage:{fareRequestsStarted:4,requestBudget:4,responsesReused:0,interruptedRequests:0},plans:[{price:450,currency:'CAD',observedAt,expiresAt,tickets:[exactTicket('outbound',0,100),exactTicket('outbound',1,200),exactTicket('inbound',0,50),exactTicket('inbound',1,100)]}],routeAlternatives:[],routeAlternativeCoverage:{scope:'same_exact_airport_pair_refresh',candidateItinerariesReturned:0,matchingAlternatives:0,alternativesShown:0,displayLimit:8,omittedMatchingAlternatives:0,providerCompletionKnown:false,providerReportedComplete:false,alternateAirportPairsPlanned:0,alternateAirportPairsAttempted:0,alternateAirportPairsAttemptedList:[],alternateAirportPairsSearched:0,alternateAirportPairsSearchedList:[],alternateAirportPairsStoppedList:[],alternateAirportPairsNotSearched:[],airportPairSearchLimit:8,exhaustive:false}};
+ const envelope={status:'observed',query:validateComparisonQuery(segmentInput),coverage:{fareRequestsStarted:4,requestBudget:4,responsesReused:0,interruptedRequests:0},plans:[{price:450,currency:'CAD',observedAt,expiresAt,tickets:[exactTicket('outbound',0,100),exactTicket('outbound',1,200),exactTicket('inbound',0,50),exactTicket('inbound',1,100)]}],routeAlternatives:[],routeAlternativeCoverage:{scope:'same_exact_airport_pair_refresh',candidateItinerariesReturned:0,matchingAlternatives:0,alternativesShown:0,displayLimit:8,omittedMatchingAlternatives:0,providerCompletionKnown:false,providerReportedComplete:false,alternateAirportPairsPlanned:0,alternateAirportPairsAttempted:0,alternateAirportPairsAttemptedList:[],alternateAirportPairsSearched:0,alternateAirportPairsSearchedList:[],alternateAirportPairsStoppedList:[],alternateAirportPairsNotSearched:[],airportPairSearchLimit:8,exhaustive:false}};
  assert.equal(comparisonWorkerResultError(envelope,segmentInput),null);
  const changed=structuredClone(envelope);changed.plans[0].tickets[3].segments[0].flight_number='999';
  assert.ok(comparisonWorkerResultError(changed,segmentInput));
@@ -93,7 +96,7 @@ test('round-trip separate-ticket plans preserve every exact outbound and return 
 test('alternate-route coverage preserves unsearched airport pairs and never claims exhaustive coverage',()=>{
  const routeInput={mode:'segments',origin:'YHZ',destination:'BCN',date:'2099-04-15',adults:1,children:0,childrenAges:[],searchLimit:4,routeSearchLimit:1,routePairs:[{origin:'YHZ',destination:'LHR'},{origin:'YHZ',destination:'CDG'}],itineraryKey:'selected-itinerary'};
  const query=validateComparisonQuery(routeInput),coverage={scope:'bounded_resolved_airport_pairs',candidateItinerariesReturned:0,matchingAlternatives:0,alternativesShown:0,displayLimit:8,omittedMatchingAlternatives:0,providerCompletionKnown:false,providerReportedComplete:false,alternateAirportPairsPlanned:2,alternateAirportPairsAttempted:0,alternateAirportPairsAttemptedList:[],alternateAirportPairsSearched:0,alternateAirportPairsSearchedList:[],alternateAirportPairsStoppedList:[],alternateAirportPairsNotSearched:routeInput.routePairs,airportPairSearchLimit:1,exhaustive:false};
- const envelope={query,coverage:{fareRequestsStarted:1,requestBudget:4,responsesReused:0,interruptedRequests:0},plans:[],routeAlternatives:[],routeAlternativeCoverage:coverage};
+ const envelope={status:'observed',query,coverage:{fareRequestsStarted:1,requestBudget:4,responsesReused:0,interruptedRequests:0},plans:[],routeAlternatives:[],routeAlternativeCoverage:coverage};
  assert.equal(comparisonWorkerResultError(envelope,routeInput),null);
  const understated=structuredClone(envelope);understated.routeAlternativeCoverage.alternateAirportPairsNotSearched.pop();
  assert.ok(comparisonWorkerResultError(understated,routeInput));
