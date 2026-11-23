@@ -216,6 +216,20 @@ test('explicit Matrix detail expansion returns the matched connecting itinerary 
  assert.deepEqual(result.sources[0].detailCoverage,{needed:1,requested:1,received:1,limit:3,failed:0});
 });
 
+test('Matrix emits validated price-only progress before and after detailed expansion',async()=>{
+ const {readFile}=await import('node:fs/promises'),fixture=JSON.parse(await readFile(new URL('./fixtures/matrix-connection.json',import.meta.url),'utf8'));
+ const summary=structuredClone(fixture.summary),details=structuredClone(fixture.details);
+ for(const item of [summary,details]){item.passengerCount=1;item.pricings=[{ext:{pax:{adults:1}}}];}
+ for(const slice of details.itinerary.slices)for(const segment of slice.segments)segment.bookingInfos=[segment.bookingInfos[0]];
+ const updates=[];
+ const final=await searchMatrix({origin:'YVR',destination:'IST',departureDate:'2099-11-10',returnDate:'2099-11-15',passengers:{adults:1},cabin:'COACH',currency:'CAD',expandDetailedItineraries:true},{browserSearch:async(_input,{onUpdate})=>{
+  const initial={session:'s1',solutionSet:'ss1',solutionList:{solutions:[summary]}};await onUpdate(initial);
+  return {...initial,solutionList:{solutions:[{...summary,matrixDetails:details}]}};
+ },onUpdate:update=>updates.push(update)});
+ assert.equal(updates.length,1);assert.equal(updates[0].offers.length,0);assert.equal(updates[0].priceObservations.length,1);
+ assert.equal(updates[0].sources[0].provider,'ITA Matrix');assert.equal(final.offers.length,1);
+});
+
 test('Matrix detail expansion refuses cabin or stop settings the live form cannot represent',async()=>{
  let calls=0;const browserSearch=async()=>{calls++;return {solutionList:{solutions:[]}};};
  await assert.rejects(searchMatrix({origin:'YVR',destination:'IST',departureDate:'2099-11-10',passengers:{adults:1},cabin:'BUSINESS',expandDetailedItineraries:true},{browserSearch}),/only for economy/);

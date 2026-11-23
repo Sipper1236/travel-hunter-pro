@@ -1,5 +1,11 @@
 # Travel Hunter Pro — Current Handoff
 
+## ITA Matrix progressive detail results — 2026-11-23
+
+Matrix now publishes a validated preview after its initial response, then updates the same source result as each matched detail response arrives. Early CAD observations can display as price-only while flight details are being fetched; fully validated itineraries replace their corresponding observations. Fixed the single-airport callback-shape bug that dropped provider updates, the worker's `origin/destination` versus `from/to` route match for price-only observations, and premature route-complete status during a partial Matrix response.
+
+Verification: Matrix/provider/location suites **54/54**; full `npm test` **653/653**; production build passed after the Next.js reminder retry; rebuilt fixture UI showed a Matrix price-only card plus another source's partial result **437 ms** after persisted progress, followed by final fixture results, zero browser errors and no external requests. No live Matrix request was made; live progressive behavior/latency remains open. Details: [Matrix progressive evidence](docs/matrix-progressive-results-2026-11-23.md). Broader endpoint implementation and §17 remain incomplete.
+
 ## Ignav exact-query response cache — 2026-11-23
 
 Added a durable SQLite response cache for validated Ignav flight offers. It keys on exact route, dates/trip type, count party and exact child ages, cabin, filters, market, currency, and a hash of the configured Ignav account scope. It only caches positive, fully accepted, currently fresh CAD results for count-based parties; identified travelers, infants, missing child ages, empty results, and invalid/stale offers bypass storage. TTL is at most five minutes and never extends the quote's original freshness window. Cache hits preserve each offer's original `observedAt` and the UI labels them “cached observed results.” Storage is capped at 100 entries and 512 KB per result. This is Ignav-only; no cache policy has been inferred for other providers.

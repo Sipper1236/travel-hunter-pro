@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import {resolveCity} from '../lib/city-resolution.mjs';
 import {resolvePlace} from '../lib/place-resolution.mjs';
 import {searchLocations} from '../lib/location-search.mjs';
+import {searchProviders} from '../lib/providers.mjs';
+import {searchMatrix} from '../lib/ita-matrix.mjs';
 
 test('airport codes need no lookup and exact names retain live provenance',async()=>{
  const noLookup=()=>{throw Error('unexpected network');};
@@ -36,6 +38,21 @@ test('regional airport-pair fanout suppresses Matrix detail expansion for each p
  await searchLocations(input,{origin:{type:'region'},destination:{type:'region'}},{resolveRegion:async name=>({airports:name==='North America'?[{code:'YYZ'},{code:'YTZ'}]:[{code:'FRA'},{code:'CDG'}],method:'test'}),search:async query=>{calls.push(query);return {offers:[],sources:[],complete:false};}});
  assert.equal(calls.length,4);
  assert.ok(calls.every(query=>query.matrixOptions.expandDetailedItineraries===false));
+});
+
+test('Matrix price-only observations persist into flight progress before detail expansion finishes',async()=>{
+ const {readFile}=await import('node:fs/promises'),fixture=JSON.parse(await readFile(new URL('./fixtures/matrix-connection.json',import.meta.url),'utf8'));
+ const summary=structuredClone(fixture.summary),details=structuredClone(fixture.details);
+ for(const item of [summary,details]){item.passengerCount=1;item.pricings=[{ext:{pax:{adults:1}}}];}
+ for(const slice of details.itinerary.slices)for(const segment of slice.segments)segment.bookingInfos=[segment.bookingInfos[0]];
+ const initial={session:'session-1',solutionSet:'set-1',solutionList:{solutions:[summary]}},final={session:'session-1',solutionSet:'set-1',solutionList:{solutions:[{...summary,matrixDetails:details}]}},progress=[];
+ const input={origin:'YVR',destination:'IST',date:'2099-11-10',returnDate:'2099-11-15',tripType:'round-trip',adults:1,children:0,childrenAges:[],cabin:'economy',source:'ita-matrix',matrixOptions:{expandDetailedItineraries:true,maxExtraLegsRelativeToMinimum:2,allowAirportChanges:false}};
+ const result=await searchLocations(input,{origin:{type:'place'},destination:{type:'place'}},{resolvePlace:async code=>({kind:'airport',airports:[{code}],method:'test'}),search:async(query,options)=>searchProviders(query,{searchMatrix:(matrixInput,matrixOptions)=>searchMatrix(matrixInput,{...matrixOptions,browserSearch:async(_q,{onUpdate})=>{await onUpdate(initial);return final;}}),onProviderResult:options.onProviderResult}),onProgress:event=>progress.push(event)});
+ const streamed=progress.find(event=>event.stage==='provider_results_streaming')?.flightPreview;
+ assert.equal(streamed?.sources.some(source=>source.provider==='ITA Matrix'),true);
+ assert.equal(streamed?.priceObservations.length,1);assert.equal(streamed?.offers.length,0);
+ assert.equal(streamed?.coverage.checked[0].complete,false,'a streaming route is not complete until Matrix detail expansion returns');
+ assert.equal(result.offers.length,1);assert.equal(result.priceObservations.length,0);
 });
 
 test('verified city choices are returned and a selected identity controls airport resolution',async()=>{

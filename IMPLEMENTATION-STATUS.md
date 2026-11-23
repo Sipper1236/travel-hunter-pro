@@ -1,5 +1,11 @@
 # Implementation status against work.md
 
+## ITA Matrix progressive detail results — 2026-11-23
+
+The Matrix website adapter now calls the existing provider-progress path with a normalized result after its first response and after each successfully matched detailed-itinerary response. This allows early price-only Matrix totals to persist/render before the bounded detail expansion finishes. Complete details replace corresponding price-only observations. Also corrected the single-airport callback wrapper, exact route matching for Matrix's `origin`/`destination` observation fields, and route coverage remaining complete during partial provider results.
+
+Focused Matrix/provider/location tests: 54/54. Full suite: 653/653. Production build passed after retrying past Next.js's security reminder. Isolated production-build fixture browser check: partial Matrix price card plus another source's partial offer visible 437 ms after persistence; final fixture update, three polls, zero browser errors, provider/job responses intercepted, external traffic blocked. No live Matrix run was made. The code/UI path is exercised, but current upstream performance and live progressive behavior remain open. [Evidence](docs/matrix-progressive-results-2026-11-23.md).
+
 ## Ignav exact-query response cache — 2026-11-23
 
 Implemented a persistent exact-query Ignav cache through the ordinary API and durable worker paths. Cache identity includes route, outbound/return dates and trip type, exact count-party shape and child ages, cabin, filters, CAD/market, and a one-way hash of the configured provider key as account scope. Only positive results whose every offer passes current itinerary/CAD/freshness validation can be stored. The five-minute maximum expiry is capped by the original quote expiry; cache reads do not rewrite observation times. Identified parties, infants, children without exact ages, empty results and invalid/stale offers bypass the cache. SQLite enforces a 100-entry cap and 512 KB per result. UI source status labels cache hits.

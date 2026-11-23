@@ -20,9 +20,11 @@ try{
   if(body.action==='start'){
    const input=body.input,now=new Date().toISOString(),query={...input,tripType:input.tripType??'one-way',returnDate:null,cabin:input.cabin??'economy',childrenAges:input.childrenAges??[]};
    const source={provider:'Ignav',status:'ok',received:1,accepted:1,cacheStatus:'hit'};
+   const matrixSource={provider:'ITA Matrix',status:'ok',received:1,accepted:0,priceObservations:1};
+   const matrixObservation={id:'matrix_stream_fixture',provider:'ITA Matrix',origin:'YHZ',destination:'LHR',departureDate:'2099-04-15',price:500,currency:'CAD',priceScope:'Matrix-reported group total',travelers:'1 adult',cabin:'economy',observedAt:now,sourceUrl:'https://matrix.itasoftware.com/flights',linkLabel:'Open Matrix search',itineraryVerified:false,details:'Flight details are still loading.'};
    const locationResolution={origin:{type:'place',kind:'airport',airports:[{code:'YHZ',name:'Halifax Stanfield'}],method:'fixture'},destination:{type:'place',kind:'airport',airports:[{code:'LHR',name:'London Heathrow'}],method:'fixture'}};
-   const coverage={side:'both',partial:true,airportLimit:10,pairsChecked:1,pairsPlanned:1,checked:[{origin:{code:'YHZ',name:'Halifax Stanfield'},destination:{code:'LHR',name:'London Heathrow'},sources:[source],offers:1,complete:false}],origin:locationResolution.origin,destination:locationResolution.destination,uncheckedPairs:[],uncheckedAirportPairs:[]};
-   const partial={query,observedAt:now,offers:[offer(600,now)],priceObservations:[],sources:[{...source,route:{origin:'YHZ',destination:'LHR'}}],complete:false,partial:true,coverage,locationResolution,originDetection:{type:'place',kind:'airport'},destinationDetection:{type:'place',kind:'airport'},streaming:{providerResponsesReceived:1,providerResponsesPlanned:7,pairsWithResponses:1,pairsPlanned:1,firstResponseMs:450,providerLatencyMs:{ignav:{samples:1,latestMs:440,maxMs:440}}},limitation:'Live partial results; other provider responses are pending.',limitations:['This is a controlled browser fixture.']};
+   const coverage={side:'both',partial:true,airportLimit:10,pairsChecked:1,pairsPlanned:1,checked:[{origin:{code:'YHZ',name:'Halifax Stanfield'},destination:{code:'LHR',name:'London Heathrow'},sources:[{...source,route:{origin:'YHZ',destination:'LHR'}},{...matrixSource,route:{origin:'YHZ',destination:'LHR'}}],offers:1,complete:false}],origin:locationResolution.origin,destination:locationResolution.destination,uncheckedPairs:[],uncheckedAirportPairs:[]};
+   const partial={query,observedAt:now,offers:[offer(600,now)],priceObservations:[matrixObservation],sources:[{...source,route:{origin:'YHZ',destination:'LHR'}},{...matrixSource,route:{origin:'YHZ',destination:'LHR'}}],complete:false,partial:true,coverage,locationResolution,originDetection:{type:'place',kind:'airport'},destinationDetection:{type:'place',kind:'airport'},streaming:{providerResponsesReceived:2,providerResponsesPlanned:7,pairsWithResponses:1,pairsPlanned:1,firstResponseMs:450,providerLatencyMs:{ignav:{samples:1,latestMs:440,maxMs:440},'ita-matrix':{samples:1,latestMs:460,maxMs:460}}},limitation:'Live partial results; other provider responses are pending.',limitations:['This is a controlled browser fixture.']};
    finalResult={...partial,observedAt:new Date().toISOString(),offers:[offer(450,new Date().toISOString())],partial:false,coverage:{...coverage,partial:false}};
    job={id:'00000000-0000-4000-8000-000000000311',kind:'flight',input,status:'running',progress:{stage:'searching'}};
    return route.fulfill({status:202,json:job});
@@ -30,7 +32,7 @@ try{
   if(body.action==='status'){
    polls++;
    if(polls<=2){
-    const flightPreview={...finalResult,offers:[offer(600,finalResult.observedAt)],partial:true,streaming:{providerResponsesReceived:1,providerResponsesPlanned:7,pairsWithResponses:1,pairsPlanned:1,firstResponseMs:450,providerLatencyMs:{ignav:{samples:1,latestMs:440,maxMs:440}}}};
+    const flightPreview={...finalResult,offers:[offer(600,finalResult.observedAt)],partial:true,streaming:{providerResponsesReceived:2,providerResponsesPlanned:7,pairsWithResponses:1,pairsPlanned:1,firstResponseMs:450,providerLatencyMs:{ignav:{samples:1,latestMs:440,maxMs:440},'ita-matrix':{samples:1,latestMs:460,maxMs:460}}}};
     return route.fulfill({json:{...job,status:'running',progress:{stage:'provider_results_streaming',persistedAt:new Date(Date.now()-250).toISOString(),flightPreview}}});
    }
    return route.fulfill({json:{...job,status:'complete',progress:{stage:'complete'},result:finalResult}});
@@ -45,19 +47,21 @@ try{
  await page.getByRole('button',{name:/^Search flights/}).click();
  const results=page.locator('section.results'),live=results.locator('[role="status"]');
  await results.getByText('Live partial results:',{exact:false}).waitFor();
- assert.match(await live.textContent(),/Flight search update: 1 provider response received; 1 validated price observation is available\. First result became available 0\.5 seconds after search began\. Search continues\./);
+ assert.match(await live.textContent(),/Flight search update: 2 provider responses received; 2 validated price observations are available\. First result became available 0\.5 seconds after search began\. Search continues\./);
  const persistedAt=Date.parse(await live.getAttribute('data-progress-persisted-at'));
  assert.ok(Number.isFinite(persistedAt)&&persistedAt<=Date.now(),'the result should retain its durable progress timestamp');
  const persistedToUiMs=Date.now()-persistedAt;
  assert.ok(persistedToUiMs<1500,`the UI should expose persisted progress within one polling interval; observed ${persistedToUiMs}ms`);
- assert.equal(await results.locator('article.offer').count(),1,'the early provider fare should render before the job completes');
+ assert.equal(await results.locator('article.offer:not(.matrix-observation)').count(),1,'the early provider fare should render before the job completes');
  await results.getByText('cached observed results',{exact:false}).waitFor();
- assert.match(await results.locator('article.offer').innerText(),/(?:CA\$|CAD\s*)600\.00/);
- assert.match(await results.innerText(),/1 of 7 provider\/route responses received/);
- await results.getByText(/Flight search complete: 1 validated price observation is available\./).waitFor({state:'attached'});
+ assert.match(await results.locator('article.offer:not(.matrix-observation)').innerText(),/(?:CA\$|CAD\s*)600\.00/);
+ assert.match(await results.locator('article.matrix-observation').innerText(),/ITA Matrix price only · itinerary and filter compliance unverified/);
+ assert.match(await results.locator('article.matrix-observation').innerText(),/(?:CA\$|CAD\s*|\$)500\.00/);
+ assert.match(await results.innerText(),/2 of 7 provider\/route responses received/);
+ await results.getByText(/Flight search complete: 2 validated price observations are available\./).waitFor({state:'attached'});
  await page.waitForFunction(element=>/(?:CA\$|CAD\s*)450\.00/.test(element.textContent),await results.locator('article.offer').first().elementHandle());
  assert.equal(polls,3);
  assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
- console.log(JSON.stringify({ui:'flight-progressive-provider-results',partialPrice:600,finalPrice:450,statusPolls:polls,persistedToUiMs,providerRequestsIntercepted:true,browserErrors:errors.length,externalRequestsBlocked:true}));
+ console.log(JSON.stringify({ui:'flight-progressive-provider-results',partialPrice:600,matrixPriceOnly:500,finalPrice:450,statusPolls:polls,persistedToUiMs,providerRequestsIntercepted:true,browserErrors:errors.length,externalRequestsBlocked:true}));
  await context.close();
 }finally{await browser.close();}

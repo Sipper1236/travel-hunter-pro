@@ -46,6 +46,14 @@ test('all-source search publishes a fast provider result before a slow source an
  assert.equal(result.offers[0].price,222);assert.equal(result.sources.length,7);
 });
 
+test('Matrix partial updates are forwarded before its final source result',async()=>{
+ const events=[],partial={offers:[],priceObservations:[{provider:'ITA Matrix',price:500,currency:'CAD',observedAt:new Date().toISOString()}],sources:[{provider:'ITA Matrix',status:'ok',received:1,accepted:0,priceObservations:1}],observedAt:new Date().toISOString(),complete:false,limitations:[]};
+ const result=await searchProviders({origin:'YHZ',destination:'YYZ',date:'2099-04-15',tripType:'one-way',adults:1,children:0,childrenAges:[],cabin:'economy',source:'ita-matrix'},{searchMatrix:async(_input,options)=>{await options.onUpdate(partial);return partial;},onProviderResult:event=>events.push(event)});
+ assert.equal(events.length,2);assert.equal(events[0].sourceId,'ita-matrix');assert.equal(events[0].result.partial,true);
+ assert.equal(events[0].result.query.origin,'YHZ');assert.equal(events[0].result.priceObservations.length,1);
+ assert.equal(events[1].result.partial,undefined);assert.equal(result.priceObservations.length,1);
+});
+
 test('source accepted counts reflect the final shared-filtered results',async()=>{
  const withCarrier=(provider,carrier)=>({...fare(250,provider),segments:[segment('YHZ','BCN',carrier)]});
  const result=await searchProviders({...query,source:'ignav',filters:{airlinesInclude:['AC']}},{searchIgnav:async()=>({offers:[withCarrier('Ignav','AC'),withCarrier('Ignav','DL')],sources:[{provider:'Ignav',status:'ok',received:2,accepted:2}]})});
