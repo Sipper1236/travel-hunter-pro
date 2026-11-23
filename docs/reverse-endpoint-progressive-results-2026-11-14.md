@@ -1,5 +1,9 @@
 # Reverse-endpoint fan-out and progressive flight results — 2026-11-14
 
+## Production UI progressive-results recheck — 2026-11-23
+
+Ran `TRAVEL_CHECK_URL=http://127.0.0.1:3117 node scripts/check-flight-streaming-ui.mjs` against the current production build. It displayed the persisted partial flight fare and a separate Matrix price-only observation before the final fixture result. Persisted-to-visible time was **339 ms** across three polls; browser errors were 0, provider/job calls were intercepted, and external requests were blocked. The loopback server was stopped after the check. This is one synthetic fixture sample, not live provider latency or p95. [Detailed evidence](flight-streaming-production-ui-2026-11-23.md).
+
 ## ACV adult multi-room structured results — 2026-11-22 live evidence / 2026-11-23 implementation
 
 The ordinary widget exposed two exact room entries (`r0=1-adult-0`, `r1=1-adult-0`) for a two-adult/two-room search. In a direct adapter run, each of 20 returned packages reconciled only when passenger-row totals were multiplied by their passenger counts; the adapter accepted 20/20 and the worker result validator accepted the result. UI cards now expose those validated room allocations. This does not verify child+multi-room or infant occupancy, a durable browser-to-worker UI path, more than 20 records, complete package segment chronology, seller availability or final fees. Current full suite is 641/641; production build passed after the Next.js reminder retry; audit reports one moderate Next.js vulnerability.

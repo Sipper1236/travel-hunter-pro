@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## Progressive-results production UI recheck — 2026-11-23
+
+The current production build rendered a persisted partial flight result before the final fixture result. `TRAVEL_CHECK_URL=http://127.0.0.1:3117 node scripts/check-flight-streaming-ui.mjs` observed 339 ms from persisted progress to visible UI, three status polls, correct partial/final replacement, zero browser errors, and all provider/job traffic intercepted with external requests blocked. One fixture-only sample; no live provider call or p95 claim. The temporary server was stopped. [Evidence](docs/flight-streaming-production-ui-2026-11-23.md).
+
 ## Reverse-endpoint progress — Ignav fare-calendar cache — 2026-11-23
 
 Exact fresh Ignav responses now reuse the durable provider cache from calendar workers as well as ordinary flight workers. Calendar fan-out passes the shared SQLite job store into each provider request; repeated exact route/date/party/cabin/filter searches can avoid another provider call across worker-store connections. A regression failed before the wiring and now verifies one provider call across two independent persistent connections, unchanged original `observedAt`, and `cacheStatus: hit`. Focused calendar/provider tests pass 71/71; full `npm test` passes 680/680. `npm run build` passes after retrying past Next.js 16.4.3's security reminder. Cache eligibility remains limited to exact, fresh, complete, validated CAD count-party offers; unsupported parties and empty/stale/invalid results are not cached. No live provider call or latency claim was made. See [evidence](docs/ignav-calendar-cache-2026-11-23.md). Reverse-endpoint and §17 work remain open.

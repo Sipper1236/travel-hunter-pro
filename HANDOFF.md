@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Progressive-results production UI check — 2026-11-23
+
+The current production build passed `scripts/check-flight-streaming-ui.mjs` on loopback. It rendered the persisted partial fare and Matrix price-only observation before the final fixture response and measured **339 ms** from durable progress timestamp to visible UI, across three status polls. Browser errors: 0; provider/job traffic intercepted: yes; external requests blocked: yes. This is a controlled fixture sample, not live provider latency or p95. The temporary port 3117 server was stopped. [Evidence](docs/flight-streaming-production-ui-2026-11-23.md).
+
 ## Ignav fare-calendar cache — 2026-11-23
 
 Calendar workers now pass the shared SQLite provider cache into exact provider searches, extending Ignav's existing exact-query cache to repeated fare-calendar searches across jobs/workers. The cache preserves the original observation timestamp and reports a hit; it still excludes identified parties, infants, empty results, stale observations and invalid/mismatched offers. Regression was red before the wiring and passes across two independent persistent store connections. Focused calendar/provider tests pass 71/71; full `npm test` passes 680/680. `npm run build` passes after retrying past Next.js 16.4.3's security reminder. No live request or real latency measurement was made. See [dated evidence](docs/ignav-calendar-cache-2026-11-23.md). Broader reverse-endpoint and §17 work remains incomplete.

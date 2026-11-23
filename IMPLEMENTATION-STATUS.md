@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Progressive-results production UI check — 2026-11-23
+
+Ran the existing Chromium check against the current production build on loopback port 3117. The persisted partial flight card and separate Matrix price-only observation appeared before the final fixture result. Persisted-to-visible time was **339 ms** across three status polls; browser errors were 0, API/job calls were intercepted, and external requests were blocked. This verifies a single fixture rendering path only, not provider response timing or p95. The short-lived server was stopped. [Evidence](docs/flight-streaming-production-ui-2026-11-23.md).
+
 ## Ignav cache coverage for fare calendars — 2026-11-23
 
 The durable exact-query Ignav cache is now available to calendar worker searches in addition to ordinary flight searches. The worker supplies its shared SQLite job store to the calendar dispatcher, which forwards it to each eligible exact Ignav query. A persistent cross-connection regression verifies the second calendar job avoids another provider call and retains the original fare observation time. Focused calendar/provider tests pass 71/71; full `npm test` passes 680/680 and `npm run build` passes after retrying past Next.js 16.4.3's security reminder. No live request was made and no provider speed claim is made. Empty, stale, invalid, mismatched, identified-party and infant observations remain ineligible for cache reuse. See [dated evidence](docs/ignav-calendar-cache-2026-11-23.md). Reverse-endpoint implementation is still incomplete.

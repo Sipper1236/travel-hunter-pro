@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Production UI progressive-results recheck — 2026-11-23
+
+The production browser check now has a current-tree sample: partial flight and Matrix price-only fixture results rendered before the final result, with **339 ms** from durable progress timestamp to visible UI across three status polls. All provider/job calls were intercepted, external requests were blocked, and there were no browser errors. This does not measure provider latency or establish p95. [Evidence](flight-streaming-production-ui-2026-11-23.md).
+
 ## Ignav fare-calendar cache — 2026-11-23
 
 Calendar worker dispatch now shares the durable provider cache used by ordinary flight searches. Exact fresh Ignav calendar responses can be reused across independent worker/store connections without changing the source observation timestamp; the result still passes normal offer and calendar validation. Focused calendar/provider tests pass 71/71; full `npm test` passes 680/680 and `npm run build` passes after retrying past Next.js 16.4.3's security reminder, with no live call or latency claim. Empty/stale/invalid observations and identified/infant parties are not cacheable. [Evidence](ignav-calendar-cache-2026-11-23.md). Other provider cache coverage and access-gated integrations remain open.
