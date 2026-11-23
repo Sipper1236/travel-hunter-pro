@@ -6,6 +6,8 @@ The normal one-way Google source in `lib/providers.mjs` calls the `google-flight
 
 The bundled `api-anything/sites/google-flights.json` response projection returns airline names, a numeric price, route airports, local departure/arrival time, arrival date, total duration, and connection airports. It does not return flight numbers, marketing-carrier codes per segment, segment timestamps, or response-side currency confirmation. Its own bundled documentation describes USD defaults. This projection cannot satisfy the app's complete-offer validator, which requires exact segment identity and rejects route-level prices as full itineraries. `tests/search.test.mjs` explicitly verifies that these rows are not promoted to offers.
 
+The local normalizer now also leaves `currency` unset unless the response row explicitly supplies a three-letter currency. The `curr=CAD` request parameter alone no longer labels the returned number as CAD. A regression covers this distinction; the route-level record remains unshowable because both segment and currency evidence are absent.
+
 The separate native browser adapter captures `GetShoppingResults` and `GetBookingResults`, but currently implements selected round trips only. Native one-way calendar RPC probing returned error marker `4`; that calendar operation remains opt-in and is not a substitute for a one-way itinerary result.
 
 ## Decision and remaining work
@@ -23,6 +25,8 @@ The separate native browser adapter captures `GetShoppingResults` and `GetBookin
 - Local package docs: `node_modules/api-anything/sites/google-flights.md` and its bundled JSON projection. This describes package behavior; it is not independent Google documentation.
 - Code: `lib/search.mjs`, `lib/providers.mjs`, `lib/flight-offer.mjs`, `lib/google-native.mjs`, `lib/google-round-trip.mjs`.
 - Regression: `tests/search.test.mjs` — “does not promote Google route-level prices without flight-segment evidence.”
+- Currency regression: `tests/search.test.mjs` — “Google API Anything cannot infer CAD from the requested page currency.” Focused provider/search suite: 33/33; full `npm test`: 667/667.
+- Production build passes after retrying Next.js 16.4.3's security reminder. `npm audit --audit-level=low` reports one moderate Next.js advisory; npm's suggested forced upgrade to 16.4.6 is outside the declared dependency range and was not applied.
 - Dated native calendar evidence and limits: [Google flexible-return calendar evidence](google-flexible-return-calendar-2026-11-23.md) and [reverse-endpoint implementation map](reverse-endpoint-implementation.md).
 
 This live observation confirms the current API Anything projection gap for one exact query only; it does not establish broader Google availability or current fare coverage. The adapter remains incomplete for validated one-way itineraries.

@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateQuery, searchFlights } from '../lib/search.mjs';
+import { validateQuery, searchFlights, normalize } from '../lib/search.mjs';
 import {SourceRequestError} from '../lib/source-errors.mjs';
 const q = { origin:'YHZ', destination:'BCN', date:'2099-04-15', tripType:'one-way', cabin:'economy', adults:1, children:0 };
 const fare = { airline:['Example Air'], price:350, from:'YHZ', to:'BCN', departureTime:[9,30], arrivalTime:[10], arrivalDate:[2099,4,16], durationMinutes:550, via:['YUL'] };
 test('rejects unsupported passenger and trip parameters instead of mispricing', () => { for (const change of [{adults:2},{children:1},{tripType:'return'},{cabin:'business'},{date:'2099-02-30'}]) assert.throws(() => validateQuery({...q,...change})); });
 test('does not promote Google route-level prices without flight-segment evidence', async () => { const result = await searchFlights(q, async (_s, op) => ({ok:true,data:op==='search'?[fare,{...fare,price:undefined}]:[fare]})); assert.equal(result.offers.length,0); assert.equal(result.complete,false); assert.equal(result.sources[0].accepted,0); assert.equal(result.sources[0].received,2); });
+test('Google API Anything cannot infer CAD from the requested page currency',()=>{const normalized=normalize(fare,q,new Date().toISOString(),'search');assert.equal(normalized.currency,undefined);assert.equal(normalize({...fare,currency:'CAD'},q,new Date().toISOString(),'search').currency,'CAD');});
 test('source block stops requests and never invents an offer', async () => { let count=0; const result=await searchFlights(q,async()=>{count++;return {ok:false,class:'blocked',reason:'blocked'};}); assert.equal(count,1); assert.deepEqual(result.offers,[]); assert.equal(result.complete,false); });
 
 test('API Anything transport wrapping preserves a rate limit and stops later operations',async()=>{
