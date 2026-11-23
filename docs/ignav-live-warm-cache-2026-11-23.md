@@ -11,7 +11,8 @@ Only counts, source status and elapsed times were emitted. No fares, offer ident
 - One current exact-query API response passed the app's offer validation and entered the cache.
 - An immediate identical query returned the stored result without another provider call, preserving quote time.
 - This is a single YHZ–LAX one-adult sample, not a latency distribution, guarantee, or evidence for other query shapes.
-- The check used a SQLite `:memory:` job store in one process. Persistent-database restart, cross-worker cache reuse, other-party cache behavior, and durable production UI rendering were not verified here; fixture tests cover cache identity and invalidation.
+- The live check used a SQLite `:memory:` job store in one process; that live run itself did not exercise persistent storage, cross-worker reuse, or website rendering. A separate fixture regression verifies cross-connection persistent cache reuse, described below. Other-party cache behavior remains fixture-only.
+- A follow-up regression in `tests/providers.test.mjs` closes the first persistent SQLite store, opens a second independent connection, and confirms the exact offer is a cache hit with no second provider call and the original observation time. Provider plus job-store suites pass 35/35; full `npm test` passes 666/666. This is separate fixture evidence, not additional live coverage.
 - The first response took 3.893 s upstream-to-adapter completion; the 2 ms cache result excludes worker/job persistence and browser polling/rendering. Neither figure is a p95.
 
 The cache remains limited to complete, fresh, validated offers under exact query/account identity. Other providers do not inherit this cache policy.

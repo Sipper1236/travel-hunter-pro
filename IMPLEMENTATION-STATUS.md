@@ -2,7 +2,7 @@
 
 ## Ignav live cache-path evidence — 2026-11-23
 
-One bounded exact YHZ→LAX Dec 16 one-adult/economy call returned 12 fresh validated offers in 3,893 ms. Repeating through the same in-memory SQLite job store returned 12 offers from cache in 2 ms and preserved the original observation time. No prices or identifiers were recorded. This confirms the adapter cache path for one query; it does not prove p95, persisted restart/cross-worker reuse or website rendering. See [evidence](docs/ignav-live-warm-cache-2026-11-23.md).
+One bounded exact YHZ→LAX Dec 16 one-adult/economy call returned 12 fresh validated offers in 3,893 ms. Repeating through the same in-memory SQLite job store returned 12 offers from cache in 2 ms and preserved the original observation time. No prices or identifiers were recorded. A fixture regression now verifies reuse after closing the first persistent SQLite store and opening a second independent connection, with one provider call total. Provider/store suites pass 35/35; full `npm test` passes 666/666. Live metrics do not prove p95 or website rendering. See [evidence](docs/ignav-live-warm-cache-2026-11-23.md).
 
 ## Google one-way reverse-result audit — 2026-11-23
 

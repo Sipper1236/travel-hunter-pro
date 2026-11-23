@@ -1,5 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import { searchProviders } from '../lib/providers.mjs';
 import { localRequest } from '../lib/local-request.mjs';
 import {fetchSource} from '../lib/source-fetch.mjs';
@@ -78,6 +81,23 @@ test('exact fresh Ignav offers are reused across flight jobs without refreshing 
   assert.equal(calls,2,'a changed stop filter must spend a fresh provider request');
   assert.notEqual(changed.sources[0].cacheStatus,'hit');
  }finally{store.close();}
+});
+
+test('exact Ignav cache hit is shared across independent persistent job-store connections',async()=>{
+ const directory=await mkdtemp(join(tmpdir(),'travel-ignav-provider-cache-')),path=join(directory,'jobs.sqlite');
+ let firstStore=createJobStore({path}),secondStore,calls=0;const input={...query,source:'ignav'};
+ const searchIgnav=async()=>{calls++;return {offers:[fare(151,'Ignav')],sources:[{provider:'Ignav',status:'ok',received:1,accepted:1}]};};
+ try{
+  const first=await searchProviders(input,{providerCache:firstStore,searchIgnav});
+  const originalObservedAt=first.offers[0].observedAt;
+  firstStore.close();firstStore=null;
+  secondStore=createJobStore({path});
+  const second=await searchProviders(input,{providerCache:secondStore,searchIgnav});
+  assert.equal(calls,1,'the second independent connection must not call the provider again');
+  assert.equal(second.offers.length,1);
+  assert.equal(second.sources[0].cacheStatus,'hit');
+  assert.equal(second.offers[0].observedAt,originalObservedAt,'a cache hit must preserve the source observation time');
+ }finally{firstStore?.close();secondStore?.close();await rm(directory,{recursive:true,force:true});}
 });
 
 test('native Google search metrics include shared-filter results without rewriting diagnostics',async()=>{

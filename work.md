@@ -2,7 +2,7 @@
 
 ## Reverse-endpoint live check — Ignav exact-query cache — 2026-11-23
 
-A bounded live Ignav YHZ→LAX Dec 16 one-adult/economy query returned 12 validator-accepted offers in 3,893 ms; the identical immediate query returned a same-process in-memory SQLite cache hit in 2 ms and preserved the original observation timestamp. No fares or offer identifiers were recorded. This verifies one adapter/cache query shape only, not p95, persistent restart/cross-worker reuse, or durable website rendering. Other provider cache behavior remains unverified. See [live cache evidence](docs/ignav-live-warm-cache-2026-11-23.md).
+A bounded live Ignav YHZ→LAX Dec 16 one-adult/economy query returned 12 validator-accepted offers in 3,893 ms; the identical immediate query returned a same-process in-memory SQLite cache hit in 2 ms and preserved the original observation timestamp. No fares or offer identifiers were recorded. A new regression also verifies a second independent persistent SQLite connection uses the exact cache with no second provider call and preserves the timestamp. Provider/store suites pass 35/35; full `npm test` passes 666/666. Live coverage remains one adapter/query shape, not p95 or durable website rendering. Other provider cache behavior remains unverified. See [live cache evidence](docs/ignav-live-warm-cache-2026-11-23.md).
 
 ## Reverse-endpoint audit — Google one-way API Anything projection — 2026-11-23
 

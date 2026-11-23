@@ -2,7 +2,7 @@
 
 ## Ignav exact-query cache live check — 2026-11-23
 
-One live YHZ→LAX Dec 16, one-adult/economy query returned 12 validator-accepted offers in 3,893 ms. An immediate identical request through the same in-memory SQLite job store returned 12 cached offers in 2 ms and preserved the original `observedAt`; no fare or identifier values were recorded. This is not p95 or UI latency and did not test persistent restart/cross-worker reuse. [Evidence](docs/ignav-live-warm-cache-2026-11-23.md).
+One live YHZ→LAX Dec 16, one-adult/economy query returned 12 validator-accepted offers in 3,893 ms. An immediate identical request through the same in-memory SQLite job store returned 12 cached offers in 2 ms and preserved the original `observedAt`; no fare or identifier values were recorded. A new fixture regression also verifies a second independent persistent SQLite connection reuses the exact cache without a second provider request. Provider/store tests pass 35/35; full suite passes 666/666. These figures are not p95 or UI latency. [Evidence](docs/ignav-live-warm-cache-2026-11-23.md).
 
 ## Google one-way structured-result gap — 2026-11-23
 
