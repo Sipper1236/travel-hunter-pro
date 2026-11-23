@@ -59,7 +59,7 @@ Job ownership tokens are local capabilities, not user authentication. Do not exp
 
 ## Checks
 
-The latest successful hosted verification on 2026-11-23 passed **706/706 tests** and a production build on Node 22.13.1. A later rerun exposed intermittent Chromium startup in the regional worker test; CI now selects the runner's Google Chrome binary for browser tests. The dependency audit reports zero vulnerabilities after updating Next.js to 16.4.6. CI repeats these checks on pushes and pull requests.
+The latest hosted verification on 2026-11-23 passed **706/706 tests** and a production build on Node 22.13.1. After Chromium startup timed out in the regional worker test, CI now selects the runner's Google Chrome binary for browser tests. The dependency audit reports zero vulnerabilities after updating Next.js to 16.4.6. CI repeats these checks on pushes and pull requests.
 
 ```sh
 npm test
