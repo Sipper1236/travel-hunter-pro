@@ -6,6 +6,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createJobStore} from '../lib/job-store.mjs';
 import {startSearchWorker} from '../lib/search-worker.mjs';
+import {createRegionCache} from '../lib/region-cache.mjs';
 const input={origin:'YHZ',destination:'BCN',start:'2099-04-15',end:'2099-04-16',tripType:'round-trip',nights:5,cabin:'business',adults:2,children:2,childrenAges:[10,15],searchLimit:3,filters:{maxStops:0}};
 // Forked workers share CPU with Chromium fixtures; allow process startup without relaxing result assertions.
 const waitFor=async predicate=>{const end=Date.now()+30000;while(!predicate()){if(Date.now()>end)throw Error('Calendar worker timed out.');await new Promise(r=>setTimeout(r,10));}};
@@ -38,6 +39,8 @@ test('actual worker validates Ignav cheapest-dates as fast price-only calendar o
 });
 test('actual worker prices native Google regional return/night combinations with the complete teen family',async()=>{
  const directory=await mkdtemp(join(tmpdir(),'google-calendar-worker-')),path=join(directory,'jobs.sqlite'),store=createJobStore({path}),children=[];let worker;
+ const zones={YHZ:'America/Halifax',LHR:'Europe/London',BCN:'Europe/Madrid'};
+ await createRegionCache({directory:join(directory,'timezones')})('world',async()=>({region:{name:'Airport IANA timezones'},airports:Object.entries(zones).map(([code,timeZone])=>({code,icao:`T${code}`,name:'Fixture airport',timeZone}))}));
  const regional={origin:'Canada',destination:'Europe',originType:'region',destinationType:'region',originAirports:['YHZ'],destinationAirports:['LHR','BCN'],start:'2099-04-15',end:'2099-04-15',source:'google',tripType:'round-trip',nightsMin:5,nightsMax:6,cabin:'economy',adults:2,children:1,childrenAges:[15],searchLimit:4,filters:{maxStops:0}};
  try{
   const job=store.submit(regional,'google_region_calendar_123',{kind:'calendar'});
