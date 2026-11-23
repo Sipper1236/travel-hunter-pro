@@ -2,7 +2,7 @@
 
 ## Omkar exact-query response cache — 2026-11-23
 
-Added a bounded durable cache to the ordinary `searchProviders` Omkar path for exact, complete, fresh, one-adult one-way CAD offers. The key binds route/date/cabin/filters/airport labels/Canada/CAD and the configured account-key hash; maximum TTL is 30 seconds and never extends offer freshness. Price-only or mixed results, empty/stale/invalid results and unsupported parties do not cache. Provider-seam regressions pass 4/4; full `npm test` passes 697/697; build passes after retrying past the Next.js security reminder. No live cache sample was taken, and recent live Omkar data lacked explicit CAD and offset-aware timestamps. Keep provider terms/schema and live-speed evidence open. [Evidence](docs/omkar-exact-response-cache-2026-11-23.md).
+Added a bounded durable cache to the ordinary `searchProviders` Omkar path for exact, complete, fresh, one-adult one-way CAD offers. The key binds route/date/cabin/filters/airport labels/Canada/CAD and the configured account-key hash; maximum TTL is 30 seconds and never extends offer freshness. Price-only or mixed results, empty/stale/invalid results and unsupported parties do not cache. Provider-seam tests pass 4/4. A durable worker integration test proves a second child process reuses the same SQLite entry with the original observation time and no second fixture-provider call. Full `npm test` passes 698/698; build passes after retrying past the Next.js security reminder. No live cache sample was taken, and recent live Omkar data lacked explicit CAD and offset-aware timestamps. Keep provider terms/schema and live-speed evidence open. [Evidence](docs/omkar-exact-response-cache-2026-11-23.md).
 
 ## Google round-trip failure diagnostics — 2026-11-23
 

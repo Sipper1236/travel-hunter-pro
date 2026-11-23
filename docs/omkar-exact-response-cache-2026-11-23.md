@@ -10,9 +10,10 @@ Only nonempty complete CAD itinerary offers with exact source/query evidence and
 
 - The provider-seam regression was red before the change: an identical second `searchProviders` query invoked the adapter again. It now makes one adapter call and returns the exact fresh offer from cache.
 - Focused cache suite: **4 passed, 0 failed**, including changed-filter/airport/cache-key cases, original timestamp retention, and price-only/stale/unsupported bypass.
-- `npm test`: **697 passed, 0 failed**.
+- An actual durable flight-job regression runs two separate worker child processes against the same SQLite job store. A test-only transport fixture supplies one validated offer; the second job reports `cacheStatus: hit`, preserves the original `observedAt`, and the fixture log confirms exactly one upstream request.
+- Durable worker suite: **1 passed, 0 failed**. `npm test`: **698 passed, 0 failed**.
 - `npm run build`: passed after retrying the Next.js 16.4.3 security reminder.
-- No live Omkar response was cached or queried for this change. The latest bounded live wrapper response lacked explicit CAD and offset-aware times, so it yielded no cacheable complete offer. This establishes fixture-backed warm-cache behavior only, not live speedup or Omkar quote reliability.
+- The worker fixture is test-only and no production result uses synthetic fares. No live Omkar response was cached or queried for this change. The latest bounded live wrapper response lacked explicit CAD and offset-aware times, so it yielded no cacheable complete offer. This establishes fixture-backed worker/cache behavior only, not live speedup or Omkar quote reliability.
 
 ## Remaining work
 

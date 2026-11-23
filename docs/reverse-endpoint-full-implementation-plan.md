@@ -2,7 +2,7 @@
 
 ## Omkar exact-response cache — 2026-11-23
 
-The normal provider path now reuses exact, complete, fresh one-adult one-way Omkar CAD itineraries through the durable SQLite cache. The 30-second maximum is capped by quote freshness; the key binds route/date/cabin/filters/airport labels/market/currency and a hash of the account key. Price-only, mixed, stale, empty and unsupported-party results bypass reuse. Provider-seam tests pass 4/4; full suite passes 697/697 and the build passes after retrying the Next.js reminder. No live Omkar cache hit was measured because the latest bounded wrapper result lacks the explicit currency and offset-time evidence required for a fare. [Evidence](omkar-exact-response-cache-2026-11-23.md).
+The normal provider path now reuses exact, complete, fresh one-adult one-way Omkar CAD itineraries through the durable SQLite cache. The 30-second maximum is capped by quote freshness; the key binds route/date/cabin/filters/airport labels/market/currency and a hash of the account key. Price-only, mixed, stale, empty and unsupported-party results bypass reuse. A real durable job test launches two separate child workers against the same store and proves one fixture upstream request total with preserved original `observedAt`. Focused cache tests pass 4/4, worker test 1/1, full suite 698/698, and the build passes after retrying the Next.js reminder. No live Omkar cache hit was measured because the latest bounded wrapper result lacks the explicit currency and offset-time evidence required for a fare. [Evidence](omkar-exact-response-cache-2026-11-23.md).
 
 ## ITA Matrix current live adapter/cache check — 2026-11-23
 
