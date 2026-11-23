@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Flight worker completion semantics — 2026-11-23
+
+The worker now rejects `complete: true` with failed/partial/suppressed source rows or unfinished selected airport-pair coverage. The flag remains bounded to the disclosed query and does not imply exhaustive market coverage or seller availability. Focused tests passed 35/35; full suite 740/740; build, audit, and controlled browser check passed. [Evidence](docs/flight-worker-completion-semantics-2026-11-23.md).
+
 ## Flight worker provider-row schema — 2026-11-23
 
 Provider status rows now reject unknown field names, including `sellerVerified`, and unknown states such as `booked` on empty results; current adapter metadata and statuses remain allowed. Focused cross-provider suites passed 99/99 and full suite 739/739. Build, audit, and controlled browser check passed. Nested telemetry and other result subtrees are still open. [Evidence](docs/flight-worker-source-row-schema-2026-11-23.md).

@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## Flight worker completion semantics — 2026-11-23
+
+The result guard now requires all source rows and selected airport-pair queries to finish before it accepts `complete: true`. Coverage stays explicitly bounded; no exhaustive or seller-verified claim follows from this flag. [Evidence](flight-worker-completion-semantics-2026-11-23.md).
+
 ## Flight provider status-row schema — 2026-11-23
 
 Provider result rows now reject unknown fields and unrecognized statuses; current route/source metadata remains accepted. Nested source telemetry still needs full schema definitions. [Evidence](flight-worker-source-row-schema-2026-11-23.md).

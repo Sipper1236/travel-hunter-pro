@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — bound completed-search status
+
+Flight results cannot be marked complete when selected provider work or planned airport pairs are unfinished. Full suite 740/740, build, audit, and browser checks passed. This does not claim exhaustive coverage or seller confirmation; the broader work remains active. See [evidence](docs/flight-worker-completion-semantics-2026-11-23.md).
+
 ## 2026-11-23 continuation — flight provider-row schema
 
 Added known-field and status-value boundaries for flight worker source rows, including regional source coverage; unknown `sellerVerified` metadata and `booked` status now fail validation. Full suite 739/739, build, audit, and controlled browser QA passed. Nested telemetry and the broad completion goal remain open. See [evidence](docs/flight-worker-source-row-schema-2026-11-23.md).

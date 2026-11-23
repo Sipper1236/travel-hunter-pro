@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Flight worker completion semantics — 2026-11-23
+
+Completed results must now have successful nonsuppressed source rows and complete planned route coverage. Full suite passed 740/740; isolated build and controlled browser check passed; audit found 0 vulnerabilities. This does not indicate exhaustive inventory or seller-verified offers. [Evidence](docs/flight-worker-completion-semantics-2026-11-23.md).
+
 ## Flight worker provider-row fields — 2026-11-23
 
 Unknown provider status row fields and unrecognized status values now fail validation. Full suite passed 739/739; build and controlled browser check passed; audit found zero vulnerabilities. Nested telemetry and the remaining worker/result schemas remain incomplete. [Evidence](docs/flight-worker-source-row-schema-2026-11-23.md).

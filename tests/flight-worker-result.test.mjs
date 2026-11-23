@@ -21,6 +21,14 @@ test('flight worker result rejects missing schemas, invalid source status, and s
  assert.ok(flightWorkerResultError(result({offers:[offer({observedAt:'2020-01-01T00:00:00Z'})]}),input));
 });
 
+test('flight worker cannot call a failed or partial provider result complete',()=>{
+ assert.match(flightWorkerResultError(result({offers:[],sources:[{provider:'Ignav',status:'error'}],complete:true}),input),/complete.*source|source.*complete/i);
+ assert.match(flightWorkerResultError(result({offers:[],sources:[{provider:'Ignav',status:'partial',received:0,accepted:0,partial:true}],complete:true}),input),/complete.*source|source.*complete/i);
+ assert.equal(flightWorkerResultError(result({sources:[{provider:'Ignav',status:'ok',received:1,accepted:1}],complete:true}),input),null);
+ const partialCoverage={side:'both',pairsChecked:1,pairsPlanned:2,origin:{airports:[{code:'YHZ'}]},destination:{airports:[{code:'LHR'},{code:'CDG'}]},checked:[{origin:{code:'YHZ'},destination:{code:'LHR'},sources:[{provider:'Ignav',status:'ok',received:1,accepted:0}],offers:0,complete:true}]};
+ assert.match(flightWorkerResultError(result({offers:[],sources:[{provider:'Ignav',status:'ok',received:1,accepted:0}],coverage:partialCoverage,complete:true}),input),/complete.*coverage|coverage.*complete/i);
+});
+
 test('flight worker result rejects unknown top-level claims but keeps documented adapter metadata',()=>{
  assert.match(flightWorkerResultError(result({booked:true}),input),/unknown|unsupported.*field/i);
  assert.match(flightWorkerResultError(result({sellerVerified:true}),input),/unknown|unsupported.*field/i);

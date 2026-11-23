@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Detailed Handoff (updated 2026-11-23)
 
+## 2026-11-23 continuation — flight completion semantics
+
+The flight result validator now rejects a `complete` result if any source failed, was partial/suppressed, or any planned selected airport pair remains unchecked. Regressions reproduced both a source-error result labeled complete and incomplete regional pair coverage. Focused suites passed 35/35 and full suite 740/740; isolated build, audit, and controlled browser check passed. This is a bounded job-completion status, not worldwide coverage or seller availability. [Evidence](docs/flight-worker-completion-semantics-2026-11-23.md).
+
 ## 2026-11-23 continuation — flight provider-row field allowlist
 
 Flight worker provider status rows now reject unknown keys and states, including injected `sellerVerified` data or `status: "booked"`. Current source and regional route metadata remain allowed. Focused tests passed 99/99; full suite 739/739; isolated build, audit, and controlled browser check passed. This does not yet validate the contents of nested timing/diagnostic objects or complete schemas for observations/coverage/other workers. [Evidence](docs/flight-worker-source-row-schema-2026-11-23.md).

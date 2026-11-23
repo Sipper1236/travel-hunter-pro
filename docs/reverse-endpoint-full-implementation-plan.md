@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Flight worker completion semantics — 2026-11-23
+
+`complete: true` is now rejected when selected provider responses or planned route pairs remain partial/unsearched. This reports completion only inside the submitted bounds, not exhaustive market coverage. [Evidence](flight-worker-completion-semantics-2026-11-23.md).
+
 ## Flight provider status-row schema — 2026-11-23
 
 Flight worker source rows use an allowlist of current provider/orchestration keys and known source states. This blocks unsupported seller claims but does not yet validate nested telemetry. [Evidence](flight-worker-source-row-schema-2026-11-23.md).
