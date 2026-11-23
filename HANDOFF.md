@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## All-source Matrix partial-result forwarding — 2026-11-23
+
+Fixed a streaming gap in `searchProviders`: the bounded all-source fan-out had removed `onProviderResult` before calling each adapter, so ITA Matrix's existing partial API/browser updates were discarded and only its final result reached the durable job. All-source fan-out now forwards the callback with the correct source index/count; route progress replaces that provider's partial snapshot with the final snapshot when Matrix completes. Added a regression that failed before the fix and verifies both partial and final Matrix events. Focused provider regressions pass 2/2; full `npm test` passes 674/674; production build passes after retrying Next.js's security reminder. No provider call or UI latency check was made for this fix. [Plan and source map](docs/reverse-endpoint-implementation.md).
+
 ## Ignav exact-query cache live check — 2026-11-23
 
 One live YHZ→LAX Dec 16, one-adult/economy query returned 12 validator-accepted offers in 3,893 ms. An immediate identical request through the same in-memory SQLite job store returned 12 cached offers in 2 ms and preserved the original `observedAt`; no fare or identifier values were recorded. A new fixture regression also verifies a second independent persistent SQLite connection reuses the exact cache without a second provider request. Provider/store tests pass 35/35; full suite passes 666/666. These figures are not p95 or UI latency. [Evidence](docs/ignav-live-warm-cache-2026-11-23.md).

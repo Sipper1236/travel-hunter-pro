@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## All-source Matrix partial-result path — 2026-11-23
+
+The all-source provider pool now forwards Matrix's validated partial updates to the shared `onProviderResult` callback with the Matrix source index/count. `location-search` already stores each provider's latest snapshot per exact route, so later final Matrix results replace that partial result instead of duplicating it. A regression failed before the callback was preserved and now verifies partial-before-final ordering. Focused provider tests pass 2/2, the full suite passes 674/674, and the production build passes after Next.js's reminder retry. No live request, provider latency, or rendered UI timing was measured. This removes a code-path suppression but does not prove Matrix's live API emits early rows for every query.
+
 ## Bounded regional airport-pair overlap — 2026-11-23
 
 Auto-detected two-region one-way adult-only count searches now run up to two exact airport pairs concurrently, while source calls still use their shared per-provider pacing/cooldown. Pair result slots preserve deterministic final coverage order; early provider stops prevent new dispatches and report any already-active pair. Family, identified, infant, youth/senior, round-trip, and ordinary place-expansion shapes stay sequential because they may use browser sessions. Focused location/region/worker tests pass **36/36**. No live provider calls were made; measured speedup and p95 remain unverified. [Evidence](regional-pair-streaming-2026-11-23.md).

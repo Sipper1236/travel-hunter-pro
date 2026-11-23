@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## All-source Matrix partial-result forwarding — 2026-11-23
+
+`searchProviders` now preserves the progress callback when its bounded all-source pool invokes adapters, and rewrites Matrix partial-event metadata to its actual all-source index and count. This activates the Matrix partial API/browser updates already consumed by `location-search` and durable job progress; the final Matrix snapshot still replaces the partial snapshot for that route. A regression failed before this fix and now verifies the partial and final events. Focused provider regressions pass 2/2; full `npm test` passes 674/674; production build passes after the Next.js reminder retry. No live Matrix request or browser latency measurement was made. Overall reverse-endpoint coverage and §17 remain incomplete.
+
 ## Ignav live cache-path evidence — 2026-11-23
 
 One bounded exact YHZ→LAX Dec 16 one-adult/economy call returned 12 fresh validated offers in 3,893 ms. Repeating through the same in-memory SQLite job store returned 12 offers from cache in 2 ms and preserved the original observation time. No prices or identifiers were recorded. A fixture regression now verifies reuse after closing the first persistent SQLite store and opening a second independent connection, with one provider call total. Provider/store suites pass 35/35; full `npm test` passes 666/666. Live metrics do not prove p95 or website rendering. See [evidence](docs/ignav-live-warm-cache-2026-11-23.md).

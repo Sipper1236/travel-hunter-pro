@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## Reverse-endpoint progress — all-source Matrix partial results — 2026-11-23
+
+Fixed the all-source `searchProviders` path so it forwards Matrix's intermediate result updates rather than suppressing them. The callback carries the correct source index/count, and the final provider result replaces the partial route snapshot. A regression reproduced the missing partial before the change. Focused provider tests pass 2/2, full `npm test` passes 674/674, and `npm run build` passes after retrying the Next.js security reminder. This is fixture evidence only; no live Matrix query or persisted-to-visible timing check was made. See [reverse-endpoint inventory](docs/reverse-endpoint-implementation.md). Reverse-endpoint completion and §17 remain open.
+
 ## Reverse-endpoint live check — Ignav exact-query cache — 2026-11-23
 
 A bounded live Ignav YHZ→LAX Dec 16 one-adult/economy query returned 12 validator-accepted offers in 3,893 ms; the identical immediate query returned a same-process in-memory SQLite cache hit in 2 ms and preserved the original observation timestamp. No fares or offer identifiers were recorded. A new regression also verifies a second independent persistent SQLite connection uses the exact cache with no second provider call and preserves the timestamp. Provider/store suites pass 35/35; full `npm test` passes 666/666. Live coverage remains one adapter/query shape, not p95 or durable website rendering. Other provider cache behavior remains unverified. See [live cache evidence](docs/ignav-live-warm-cache-2026-11-23.md).

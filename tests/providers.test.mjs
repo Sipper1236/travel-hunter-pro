@@ -57,6 +57,24 @@ test('Matrix partial updates are forwarded before its final source result',async
  assert.equal(events[1].result.partial,undefined);assert.equal(result.priceObservations.length,1);
 });
 
+test('all-source fan-out forwards Matrix partial results before the final provider result',async()=>{
+ const events=[],partial={offers:[],priceObservations:[{provider:'ITA Matrix',price:500,currency:'CAD',observedAt:new Date().toISOString()}],sources:[{provider:'ITA Matrix',status:'ok',received:1,accepted:0,priceObservations:1}],observedAt:new Date().toISOString(),complete:false,limitations:[]};
+ const result=await searchProviders({...query,source:'all',tripType:'one-way',childrenAges:[],cabin:'economy'},{maxConcurrentProviders:4,
+  searchGoogle:async()=>({offers:[],sources:[{provider:'Google Flights',status:'ok',received:0,accepted:0}]}),
+  searchIgnav:async()=>({offers:[],sources:[{provider:'Ignav',status:'ok',received:0,accepted:0}]}),
+  searchExpedia:async()=>({offers:[],sources:[{provider:'Expedia',status:'ok',received:0,accepted:0}]}),
+  searchSkyscanner:async()=>({offers:[],sources:[{provider:'Skyscanner',status:'ok',received:0,accepted:0}]}),
+  searchAirCanada:async()=>({offers:[],sources:[{provider:'Air Canada NDC',status:'ok',received:0,accepted:0}]}),
+  searchMatrix:async(_input,options)=>{await options.onUpdate(partial);return {...partial,priceObservations:[...partial.priceObservations,{...partial.priceObservations[0],price:510}],sources:[{provider:'ITA Matrix',status:'ok',received:2,accepted:0,priceObservations:2}]};},
+  searchOmkarExpedia:async()=>({offers:[],sources:[{provider:'Expedia via Omkar',status:'ok',received:0,accepted:0}]}),
+  onProviderResult:event=>events.push(event),
+ });
+ const matrixEvents=events.filter(event=>event.sourceId==='ita-matrix');
+ assert.equal(matrixEvents.length,2);assert.equal(matrixEvents[0].result.partial,true);assert.equal(matrixEvents[0].result.priceObservations[0].price,500);
+ assert.equal(matrixEvents[0].sourceCount,7);assert.equal(matrixEvents[0].sourceIndex,5);assert.equal(matrixEvents[1].result.partial,undefined);
+ assert.deepEqual(result.priceObservations.map(row=>row.price),[500,510]);
+});
+
 test('source accepted counts reflect the final shared-filtered results',async()=>{
  const withCarrier=(provider,carrier)=>({...fare(250,provider),segments:[segment('YHZ','BCN',carrier)]});
  const result=await searchProviders({...query,source:'ignav',filters:{airlinesInclude:['AC']}},{searchIgnav:async()=>({offers:[withCarrier('Ignav','AC'),withCarrier('Ignav','DL')],sources:[{provider:'Ignav',status:'ok',received:2,accepted:2}]})});
