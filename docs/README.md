@@ -1,6 +1,7 @@
 # Travel Hunter Pro documentation index
 
 - [Reverse-endpoint implementation plan and inventory](reverse-endpoint-implementation.md) — current adapter/API inventory, access and entitlement gates, full adapter contract, and latency/streaming targets.
+- [Skyscanner exact-query cache (2026-11-23)](skyscanner-response-cache-2026-11-23.md) — short durable cache for completed exact CAD results, integrity checks, fixture evidence, and missing partner-credential limits.
 - [Reverse-endpoint full implementation map](reverse-endpoint-full-implementation-plan.md) — provider-by-provider endpoint map, end-to-end completion contract, fast request path, priorities, and current evidence/open access gates.
 - [Google API Anything one-way coverage gap (2026-11-23)](google-api-anything-one-way-gap-2026-11-23.md) — missing segment and response-side currency evidence in the current one-way result projection, with the verification required before enabling it as itinerary inventory.
 - [Omkar exact-response cache (2026-11-23)](omkar-exact-response-cache-2026-11-23.md) — exact fresh-offer cache rules, provider-seam regression, full suite/build evidence, and the lack of a live cacheable wrapper result.

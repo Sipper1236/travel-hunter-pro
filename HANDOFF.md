@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Skyscanner exact-query cache — 2026-11-23
+
+The configured-partner adapter now reuses only positive, completed, exact Skyscanner results for up to 30 seconds, capped by quote freshness. Cache identity covers the Canadian market, exact route/date/trip, adult and child-age counts, cabin, filters, poll budget/interval and a hash of the effective API key. Reads recheck the exact normalized query, successful source counts, session/itinerary identities, exact itinerary validation and freshness; corrupt rows are evicted. Partial/empty results and identified parties bypass the cache. Focused Skyscanner/provider tests pass 33/33. This is fixture evidence only: `SKYSCANNER_API_KEY` is not configured locally, so no live cache or latency result is claimed. [Evidence](docs/skyscanner-response-cache-2026-11-23.md).
+
 ## ITA Matrix cache integrity — 2026-11-23
 
 Matrix's durable response cache now stores and returns only nonempty, complete, fresh CAD itineraries that pass exact route/date/return/cabin and source-evidence validation. Empty and price-only responses bypass the cache; cache hits are revalidated and malformed/stale rows are evicted before refetch. Cache TTL is capped by offer freshness. Focused Matrix tests pass 30/30, including cross-process cache reuse and empty/price-only bypass. This is fixture evidence; no live request or latency claim was added. Matrix cold live latency remains a known performance limit (41,688 ms in one earlier sample); p95 and endpoint terms are unknown. Evidence: [Matrix cache integrity](docs/matrix-cache-integrity-2026-11-23.md).

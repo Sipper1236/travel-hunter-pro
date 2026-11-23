@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { refreshSkyscanner, searchSkyscanner } from '../lib/skyscanner.mjs';
 import {searchProviders} from '../lib/providers.mjs';
+import {createJobStore} from '../lib/job-store.mjs';
+import {skyscannerResponseCacheKey} from '../lib/skyscanner-response-cache.mjs';
 
 const input = { origin: 'YHZ', destination: 'BCN', date: '2099-04-15', adults: 1, cabin: 'economy', market: 'CA', currency: 'CAD', locale: 'en-CA' };
 const response = status => ({ status, content: { results: {
@@ -100,6 +102,33 @@ test('shared flight router passes supported round trips to Skyscanner and preser
  const result=await searchProviders(query,{searchSkyscanner:async(q,options)=>{requested=q;forwarded=options;return searchSkyscanner(q,{...options,loadTimezones:async()=>timeEvidence(),apiKey:'offline',fetcher:async()=>Response.json({...roundTripResponse(),sessionToken:'offline-session'})});}});
  assert.equal(forwarded.requireTimeEvidence,true);
  assert.equal(requested.returnDate,query.returnDate);assert.equal(result.offers.length,1);assert.equal(result.offers[0].inbound.from,'BCN');assert.equal(result.query.tripType,'round-trip');assert.equal(result.sources[0].status,'ok');
+});
+
+test('Skyscanner reuses only fresh complete exact-query results from the durable provider cache',async()=>{
+ const cache=createJobStore({path:':memory:'}),query={...input,source:'skyscanner',filters:{}},calls=[];
+ const searchSkyscannerWithFixture=async(q,options)=>{calls.push(q);return searchSkyscanner(q,{...options,apiKey:'fixture-account',sleep:async()=>{},loadTimezones:async()=>timeEvidence(),fetcher:async(_url,init)=>{assert.equal(JSON.parse(init.body).query.currency,'CAD');return Response.json({...response('RESULT_STATUS_COMPLETE'),sessionToken:`session-${calls.length}`});}});};
+ try{
+  const first=await searchProviders(query,{providerCache:cache,skyscannerOptions:{apiKey:'fixture-account'},searchSkyscanner:searchSkyscannerWithFixture});
+  const timestamp=first.offers[0].observedAt;
+  const second=await searchProviders(query,{providerCache:cache,skyscannerOptions:{apiKey:'fixture-account'},searchSkyscanner:searchSkyscannerWithFixture});
+  assert.equal(calls.length,1);assert.equal(second.sources[0].cacheStatus,'hit');assert.equal(second.offers[0].observedAt,timestamp);assert.equal(second.offers[0].skyscannerSessionToken,first.offers[0].skyscannerSessionToken);
+  const cacheKey=skyscannerResponseCacheKey(query,{apiKey:'fixture-account'}),corrupted=cache.getProviderResponse(cacheKey);corrupted.offers[0].to='LAX';cache.setProviderResponse(cacheKey,corrupted,Date.now()+30_000,Date.now());
+  const refreshed=await searchProviders(query,{providerCache:cache,skyscannerOptions:{apiKey:'fixture-account'},searchSkyscanner:searchSkyscannerWithFixture});
+  assert.equal(calls.length,2);assert.equal(refreshed.offers[0].to,'BCN');assert.equal(refreshed.sources[0].cacheStatus,undefined,'invalid cached route evidence is evicted and refreshed');
+  await searchProviders({...query,date:'2099-04-16'},{providerCache:cache,skyscannerOptions:{apiKey:'fixture-account'},searchSkyscanner:searchSkyscannerWithFixture});
+  await searchProviders(query,{providerCache:cache,skyscannerOptions:{apiKey:'different-account'},searchSkyscanner:searchSkyscannerWithFixture});
+  assert.equal(calls.length,4,'date and effective account key are part of the cache identity');
+ }finally{cache.close();}
+});
+
+test('Skyscanner cache bypasses partial results and identified travelers',async()=>{
+ const cache=createJobStore({path:':memory:'}),query={...input,source:'skyscanner',filters:{}},people=[{id:'adult',birthDate:'2060-01-01'}];let calls=0;
+ const partialSearch=async(q,options)=>{calls++;return searchSkyscanner(q,{...options,apiKey:'fixture-account',maxPolls:0,loadTimezones:async()=>timeEvidence(),fetcher:async()=>Response.json({...response('RESULT_STATUS_INCOMPLETE'),sessionToken:'partial-session'})});};
+ try{
+  for(let attempt=0;attempt<2;attempt++){const partial=await searchProviders(query,{providerCache:cache,maxPolls:0,skyscannerOptions:{apiKey:'fixture-account'},searchSkyscanner:partialSearch});assert.equal(partial.sources[0].status,'partial');}
+  assert.equal(calls,2,'partial results are not cached');
+  assert.equal(skyscannerResponseCacheKey({...query,travelers:people},{apiKey:'fixture-account'}),null,'identified travelers are not cache eligible');
+ }finally{cache.close();}
 });
 
 test('Skyscanner converts documented price units and refuses unknown units or fractional cents',async()=>{

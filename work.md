@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## Reverse-endpoint progress — Skyscanner exact-query cache — 2026-11-23
+
+The durable worker cache now reuses only completed positive Skyscanner partner-API results for the same Canadian route/date/trip, count party and child ages, cabin, filters, polling budget/interval and effective API-key scope. It preserves original quote and session timestamps, caps reuse at 30 seconds and quote freshness, revalidates the exact query/source/itinerary, and deletes tampered entries. Partial/empty and identified-party results are never cached. Fixture regressions cover query/account isolation, corruption eviction, original timestamp/session preservation, and partial/identified bypass. `SKYSCANNER_API_KEY` is absent locally, so this is not live inventory or latency evidence. See [evidence](docs/skyscanner-response-cache-2026-11-23.md). Broader reverse-endpoint and §17 requirements remain open.
+
 ## Reverse-endpoint progress — ITA Matrix cache integrity — 2026-11-23
 
 Matrix's persistent exact-query cache now rejects empty and price-only results, checks each cached itinerary against fresh quote age and the exact route/date/return/cabin, verifies source counts and Matrix URL/timestamp provenance, and evicts invalid rows before refetch. The cache lifetime cannot exceed offer freshness. Regression coverage confirms cross-worker reuse for valid offers and repeated provider fetches for empty/price-only results. Focused Matrix tests pass 30/30. This is test evidence only; it does not resolve the slow live cold response (one 41.7-second sample), provider access terms, or p95 latency. See [evidence](docs/matrix-cache-integrity-2026-11-23.md). Broader reverse-endpoint work and §17 remain open.

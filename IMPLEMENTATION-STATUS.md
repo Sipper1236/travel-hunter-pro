@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Skyscanner exact-query cache — 2026-11-23
+
+Added a 30-second durable exact-query cache for successful, nonempty Skyscanner results, capped by offer freshness. It hashes the effective API key and includes route, dates, trip type, exact child ages, cabin, filters, polling budget/interval, CAD and Canada. Reads repeat normalized query, source-count, session/itinerary, offer and quote-freshness validation; invalid rows are deleted. Partial/empty results and identified travelers are ineligible. Focused Skyscanner/provider tests pass 33/33. The partner credential is not configured here; no live results or speedup are established. [Evidence](docs/skyscanner-response-cache-2026-11-23.md).
+
 ## ITA Matrix cache integrity — 2026-11-23
 
 The durable Matrix cache now requires a nonempty all-itinerary CAD result, exact Matrix URL/query provenance, matching observation timestamps, Matrix source counts, and repeated fresh offer validation. Empty and price-only responses are never cached; invalid cache entries are deleted and fetched again. The five-minute maximum is reduced to the earliest offer freshness deadline. Focused Matrix suite: 30/30. Fixture-only; live latency and source access terms are unchanged and unverified. [Evidence](docs/matrix-cache-integrity-2026-11-23.md).
