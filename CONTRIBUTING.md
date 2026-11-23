@@ -11,6 +11,7 @@ Before opening a change, run:
 ```sh
 npm ci
 npm audit --audit-level=low
+npm run check:markdown-links
 npm test
 npm run build
 ```
