@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## ITA Matrix cache integrity — 2026-11-23
+
+The durable Matrix cache now requires a nonempty all-itinerary CAD result, exact Matrix URL/query provenance, matching observation timestamps, Matrix source counts, and repeated fresh offer validation. Empty and price-only responses are never cached; invalid cache entries are deleted and fetched again. The five-minute maximum is reduced to the earliest offer freshness deadline. Focused Matrix suite: 30/30. Fixture-only; live latency and source access terms are unchanged and unverified. [Evidence](docs/matrix-cache-integrity-2026-11-23.md).
+
 ## Omkar exact-query response cache — 2026-11-23
 
 Added a bounded durable cache to the ordinary `searchProviders` Omkar path for exact, complete, fresh, one-adult one-way CAD offers. The key binds route/date/cabin/filters/airport labels/Canada/CAD and a hash of the effective API key, including per-call overrides; maximum TTL is 30 seconds and never extends offer freshness. Price-only or mixed results, empty/stale/invalid results and unsupported parties do not cache. Provider-seam tests pass 5/5, including account-key isolation. A durable worker integration test proves a second child process reuses the same SQLite entry with the original observation time and no second fixture-provider call. Full `npm test` passes 699/699; build passes after retrying past the Next.js security reminder. No live cache sample was taken, and recent live Omkar data lacked explicit CAD and offset-aware timestamps. Keep provider terms/schema and live-speed evidence open. [Evidence](docs/omkar-exact-response-cache-2026-11-23.md).

@@ -129,13 +129,17 @@ test('fresh Matrix API responses are reused across worker processes without anot
  response.solutionList.solutions[0].passengerCount=1;
  response.solutionList.solutions[0].pricings[0].ext.pax={adults:1};
  const script=`import {searchMatrix} from './lib/ita-matrix.mjs';let calls=0;globalThis.fetch=async()=>{calls++;return new Response(process.env.MATRIX_RESPONSE,{headers:{'content-type':'application/json'}})};const result=await searchMatrix(JSON.parse(process.env.MATRIX_QUERY),{apiKey:process.env.MATRIX_TEST_KEY,now:()=>Number(process.env.MATRIX_CACHE_NOW)||Date.now()});console.log(JSON.stringify({calls,cached:result.sources[0]?.cached===true,cacheClock:Date.now()}));`;
- const run=({search=input,key=testKey,cacheNow}={})=>JSON.parse(execFileSync(process.execPath,['--input-type=module','-e',script],{cwd:process.cwd(),encoding:'utf8',timeout:10000,env:{...process.env,TRAVEL_JOB_DB:database,MATRIX_TEST_KEY:key,MATRIX_QUERY:JSON.stringify(search),MATRIX_RESPONSE:JSON.stringify(response),MATRIX_CACHE_NOW:cacheNow?String(cacheNow):''}}));
+ const run=({search=input,key=testKey,cacheNow,body=response}={})=>JSON.parse(execFileSync(process.execPath,['--input-type=module','-e',script],{cwd:process.cwd(),encoding:'utf8',timeout:10000,env:{...process.env,TRAVEL_JOB_DB:database,MATRIX_TEST_KEY:key,MATRIX_QUERY:JSON.stringify(search),MATRIX_RESPONSE:JSON.stringify(body),MATRIX_CACHE_NOW:cacheNow?String(cacheNow):''}}));
  try{
   const first=run();assert.deepEqual({calls:first.calls,cached:first.cached},{calls:1,cached:false});
   const second=run();assert.equal(second.calls,0);assert.equal(second.cached,true);assert.ok(Number.isFinite(second.cacheClock));
   const expired=run({cacheNow:first.cacheClock+300_001});assert.deepEqual({calls:expired.calls,cached:expired.cached},{calls:1,cached:false});
   const differentQuery=run({search:{...input,pageSize:49}});assert.deepEqual({calls:differentQuery.calls,cached:differentQuery.cached},{calls:1,cached:false});
   const differentKey=run({key:'AIza'+'B'.repeat(35)});assert.deepEqual({calls:differentKey.calls,cached:differentKey.cached},{calls:1,cached:false});
+  const emptyBody=structuredClone(response);emptyBody.solutionList.solutions=[];
+  for(let attempt=0;attempt<2;attempt++){const empty=run({search:{...input,pageSize:48},body:emptyBody});assert.deepEqual({calls:empty.calls,cached:empty.cached},{calls:1,cached:false});}
+  const priceOnlyBody=structuredClone(response),solution=priceOnlyBody.solutionList.solutions[0];solution.itinerary.carriers.push({code:'ZZ',shortName:'Other Air'});solution.itinerary.slices[0].flights=['EA123','ZZ456'];
+  for(let attempt=0;attempt<2;attempt++){const priceOnly=run({search:{...input,pageSize:47},body:priceOnlyBody});assert.deepEqual({calls:priceOnly.calls,cached:priceOnly.cached},{calls:1,cached:false});}
  }finally{await rm(directory,{recursive:true,force:true});}
 });
 

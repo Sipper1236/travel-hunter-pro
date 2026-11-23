@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## ITA Matrix cache integrity — 2026-11-23
+
+Matrix's durable exact-query cache now revalidates that entries contain at least one fresh CAD itinerary, no price-only observations, matching Matrix source counts, the exact Canadian Matrix search URL, matching observation timestamps, and offers that still pass `flightOfferError` for the exact route/date/return/cabin. Invalid cached rows are evicted and fetched again. Empty and price-only responses are not saved, so a no-inventory/partial response cannot mask a later result for the five-minute cache window. TTL is also capped by each offer's freshness deadline. The cross-process regression covers valid reuse, expiry, query/API-key isolation, and repeated empty/price-only bypass. Focused Matrix tests pass 30/30; no live request was made for this integrity change. This does not shorten Matrix's observed 41.7-second cold response or establish provider p95. [Evidence](matrix-cache-integrity-2026-11-23.md).
+
 ## ITA Matrix live adapter/cache recheck — 2026-11-23
 
 A current bounded YYZ–LHR one-way CAD request for 2027-02-12 returned 10 records and 10 accepted complete itineraries in 41,688 ms. A separate identical call through `searchProviders` reported a durable Matrix cache hit and the flight worker-result validator accepted the result. No fares or payloads were retained. This confirms one live adapter/pipeline/cache path; the cold response is slow and does not establish p95, seller freshness or broad coverage. [Evidence](matrix-live-recheck-2026-11-23.md).

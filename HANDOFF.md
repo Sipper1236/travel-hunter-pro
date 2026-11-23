@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## ITA Matrix cache integrity — 2026-11-23
+
+Matrix's durable response cache now stores and returns only nonempty, complete, fresh CAD itineraries that pass exact route/date/return/cabin and source-evidence validation. Empty and price-only responses bypass the cache; cache hits are revalidated and malformed/stale rows are evicted before refetch. Cache TTL is capped by offer freshness. Focused Matrix tests pass 30/30, including cross-process cache reuse and empty/price-only bypass. This is fixture evidence; no live request or latency claim was added. Matrix cold live latency remains a known performance limit (41,688 ms in one earlier sample); p95 and endpoint terms are unknown. Evidence: [Matrix cache integrity](docs/matrix-cache-integrity-2026-11-23.md).
+
 ## Omkar exact-query response cache — 2026-11-23
 
 Omkar's validated one-adult, one-way CAD itineraries can now use the durable provider cache through `searchProviders`. The cache binds the exact route/date/cabin/filters/airport labels and effective API-key hash, including adapter overrides; its 30-second maximum is capped by quote freshness. Only complete fresh offers cache. Price-only, mixed, empty, stale and unsupported-party results bypass it. A durable job regression launches two separate worker processes sharing the SQLite store: the second returned the original fresh offer as a cache hit, preserved `observedAt`, and made no second fixture-provider request. Distinct API-key override tests confirm account cache isolation. Focused cache tests pass 5/5; worker test passes 1/1; full suite 699/699. The build passes after retrying Next's security reminder. No live call/cache evidence was made because the latest inspected response lacked currency and offset-time evidence. See [evidence](docs/omkar-exact-response-cache-2026-11-23.md). Omkar terms and live cache speed remain open.
