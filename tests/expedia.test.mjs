@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { searchExpedia } from '../lib/expedia.mjs';
+import {searchProviders} from '../lib/providers.mjs';
+import {createJobStore} from '../lib/job-store.mjs';
+import {expediaResponseCacheKey} from '../lib/expedia-response-cache.mjs';
 
 const query = { origin: 'YHZ', destination: 'BCN', date: '2099-04-15', adults: 1, children: 0, cabin: 'economy' };
 const responseData = { Segments: [{ SegmentId: 'seg-1', Legs: [{
@@ -30,6 +33,21 @@ test('Expedia adapter calls the documented listings API and preserves total, iti
   assert.equal(result.offers[0].currency, 'CAD');
   assert.equal(result.offers[0].sourceUrl, 'https://www.expedia.com/go/flight-details?id=offer-1');
   assert.equal(result.offers[0].durationMinutes, 300);
+});
+
+test('Expedia reuses only a fresh exact partner result under the same credentials and filters',async()=>{
+ const cache=createJobStore({path:':memory:'}),calls=[];
+ const options={apiKey:'fixture-expedia-key',authorization:'Bearer fixture-expedia-auth',fetcher:async()=>{calls.push(1);return Response.json(responseData);}};
+ try{
+  const input={...query,source:'expedia',filters:{}};
+  const first=await searchProviders(input,{providerCache:cache,expediaOptions:options}),second=await searchProviders(input,{providerCache:cache,expediaOptions:options});
+  assert.equal(first.offers.length,1);assert.equal(second.sources[0].cacheStatus,'hit');assert.equal(second.offers[0].observedAt,first.offers[0].observedAt);assert.equal(calls.length,1);
+  const key=expediaResponseCacheKey(input,options),corrupted=cache.getProviderResponse(key);corrupted.offers[0].sourceUrl='https://attacker.example/offer';cache.setProviderResponse(key,corrupted,Date.now()+30_000,Date.now());
+  const refreshed=await searchProviders(input,{providerCache:cache,expediaOptions:options});assert.equal(refreshed.sources[0].cacheStatus,undefined);assert.equal(calls.length,2,'invalid seller links are evicted before reuse');
+  await searchProviders({...input,filters:{maxStops:0}},{providerCache:cache,expediaOptions:options});
+  await searchProviders(input,{providerCache:cache,expediaOptions:{...options,apiKey:'other-expedia-key'}});
+  assert.equal(calls.length,4,'filters and effective partner credentials isolate entries');
+ }finally{cache.close();}
 });
 
 test('Expedia round-trip listings request two inverse legs and normalize one linked group total with child ages',async()=>{

@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Expedia Travel Redirect exact-query cache — 2026-11-23
+
+Normal Expedia partner listings results can now reuse only complete, fresh, positive CAD offers for an exact route/date/trip/party/age/cabin/filter query and the same hashed partner credential pair. Cache life is at most 30 seconds and capped by quote freshness. Cache reads recheck source counts, the exact selected flights, offer completeness, and an HTTPS Expedia handoff URL; invalid entries are evicted. Seller refresh still calls the partner to reprice the exact flights. Focused Expedia/provider tests pass 25/25; full `npm test` passes 703/703 and `npm run build` passes. `npm audit --audit-level=low` still reports one moderate Next.js advisory. This is fixture-only because Expedia partner credentials are absent locally. [Evidence](docs/expedia-response-cache-2026-11-23.md).
+
 ## Skyscanner exact-query cache — 2026-11-23
 
 The configured-partner adapter now reuses only positive, completed, exact Skyscanner results for up to 30 seconds, capped by quote freshness. Cache identity covers the Canadian market, exact route/date/trip, adult and child-age counts, cabin, filters, poll budget/interval and a hash of the effective API key. Reads recheck the exact normalized query, successful source counts, session/itinerary identities, exact itinerary validation and freshness; corrupt rows are evicted. Partial/empty results and identified parties bypass the cache. A regression now proves reuse across two worker processes sharing the durable SQLite store. Focused Skyscanner/provider tests pass 34/34; full `npm test` passes 702/702. This is fixture evidence only: `SKYSCANNER_API_KEY` is not configured locally, so no live cache or latency result is claimed. [Evidence](docs/skyscanner-response-cache-2026-11-23.md).
