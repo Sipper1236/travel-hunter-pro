@@ -1,5 +1,11 @@
 # Travel Hunter Pro — Current Handoff
 
+## Google calendar grids for multiple airport pairs — 2026-11-23
+
+The opt-in Google date-grid adapter now handles bounded multi-airport/region calendar searches when Google is the selected source. It issues one exact-route grid per airport pair and reuses its date rows, while request budgeting counts every logical date/pair and `wireResponses` reports actual grid calls. It remains limited to one adult, economy, no identified party, no active filters, and one-way or fixed-return trips; variable-return round trips and filtered price-only scans still use other paths.
+
+Verification: calendar/worker/query tests **53/53**, full suite **653/653**, build passed after the Next.js reminder retry, and the production-build calendar-streaming fixture passed with calls intercepted. The multi-airport-specific test uses fixtures; no live multi-route Google request was made. See [Google multi-airport evidence](docs/google-calendar-multi-airport-2026-11-23.md). Overall reverse-endpoint work and §17 remain open.
+
 ## ITA Matrix progressive detail results — 2026-11-23
 
 Matrix now publishes a validated preview after its initial response, then updates the same source result as each matched detail response arrives. Early CAD observations can display as price-only while flight details are being fetched; fully validated itineraries replace their corresponding observations. Fixed the single-airport callback-shape bug that dropped provider updates, the worker's `origin/destination` versus `from/to` route match for price-only observations, and premature route-complete status during a partial Matrix response.

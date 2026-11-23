@@ -20,28 +20,28 @@ test('Google one-way calendar uses one bounded price grid and keeps observations
  assert.equal(calendarWorkerResultError(result),null);
 });
 
-test('Google fixed-return calendar price grid is eligible only for a single exact return date',async()=>{
+test('Google fixed-return calendar reuses one price grid per selected airport pair',async()=>{
  const seen=[];const observedAt=new Date().toISOString();
- const sourceUrl='https://www.google.com/travel/flights?'+new URLSearchParams({q:'Flights from YHZ to LHR on 2099-04-15 through 2099-04-20',hl:'en-CA',gl:'CA',curr:'CAD'});
- const observation={provider:'Google Flights',source:'Google Flights price calendar RPC',from:'YHZ',to:'LHR',date:'2099-04-15',calendarStart:'2099-04-15',calendarEnd:'2099-04-16',tripType:'round-trip',returnDate:'2099-04-20',price:701,currency:'CAD',observedAt,sourceUrl,priceScope:'round-trip one adult economy; return 2099-04-20; itinerary details not returned',itineraryVerified:false,bookingStatus:'Price-only calendar observation; no round-trip itinerary, seller availability, baggage or final charges verified.'};
- const grid=async query=>{seen.push(query);return {provider:'Google Flights',observedAt,priceObservations:[observation],noPriceDates:[],coverage:{datesReturned:1,endpointResponses:1},limitations:['Price-only observations; no itinerary returned.']};};
- const base={origin:'YHZ',destination:'LHR',originAirports:['YHZ'],destinationAirports:['LHR'],start:'2099-04-15',end:'2099-04-16',tripType:'round-trip',returnStart:'2099-04-20',returnEnd:'2099-04-20',adults:1,children:0,childrenAges:[],cabin:'economy',filters:{},source:'google',searchLimit:4};
+ const grid=async query=>{seen.push(query);return {provider:'Google Flights',observedAt,priceObservations:Array.from({length:2},(_,index)=>({provider:'Google Flights',source:'Google Flights price calendar RPC',from:query.origin,to:query.destination,date:addDays(query.start,index),calendarStart:query.start,calendarEnd:query.end,tripType:'round-trip',returnDate:'2099-04-20',price:701+(query.origin==='YUL'?100:0)+index,currency:'CAD',observedAt,sourceUrl:'https://www.google.com/travel/flights?'+new URLSearchParams({q:`Flights from ${query.origin} to ${query.destination} on ${query.start} through 2099-04-20`,hl:'en-CA',gl:'CA',curr:'CAD'}),priceScope:'round-trip one adult economy; return 2099-04-20; itinerary details not returned',itineraryVerified:false,bookingStatus:'Price-only calendar observation; no round-trip itinerary, seller availability, baggage or final charges verified.'})),noPriceDates:[],coverage:{datesReturned:2,endpointResponses:1},limitations:['Price-only observations; no itinerary returned.']};};
+ const base={origin:'Canada',originType:'region',destination:'LHR',originAirports:['YHZ','YUL'],destinationAirports:['LHR'],start:'2099-04-15',end:'2099-04-16',tripType:'round-trip',returnStart:'2099-04-20',returnEnd:'2099-04-20',adults:1,children:0,childrenAges:[],cabin:'economy',filters:{},source:'google',searchLimit:4};
  const result=await searchFareCalendar(base,{providerOptions:{searchGoogleCalendar:grid}});
- assert.equal(seen.length,1);assert.equal(seen[0].returnDate,'2099-04-20');
- assert.deepEqual(result.dates.map(cell=>cell.priceObservations.map(row=>row.price)),[[701],[]]);
+ assert.equal(seen.length,2);assert.deepEqual(seen.map(query=>query.origin).sort(),['YHZ','YUL']);assert.ok(seen.every(query=>query.returnDate==='2099-04-20'));
+ assert.deepEqual(result.dates.map(cell=>cell.priceObservations.map(row=>row.price)),[[701,801],[702,802]]);
+ assert.equal(result.coverage.fareRequestsStarted,4,'search budgeting counts exact route/date slots');
+ assert.equal(result.coverage.providerResponsesReceived,4,'response coverage counts each route/date observation');
+ assert.deepEqual(result.dates.map(cell=>cell.providerCoverage.map(row=>row.wireResponses)),[[1,1],[0,0]],'wire response coverage counts one shared date grid per airport pair');
  assert.equal(result.dates[0].returnDate,'2099-04-20');assert.equal(result.dates[1].price,null);
  assert.equal(calendarWorkerResultError(result),null);
  let calls=0;
- await assert.rejects(searchFareCalendar({...base,returnStart:'2099-04-20',returnEnd:'2099-04-21'},{providerOptions:{searchGoogleCalendar:async()=>{calls++;return {priceObservations:[],noPriceDates:[],coverage:{}};},searchGoogle:async()=>({offers:[],sources:[{provider:'Google Flights',status:'ok'}]})}}),/No selected provider supports/);
+ await assert.rejects(searchFareCalendar({...base,originAirports:['YHZ'],searchLimit:4,returnStart:'2099-04-20',returnEnd:'2099-04-21'},{providerOptions:{searchGoogleCalendar:async()=>{calls++;return {priceObservations:[],noPriceDates:[],coverage:{}};},searchGoogle:async()=>({offers:[],sources:[{provider:'Google Flights',status:'ok'}]})}}),/No selected provider supports/);
  assert.equal(calls,0,'a variable return range cannot use a fixed-return price grid');
 });
 
-test('Google price grid is skipped when filters or multiple airport pairs need itinerary evidence',async()=>{
+test('Google price grid is skipped when active filters need itinerary evidence',async()=>{
  let grids=0,searches=0;const ordinary=async q=>{searches++;return {offers:[],sources:[{provider:'Google Flights',status:'ok'}]};};
  const base={origin:'YHZ',destination:'LHR',originAirports:['YHZ'],destinationAirports:['LHR'],start:'2099-04-15',end:'2099-04-15',tripType:'one-way',adults:1,children:0,childrenAges:[],cabin:'economy',filters:{},source:'google',searchLimit:2};
  await searchFareCalendar({...base,filters:{airlinesInclude:['AC']}},{providerOptions:{searchGoogle:ordinary,searchGoogleCalendar:async()=>{grids++;return {priceObservations:[],noPriceDates:[],coverage:{}};}}});
- await searchFareCalendar({...base,origin:'Europe',originType:'region',originAirports:['YHZ','YUL'],searchLimit:2},{providerOptions:{searchGoogle:ordinary,searchGoogleCalendar:async()=>{grids++;return {priceObservations:[],noPriceDates:[],coverage:{}};}}});
- assert.equal(grids,0);assert.equal(searches,3);
+ assert.equal(grids,0);assert.equal(searches,1);
 });
 test('regional native Google selection receives the exact calendar filters before supplier work',async()=>{
  const seen=[],filters={maxStops:2,airlinesExclude:['WS'],countriesExclude:['US'],minLayover:60,maxLayover:240};

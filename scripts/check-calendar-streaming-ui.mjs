@@ -56,7 +56,7 @@ try{
  await calendar.locator('div').filter({hasText:'Fare calendar: running'}).filter({hasText:'1 of 4 provider responses received'}).first().waitFor();
  const liveAnnouncement=calendar.locator('[role="status"]');
  await liveAnnouncement.first().waitFor({state:'attached'});
- assert.match(await liveAnnouncement.first().textContent(),/^Fare calendar update: 1 provider response received; 1 date has matching fare observations\. Search in progress\.$/);
+ assert.match(await liveAnnouncement.first().textContent(),/^Fare calendar update: 1 provider response received; 1 date has matching itinerary quotes and 0 price-only calendar values\. Search in progress\.$/);
  assert.equal(await liveAnnouncement.count(),1,'Streaming results should expose one concise live announcement, without per-poll job announcements.');
  const day=calendar.locator('.calendar-day').first();
  await day.locator('strong').first().waitFor();
@@ -74,7 +74,7 @@ try{
  await page.waitForFunction(element=>/CAD\s*400\.00/.test(element.textContent),await day.locator('strong').first().elementHandle());
  assert.doesNotMatch(await day.innerText(),/Best fresh fare seen so far/);
  await calendar.getByText(/1 of 1 provider responses received/).waitFor();
- await page.waitForFunction(element=>element.textContent==='Fare calendar search complete: 1 provider response received; 1 date has matching fare observations.',await liveAnnouncement.first().elementHandle());
+ await page.waitForFunction(element=>element.textContent==='Fare calendar search complete: 1 provider response received; 1 date has matching itinerary quotes and 0 price-only calendar values.',await liveAnnouncement.first().elementHandle());
  await page.waitForFunction(element=>element.textContent.includes('ABH'),await location.elementHandle());
  assert.match(await location.innerText(),/Known omitted airport codes:/,'completed UI lists every code returned by the resolver');
  assert.doesNotMatch(await location.innerText(),/Known omitted airport codes \(sample\)/);

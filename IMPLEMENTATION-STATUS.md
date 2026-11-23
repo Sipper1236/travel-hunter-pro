@@ -1,5 +1,11 @@
 # Implementation status against work.md
 
+## Google multi-airport calendar grid — 2026-11-23
+
+Expanded the experimental Google date-grid operation from one route pair to bounded multi-airport/region calendars. It now memoizes a separate grid by exact route, trip/date range, party, cabin and filters, then reuses date rows within that route. The exact-request budget still counts logical date/pair combinations; source coverage counts the smaller actual wire-call number. Active filters, identified parties and variable-return round trips remain excluded from this price-only endpoint.
+
+Calendar/query/worker tests: 53/53. Full suite: 653/653. Production build passed after retrying Next.js's security reminder. Existing isolated production calendar-streaming fixture passed, with provider calls intercepted, no browser errors, and external requests blocked; it does not exercise the multi-route Google backend. The two-route Google test uses fixtures. No live multi-airport query was run. [Evidence](docs/google-calendar-multi-airport-2026-11-23.md).
+
 ## ITA Matrix progressive detail results — 2026-11-23
 
 The Matrix website adapter now calls the existing provider-progress path with a normalized result after its first response and after each successfully matched detailed-itinerary response. This allows early price-only Matrix totals to persist/render before the bounded detail expansion finishes. Complete details replace corresponding price-only observations. Also corrected the single-airport callback wrapper, exact route matching for Matrix's `origin`/`destination` observation fields, and route coverage remaining complete during partial provider results.
