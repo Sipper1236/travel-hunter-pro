@@ -2,7 +2,7 @@
 
 ## Skyscanner polling budget and coverage — 2026-11-23
 
-Search and itinerary refresh now enforce at most eight poll operations and a configured 1–10 s interval, reporting operations used and remaining budget. Exhausting the cap yields explicit partial status and coverage. Validated offers from incomplete search snapshots are sent through `onUpdate` and the shared all-source progress path before polling finishes; later snapshots replace the prior route result. Focused Skyscanner/provider fixture tests pass 31/31 and full `npm test` passes 677/677. `SKYSCANNER_API_KEY` is absent locally; no live partner call, account-quota validation, or first-result timing check was made.
+Search and itinerary refresh now enforce at most eight poll operations and a configured 1–10 s interval, reporting operations used and remaining budget. Exhausting the cap yields explicit partial status and coverage. Validated offers from incomplete search snapshots are sent through `onUpdate` and the shared all-source progress path before polling finishes; the exact-route streaming path accepts them through the same worker validator and later snapshots replace the prior route result. Focused Skyscanner/provider fixture tests pass 31/31, route-streaming tests pass 2/2, and full `npm test` passes 678/678. `SKYSCANNER_API_KEY` is absent locally; no live partner call, account-quota validation, or first-result timing check was made.
 
 ## All-source Matrix partial-result path — 2026-11-23
 

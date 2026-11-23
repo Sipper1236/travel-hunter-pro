@@ -2,7 +2,7 @@
 
 ## Skyscanner polling budget hardening — 2026-11-23
 
-The partner adapter now validates poll configuration before dispatch, caps search and refresh at eight poll operations, enforces a 1–10 s configured interval, and reports poll operations used/remaining. Fully validated offers from incomplete poll snapshots are published through provider progress before polling finishes; subsequent snapshots replace prior route state, and final output remains authoritative. A zero-poll budget returns any initial partial offers with explicit partial coverage. Focused Skyscanner/provider tests pass 31/31; full `npm test` passes 677/677; production build passes after retrying Next.js's security reminder. `SKYSCANNER_API_KEY` is absent here, so this is fixture evidence only, not live partner verification.
+The partner adapter now validates poll configuration before dispatch, caps search and refresh at eight poll operations, enforces a 1–10 s configured interval, and reports poll operations used/remaining. Fully validated offers from incomplete poll snapshots are published through provider progress before polling finishes; route aggregation accepts the offer under worker validation, later snapshots replace prior route state, and final output remains authoritative. A zero-poll budget returns any initial partial offers with explicit partial coverage. Skyscanner/provider tests pass 31/31; route streaming regression passes 2/2; full `npm test` passes 678/678. Production build passed on the unchanged application code after retrying Next.js's security reminder. `SKYSCANNER_API_KEY` is absent here, so this is fixture evidence only, not live partner verification.
 
 ## All-source Matrix partial-result forwarding — 2026-11-23
 

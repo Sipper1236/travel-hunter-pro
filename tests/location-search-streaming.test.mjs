@@ -33,3 +33,24 @@ test('location-expanded search publishes a validated partial result with exact r
  assert.equal(flightWorkerResultError(progress.flightPreview,input),null);
  assert.equal(result.offers.length,2,'final completed result still contains all searched route offers');
 });
+
+test('exact-route all-source progress accepts a validated Skyscanner offer from an incomplete poll',async()=>{
+ const updates=[],exactInput={origin:'YHZ',destination:'BCN',originType:'place',destinationType:'place',date:'2099-04-15',tripType:'one-way',cabin:'economy',source:'all',adults:1,children:0,childrenAges:[],filters:{}};
+ const origin={type:'place',kind:'airport',airports:[{code:'YHZ',name:'Halifax Stanfield'}],method:'fixture resolver'};
+ const destination={type:'place',kind:'airport',airports:[{code:'BCN',name:'Barcelona El Prat'}],method:'fixture resolver'};
+ const search=async(query,{onProviderResult})=>{
+  const observedAt=new Date().toISOString(),row=segment(query.origin,query.destination);
+  const offer={provider:'Skyscanner',source:'Skyscanner Flights Live Prices API',price:820.5,currency:'CAD',observedAt,travelers:'1 adult',bookingStatus:'Provider handoff; seller price not refreshed',fees:'Provider-reported fare; inclusions unverified',cabin:'economy',from:query.origin,to:query.destination,departureDate:query.date,arrivalDate:query.date,departureTime:'08:00',arrivalTime:'16:00',durationMinutes:480,airlines:['Air Canada'],via:[],segments:[row],sourceUrl:'https://www.skyscanner.ca/',skyscannerSessionToken:'session-fixture',skyscannerItineraryId:'itinerary-fixture'};
+  const scopedQuery={origin:query.origin,destination:query.destination,date:query.date,cabin:'economy',tripType:'one-way',returnDate:null,adults:1,children:0,childrenAges:[],filters:{}};
+  const partial={query:scopedQuery,observedAt,offers:[offer],priceObservations:[],sources:[{provider:'Skyscanner',status:'partial',received:1,accepted:1,polling:{pollsRequested:0,maxPolls:8,remainingPolls:8}}],complete:false,partial:true,limitations:['Search is still polling.']};
+  await onProviderResult({sourceId:'skyscanner',sourceIndex:3,sourceCount:7,result:partial});
+  return {...partial,partial:undefined,sources:[{provider:'Skyscanner',status:'ok',received:1,accepted:1,polling:{pollsRequested:1,maxPolls:8,remainingPolls:7}}]};
+ };
+ const result=await searchLocations(exactInput,{origin:{type:'place',kind:'airport'},destination:{type:'place',kind:'airport'}},{resolvePlace:async value=>value==='YHZ'?origin:destination,resolveRegion:async()=>{throw Error('unexpected region');},search,onProgress:update=>updates.push(update)});
+ const preview=updates.find(update=>update.stage==='provider_results_streaming')?.flightPreview;
+ assert.ok(preview,'a validated partial flight should reach the job progress callback before source polling completes');
+ assert.equal(preview.offers.length,1);assert.equal(preview.offers[0].provider,'Skyscanner');
+ assert.equal(preview.streaming.providerResponsesReceived,1);assert.equal(preview.streaming.providerResponsesPlanned,7);
+ assert.equal(preview.coverage.checked[0].complete,false);assert.equal(flightWorkerResultError(preview,exactInput),null);
+ assert.equal(result.offers.length,1);assert.equal(result.sources[0].status,'ok');
+});
