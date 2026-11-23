@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Flight-segment chronology guard — 2026-11-23
+
+The shared flight-offer validator now rejects impossible or contradictory offset-aware segment timelines, invalid/unknown offsets, connections that depart before arrival, and round trips whose inbound leg begins before outbound arrival. It requires offset-aware chronology for multi-segment offers and cross-direction round trips; one-segment legacy local-time fixtures remain supported. Focused cross-provider tests passed 100/100, full suite 737/737, isolated build passed, audit found 0 vulnerabilities, all 144 Markdown files passed the link checker, and the controlled local browser check reported zero browser/application CSP errors with provider calls intercepted. The same-origin health check reported one live worker and no queued/expired jobs. No live provider call. Source-specific and seller verification remain open. [Evidence](docs/flight-segment-chronology-2026-11-23.md).
+
 ## Package worker coverage-mode schema — 2026-11-23
 
 The durable ACV package validator previously treated every explicit coverage mode except `structured_widget_response` as rendered-card evidence. A test-first regression reproduced acceptance of `unrecognized-provider-mode`; the validator now accepts only the existing structured mode or an omitted mode for the browser path. Focused package worker/normalizer suites passed 33/33; full suite passed 735/735; isolated Next.js 16.4.6 build passed; audit found 0 vulnerabilities; Markdown links passed for 143 files; and `git diff --check` passed. The local site is HTTP 200 and same-origin health is `ok` with one live worker, queue 0 and no expired leases/deadlines. No provider request was made. P0 strict schemas and §17 remain open. [Evidence](docs/package-worker-coverage-mode-2026-11-23.md).

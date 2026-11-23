@@ -1,5 +1,7 @@
 # Travel Hunter Pro documentation index
 
+- [Shared flight-segment chronology guard (2026-11-23)](flight-segment-chronology-2026-11-23.md) — offset-aware intra-flight, connection, and round-trip checks with fixture verification and provider/seller limits.
+
 - [Package worker coverage-mode validation (2026-11-23)](package-worker-coverage-mode-2026-11-23.md) — rejects unknown explicit coverage modes rather than validating them as rendered-card results; one incremental strict-schema fix.
 
 - [Separate-ticket baseline refusal guard (2026-11-23)](comparison-baseline-refusal-stop-2026-11-23.md) — stops after a refused baseline request, preserves only partial observed routes, and reports unsearched airport pairs accurately.

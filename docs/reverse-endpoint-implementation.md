@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## Shared flight-segment chronology — 2026-11-23
+
+Normalized flight offers now fail closed on contradictory offset-aware segment timestamps, impossible segment/connection order, invalid or unknown offsets, and round-trip chronology violations. This protects the result boundary across adapters but does not establish each source's timezone authority or live seller acceptance. Full tests passed 737/737; build and audit passed. [Evidence](flight-segment-chronology-2026-11-23.md).
+
 ## Package worker coverage-mode guard — 2026-11-23
 
 The durable package result validator rejects any explicit `coverage.mode` besides the structured widget mode; an omitted mode remains the rendered-card path. An unknown value previously fell through to that browser validation. Focused package worker/normalizer tests passed 33/33; full suite 735/735; isolated build passed; audit found 0 vulnerabilities; Markdown links passed for 143 files. This is fixture evidence and closes one schema discriminator only; see [the evidence note](package-worker-coverage-mode-2026-11-23.md).

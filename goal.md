@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — shared segment chronology
+
+Implemented and verified stricter offset-aware segment chronology across connections and round trips. Focused cross-provider suites passed 100/100; full suite 737/737; isolated build passed; npm audit found zero vulnerabilities. The result-integrity item advances, but source-specific timezone trust, live seller verification, and all remaining `work.md` acceptance gaps remain open. No provider call was made. See [evidence](docs/flight-segment-chronology-2026-11-23.md).
+
 ## 2026-11-23 continuation — package coverage-mode guard
 
 The package worker no longer treats an unknown explicit coverage mode as rendered-card evidence. The regression failed before the guard; focused package/vacation tests passed 33/33, full suite passed 735/735, isolated build passed, audit found 0 vulnerabilities, and Markdown links passed for 143 files. No provider request was made; this advances the strict worker-schema work without closing P0 or §17. [Evidence](docs/package-worker-coverage-mode-2026-11-23.md).

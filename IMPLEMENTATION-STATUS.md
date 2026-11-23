@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Shared flight-segment chronology — 2026-11-23
+
+The common offer gate now checks offset-aware chronology within each segment, between connections, and across round-trip legs; it rejects contradictory local/UTC values and invalid or unknown offsets. Full suite: 737/737; isolated build and controlled local browser check passed; npm audit: zero vulnerabilities; Markdown links passed. This is fixture-backed validation, with source-specific time-zone authority and live seller verification still open. [Evidence](docs/flight-segment-chronology-2026-11-23.md).
+
 ## Package worker coverage-mode schema — 2026-11-23
 
 An explicit unknown ACV package coverage mode can no longer be mistaken for the rendered-card path. The durable validator allows only `structured_widget_response` or the existing omitted-mode browser result. The red regression failed before the guard; focused tests passed 33/33 and full `npm test` passed 735/735. Isolated build passed, audit found 0 vulnerabilities, 143 Markdown files passed link checks, and `git diff --check` passed. Local HTTP 200/health `ok`; one worker available, queue 0, no expired leases/deadlines. No provider request. This is one field-discriminator improvement, not a complete package schema or live ACV acceptance. [Evidence](docs/package-worker-coverage-mode-2026-11-23.md).

@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Shared flight-segment chronology — 2026-11-23
+
+The common offer validator checks explicit offset-aware timestamps within segments, across connections, and between outbound and inbound legs. Multi-segment offers without such evidence and round trips without cross-direction evidence are rejected; one-segment legacy local-only fixtures remain supported. This improves integrity for every adapter but is not a substitute for source-specific timezone verification, fresh provider evidence, or seller confirmation. [Evidence](flight-segment-chronology-2026-11-23.md).
+
 ## Package worker coverage-mode validation — 2026-11-23
 
 The package worker now fails closed when an explicit coverage mode is unknown. Only `structured_widget_response` and the legacy rendered-card shape with no `mode` are accepted. This prevents an unrecognized response schema from silently receiving the less strict browser-path checks. Focused package/normalizer tests passed 33/33; full suite 735/735; isolated build passed; audit found 0 vulnerabilities; Markdown links passed for 143 files. No live provider request was made, and broader schema, ACV live access, and §17 acceptance remain open. See [evidence](package-worker-coverage-mode-2026-11-23.md).

@@ -21,6 +21,34 @@ test('flight worker result rejects missing schemas, invalid source status, and s
  assert.ok(flightWorkerResultError(result({offers:[offer({observedAt:'2020-01-01T00:00:00Z'})]}),input));
 });
 
+test('flight worker rejects offset-aware connecting segments whose departure precedes the prior arrival',()=>{
+ const segments=[
+  {marketing_carrier_code:'AC',flight_number:'123',departure_airport:'YHZ',arrival_airport:'YUL',departure_time_local:'2099-04-15T08:00:00-03:00',departure_time_utc:'2099-04-15T11:00:00Z',arrival_time_local:'2099-04-15T10:00:00-04:00',arrival_time_utc:'2099-04-15T14:00:00Z'},
+  {marketing_carrier_code:'AC',flight_number:'456',departure_airport:'YUL',arrival_airport:'LHR',departure_time_local:'2099-04-15T11:00:00-04:00',departure_time_utc:'2099-04-15T15:00:00Z',arrival_time_local:'2099-04-15T18:00:00+01:00',arrival_time_utc:'2099-04-15T17:00:00Z'},
+ ];
+ const valid=result({offers:[offer({departureTime:'08:00',arrivalTime:'18:00',durationMinutes:360,via:['YUL'],segments})]});
+ assert.equal(flightWorkerResultError(valid,input),null);
+ const impossible=structuredClone(valid);impossible.offers[0].segments[1].departure_time_local='2099-04-15T09:00:00-04:00';impossible.offers[0].segments[1].departure_time_utc='2099-04-15T13:00:00Z';
+ assert.match(flightWorkerResultError(impossible,input),/segment|chronology/i);
+ const conflicting=structuredClone(valid);conflicting.offers[0].segments[1].departure_time_local='2099-04-15T11:00:00-03:00';
+ assert.match(flightWorkerResultError(conflicting,input),/segment|chronology/i);
+ const unknownOffset=structuredClone(valid);unknownOffset.offers[0].segments[1].departure_time_local='2099-04-15T11:00:00-00:00';
+ assert.match(flightWorkerResultError(unknownOffset,input),/segment|chronology/i);
+ const missingChronology=structuredClone(valid);delete missingChronology.offers[0].segments[1].departure_time_local;delete missingChronology.offers[0].segments[1].departure_time_utc;
+ assert.match(flightWorkerResultError(missingChronology,input),/segment|chronology/i);
+});
+
+test('flight worker rejects round trips whose inbound leg departs before the outbound arrival',()=>{
+ const outbound=offer({departureTime:'08:00',arrivalTime:'18:00',durationMinutes:360,segments:[
+  {marketing_carrier_code:'AC',flight_number:'123',departure_airport:'YHZ',arrival_airport:'LHR',departure_time_local:'2099-04-15T08:00:00-03:00',departure_time_utc:'2099-04-15T11:00:00Z',arrival_time_local:'2099-04-15T18:00:00+01:00',arrival_time_utc:'2099-04-15T17:00:00Z'},
+ ]});
+ outbound.inbound={from:'LHR',to:'YHZ',departureDate:'2099-04-15',departureTime:'15:00',arrivalDate:'2099-04-15',arrivalTime:'17:00',durationMinutes:360,via:[],segments:[
+  {marketing_carrier_code:'AC',flight_number:'124',departure_airport:'LHR',arrival_airport:'YHZ',departure_time_local:'2099-04-15T15:00:00+01:00',departure_time_utc:'2099-04-15T14:00:00Z',arrival_time_local:'2099-04-15T17:00:00-03:00',arrival_time_utc:'2099-04-15T20:00:00Z'},
+ ]};
+ const submitted={...input,tripType:'round-trip',returnDate:'2099-04-15'},returned={...result().query,tripType:'round-trip',returnDate:'2099-04-15'};
+ assert.ok(flightWorkerResultError(result({query:returned,offers:[outbound]}),submitted));
+});
+
 test('flight worker query preserves exact count-party ages and every submitted filter',()=>{
  const submitted={...input,adults:2,children:2,childrenAges:[7,15],filters:{maxPrice:900,maxDurationMinutes:840,airlinesInclude:['AC'],countriesExclude:['US']}};
  const exactQuery={...result().query,adults:2,children:2,childrenAges:[7,15],filters:submitted.filters};

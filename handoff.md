@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Detailed Handoff (updated 2026-11-23)
 
+## 2026-11-23 continuation — shared flight chronology
+
+The shared offer validator now checks offset-aware timestamp consistency and elapsed chronology across each flight's segments, connecting legs, and round-trip directions. It rejects malformed and unknown offsets, contradictory local/UTC fields, missing offset-aware times in a multi-segment itinerary, and impossible transfer order. One-segment legacy local-time records remain accepted. Focused cross-provider tests passed 100/100; the full suite passed 737/737; isolated Next.js build passed; audit found no vulnerabilities. Same-origin health is `ok` with one live worker, no queue, and no expired leases/deadlines. No provider request or booking occurred. This partial P0 fix does not establish source timezone authority, live prices, carrier eligibility, or seller availability. [Evidence](docs/flight-segment-chronology-2026-11-23.md).
+
 ## 2026-11-23 continuation — package worker coverage mode
 
 A test-first regression reproduced that an explicit unknown package `coverage.mode` was accepted as if it were the browser-rendered path. The durable validator now distinguishes the supported structured widget mode from the existing omitted-mode rendered-card result and rejects other values. Package worker plus vacation-search suites passed 33/33; full `npm test` passed 735/735; isolated production build passed; audit found 0 vulnerabilities; and Markdown links passed for 143 files. The local website and worker remained healthy. This closes one schema-discriminator gap; the broader strict worker schema and §17 remain open. No provider query. [Evidence](docs/package-worker-coverage-mode-2026-11-23.md).
