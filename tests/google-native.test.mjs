@@ -82,12 +82,14 @@ test('native cancellation closes the browser and preserves the caller abort',asy
  const controller=new AbortController(),reason=new Error('Controlled cancellation');
  await assert.rejects(searchGoogleRoundTrip(query,{...options(),signal:controller.signal,onStage:stage=>{if(stage==='party')controller.abort(reason);}}),error=>error===reason);
 });
-test('native fare request bound aborts excess browser traffic before it reaches the source',async()=>{
+test('native fare request bound aborts excess browser traffic before it reaches the source',async context=>{
+ const keepEventLoopAlive=setInterval(()=>{},1000);context.after(()=>clearInterval(keepEventLoopAlive));
  let delivered=0;
  await assert.rejects(searchGoogleRoundTrip(query,options({mode:'request-bound',onRequest:()=>delivered++})),error=>error.providerCode==='native_request_bound'&&error.nativeCoverage.nativeRpcRequests===12);
  assert.ok(delivered<=12);
 });
-test('native overall deadline closes the browser and retains bounded attempt evidence',async()=>{
+test('native overall deadline closes the browser and retains bounded attempt evidence',async context=>{
+ const keepEventLoopAlive=setInterval(()=>{},1000);context.after(()=>clearInterval(keepEventLoopAlive));
  await assert.rejects(searchGoogleRoundTrip(query,{...options(),timeoutMs:100}),error=>error.providerCode==='native_query_timeout'&&error.nativeCoverage.nativeRpcRequests===0);
 });
 test('native refresh keeps the exact originally selected flights and never substitutes another itinerary',async()=>{

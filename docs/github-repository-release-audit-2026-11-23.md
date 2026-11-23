@@ -28,7 +28,7 @@ Commands run on 2026-11-23:
 
 UI checks used local fixtures and blocked external/provider traffic. They do not establish live inventory, traveler eligibility, seller-confirmed price, or booking availability. No provider search or booking was made for this audit.
 
-The first hosted CI run exposed two Node 22 test failures: an encrypted-backup authentication message differed from Node 26, and a persistent calendar-cache test missed its cache-hit marker once. Backup error normalization was fixed and its Node 22 regression test passes. The complete suite also passed locally on Node 22.13.1, including the cache test. The hosted CI rerun for the fix is the remaining verification step.
+The first hosted CI run exposed two Node 22 test failures: an encrypted-backup authentication message differed from Node 26, and a persistent calendar-cache test missed its cache-hit marker once. Backup error normalization was fixed and its Node 22 regression test passes. A later hosted run cancelled two Google timeout tests when Node's event loop became idle; those tests now hold a referenced timer while exercising the deliberately unreferenced abort deadlines. The complete suite passed locally on Node 22.13.1 after these fixes. The hosted CI rerun for the fixes is the remaining verification step.
 
 ## GitHub publication and application boundary
 
