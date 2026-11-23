@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Separate-ticket baseline refusal guard — 2026-11-23
+
+The optimizer now honors rate-limit/access-stop statuses on the initial baseline response and sends no route or ticket-block follow-up requests afterward. Valid alternatives from that same response remain labeled partial; if no fresh selected itinerary is returned, the status is `source_unavailable`, not `baseline_unavailable`. The UI identifies planned airport pairs that were never searched and only says all pairs returned responses when every pair actually did. Focused suites passed 61/61; full `npm test` passed 734/734; isolated production build passed; audit found zero vulnerabilities; Chromium browser check passed with calls intercepted and zero page errors; `git diff --check` passed. No live provider call; this improves P3 request-stop/coverage accuracy but does not establish route exhaustiveness, live inventory, seller issuance, or comparable final costs. [Evidence](docs/comparison-baseline-refusal-stop-2026-11-23.md).
+
 ## ACV current widget entry point — 2026-11-23
 
 Current public-page inspection found no visible Flight & Hotel search form at the route the adapter uses. The local website lookup now returns HTTP 503 `temporarily_unavailable` and stops before sending location or package data; the previous raw Playwright timeout is no longer exposed. Explicit access challenges are classified as `blocked` with a five-minute cooldown and are never interacted with. Focused ACV tests pass 35/35; full suite passes 731/731, isolated build passes, audit finds 0 vulnerabilities, and Markdown links pass for 141 files. No live package result or current price was observed. P6 and §17 remain incomplete until the current supported ACV search entry point works end to end. [Evidence](docs/acv-current-widget-entrypoint-2026-11-23.md).

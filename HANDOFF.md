@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Separate-ticket baseline refusal guard — 2026-11-23
+
+The comparison worker previously ignored `rate_limited`/access-stop statuses on the initial baseline response and could issue more fare searches. It now stops immediately, retains only valid alternatives from that same response, marks response completeness accurately, and lists all unsearched airport pairs. The coverage UI no longer claims unsearched pairs returned successfully. Focused comparison/search/worker tests passed 61/61; full suite passed 734/734; isolated Next.js 16.4.6 build passed; audit found 0 vulnerabilities; the intercepted Chromium comparison check passed with zero page errors; `git diff --check` passed. No live fare request. Live seller, inventory, eligibility, and all-in cost remain open. [Evidence](docs/comparison-baseline-refusal-stop-2026-11-23.md).
+
 ## ACV current widget entry point — 2026-11-23
 
 The ACV location lookup used by the website no longer finds the expected search widget on the current official Flight & Hotel page. A bounded local-website lookup now returns HTTP 503 with `temporarily_unavailable`; it submits no location or package query and no longer exposes Playwright selector details. The official page returned HTTP 200 but rendered promotional content without visible search fields; its own booking navigation returned to that page, and the canonical route without a trailing slash also had no widget. No explicit challenge appeared. Shared detection now stops on visible CAPTCHA/security challenges and applies a five-minute ACV cooldown without interacting with them. Focused ACV tests passed 35/35; full `npm test` passed 731/731; isolated production build passed; audit found 0 vulnerabilities; Markdown links passed for 141 files. No live package result; P6/§17 remain open. [Evidence](docs/acv-current-widget-entrypoint-2026-11-23.md).

@@ -9,6 +9,35 @@ test('a segment source refusal preserves its unavailable status and search budge
  let calls=0;const result=await compareSeparateTickets(query,{searcher:async()=>++calls===1?{offers:[offer([a,b],600,'through','target')]}:{offers:[],sources:[{status:'rate_limited'}]}});
  assert.equal(result.status,'source_unavailable');assert.equal(result.coverage.searchLimit,100);assert.deepEqual(result.plans,[]);assert.equal(calls,2);assert.equal(result.ticketBlockCoverage[0].status,'unpriced');assert.equal(result.ticketBlockCoverage[0].responses[0].sources[0].status,'rate_limited');assert.equal(result.ticketBlockCoverage[1].status,'not_searched');assert.equal(result.ticketBlockCoverage[1].fareRequests,0);
 });
+test('a baseline source refusal stops before route and ticket searches while retaining partial route coverage',async()=>{
+ const alternateFirst=leg('YHZ','YYZ','301','2099-04-15T08:30:00Z','2099-04-15T10:00:00Z'),alternateLast=leg('YYZ','BCN','401','2099-04-15T13:00:00Z','2099-04-15T21:00:00Z');
+ const pairs=[{origin:'YUL',destination:'BCN'}],calls=[];
+ const result=await compareSeparateTickets({...query,routePairs:pairs,routeSearchLimit:1},{searcher:async q=>{
+  calls.push(q);
+  return {complete:false,offers:[offer([a,b],600,'through','target'),offer([alternateFirst,alternateLast],550,'alternate','alternate-key')],sources:[{provider:'Ignav',status:'rate_limited',received:2,accepted:2}]};
+ }});
+ assert.equal(result.status,'source_unavailable');
+ assert.equal(calls.length,1,'a source refusal on the initial request must stop all follow-up requests');
+ assert.deepEqual(result.plans,[]);
+ assert.equal(result.routeAlternatives.length,1,'a valid observed alternative from the refused partial response remains visible');
+ assert.equal(result.routeAlternativeCoverage.providerCompletionKnown,true);
+ assert.equal(result.routeAlternativeCoverage.providerReportedComplete,false);
+ assert.equal(result.routeAlternativeCoverage.alternateAirportPairsPlanned,1);
+ assert.equal(result.routeAlternativeCoverage.alternateAirportPairsAttempted,0);
+ assert.deepEqual(result.routeAlternativeCoverage.alternateAirportPairsNotSearched,pairs);
+ assert.equal(result.coverage.searches,1);
+ assert.equal(result.coverage.searchLimit,100);
+});
+test('a baseline refusal without a fresh target quote is reported as unavailable, not as a missing itinerary',async()=>{
+ let calls=0;
+ const result=await compareSeparateTickets({...query,routePairs:[{origin:'YUL',destination:'BCN'}]},{searcher:async()=>{calls++;return {offers:[],sources:[{provider:'Ignav',status:'access_denied',received:0,accepted:0}]};}});
+ assert.equal(result.status,'source_unavailable');
+ assert.equal(calls,1);
+ assert.deepEqual(result.plans,[]);
+ assert.deepEqual(result.routeAlternatives,[]);
+ assert.equal(result.routeAlternativeCoverage.alternateAirportPairsNotSearched.length,1);
+ assert.equal(result.coverage.searches,1);
+});
 test('source stop after partial traveler-group quotes marks the ticket block partial',async()=>{
  let calls=0;const result=await compareSeparateTickets({...query,adults:2,splitPassengers:true},{searcher:async q=>{calls++;if(calls===1)return {offers:[offer([a,b],600,'through','target')]};if(calls===2)return {offers:[offer([a],100,'one','single')],sources:[{provider:'Ignav',status:'ok',received:1,accepted:1}]};return {offers:[],sources:[{provider:'Ignav',status:'rate_limited',received:0,accepted:0}]};}});
  assert.equal(result.status,'source_unavailable');assert.equal(result.ticketBlockCoverage[0].status,'partial');assert.equal(result.ticketBlockCoverage[0].qualifyingQuotes,1);assert.deepEqual(result.ticketBlockCoverage[0].responses.map(response=>response.sources[0].status),['ok','rate_limited']);assert.equal(result.ticketBlockCoverage[1].status,'not_searched');

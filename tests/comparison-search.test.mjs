@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {executeComparison} from '../lib/comparison-search.mjs';
 import {validateComparisonQuery,comparisonStorageKey} from '../lib/comparison-query.mjs';
+import {comparisonWorkerResultError} from '../lib/comparison-worker-result.mjs';
 const leg=(from,to,n,depart,arrive)=>({marketing_carrier_code:'AC',flight_number:n,departure_airport:from,arrival_airport:to,departure_time_utc:depart,arrival_time_utc:arrive,departure_time_local:depart.slice(0,19),arrival_time_local:arrive.slice(0,19)});
 const legs=[leg('YHZ','YUL','100','2099-04-15T08:00:00Z','2099-04-15T09:00:00Z'),leg('YUL','BCN','200','2099-04-15T13:00:00Z','2099-04-15T21:00:00Z')];
 const input={mode:'segments',origin:'YHZ',destination:'BCN',date:'2099-04-15',itineraryKey:'target',adults:1,children:0,childrenAges:[],cabin:'economy',searchLimit:4};
@@ -56,6 +57,17 @@ test('provider refusal distinguishes an attempted alternate pair from a complete
  assert.deepEqual(result.routeAlternativeCoverage.alternateAirportPairsSearchedList,[]);
  assert.deepEqual(result.routeAlternativeCoverage.alternateAirportPairsStoppedList,[{origin:'YUL',destination:'LAX'}]);
  assert.deepEqual(result.routeAlternativeCoverage.alternateAirportPairsNotSearched,[{origin:'YHZ',destination:'SNA'}]);
+});
+test('baseline provider refusal persists as unavailable, preserves partial alternatives and sends no more fare requests',async()=>{
+ const routePairs=[{origin:'YUL',destination:'LAX'}],alternate=[leg('YHZ','YYZ','301','2099-04-15T07:00:00Z','2099-04-15T09:00:00Z'),leg('YYZ','BCN','302','2099-04-15T12:00:00Z','2099-04-15T20:00:00Z')],observedAt=new Date().toISOString(),expiresAt=new Date(Date.now()+60000).toISOString();let calls=0;
+ const query={...input,routePairs,routeSearchLimit:1};
+ const result=await executeComparison(query,{searcher:async q=>{calls++;return {complete:false,sources:[{provider:'Ignav',status:'rate_limited',received:2,accepted:2}],offers:[{itineraryKey:'target',ignavId:'baseline',price:600,currency:'CAD',observedAt,cabin:'economy',segments:legs},{itineraryKey:'alternate',ignavId:'alternate',price:550,currency:'CAD',observedAt,expiresAt,cabin:'economy',segments:alternate}]};}});
+ assert.equal(result.status,'source_unavailable');assert.equal(calls,1);assert.deepEqual(result.plans,[]);
+ assert.equal(result.coverage.fareRequestsStarted,1);assert.equal(result.coverage.requestBudget,query.searchLimit);
+ assert.equal(result.routeAlternativeCoverage.providerReportedComplete,false);
+ assert.deepEqual(result.routeAlternativeCoverage.alternateAirportPairsNotSearched,routePairs);
+ assert.equal(result.routeAlternatives.length,1);
+ assert.equal(comparisonWorkerResultError(result,query),null);
 });
 test('identified segment queries preserve actual ages and guardian links for downstream ticket grouping',()=>{
  const travelers=[{id:'parent',birthDate:'2070-01-01'},{id:'child',birthDate:'2090-01-01',guardianId:'parent'}];

@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — separate-ticket refusal handling
+
+Fixed a source-stop gap in separate-ticket comparisons: a baseline response marked rate-limited or access-denied no longer triggers additional route/block requests. Fresh alternate itineraries from that same response may remain visible as partial observations; unsearched pairs are listed, and the UI only claims successful pair coverage when all planned pairs were actually searched. Focused suites passed 61/61, full suite 734/734, production build passed, audit found 0 vulnerabilities, and the fixture-driven Chromium check passed with zero page errors. No live fares or seller status were checked; the overall `work.md` completion goal remains open. [Evidence](docs/comparison-baseline-refusal-stop-2026-11-23.md).
+
 ## 2026-11-23 continuation — ACV widget access and safe stop
 
 The current official Flight & Hotel page returns promotional content without the search widget expected by the adapter. The website's location lookup now reports a sanitized `temporarily_unavailable` status without sending a location or package query. Explicit challenges are stopped and cooled down without interaction. Focused tests pass 35/35; full suite passes 731/731, isolated build passes, audit finds 0 vulnerabilities, and 141 Markdown files pass link checks. No live price/result was obtained; the active completion goal remains open while the current supported ACV search entry point is unresolved. [Evidence](docs/acv-current-widget-entrypoint-2026-11-23.md).

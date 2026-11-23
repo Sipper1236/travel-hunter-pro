@@ -5,7 +5,7 @@ const base=new URL(process.env.TRAVEL_CHECK_URL||'http://127.0.0.1:3000');
 if(base.protocol!=='http:'||!['localhost','127.0.0.1','[::1]'].includes(base.hostname))throw Error('Use the local application URL.');
 const browser=await chromium.launch({executablePath:process.env.API_ANYTHING_BROWSER||'/usr/bin/chromium',headless:true});
 try{
- const page=await browser.newPage(),pageErrors=[];let flightInput,comparisonInput,comparisonOwner;
+ const page=await browser.newPage(),pageErrors=[];let flightInput,comparisonInput,comparisonOwner,comparisonScenario='complete',comparisonCount=0,activeComparisonId;
  page.on('pageerror',error=>pageErrors.push(error.message));
  await page.route('**/*',route=>new URL(route.request().url()).origin===base.origin?route.continue():route.abort());
  await page.route('**/api/airports',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({items:[]})}));
@@ -23,10 +23,16 @@ try{
    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:body.id,status:'complete',kind:'flight',input:flightInput,result})});
   }
   if(body.action==='start'&&body.kind==='comparison'){
-   comparisonInput=body.input;comparisonOwner=body.ownerToken;
-   return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:'00000000-0000-0000-0000-000000000302',status:'queued',kind:'comparison',input:comparisonInput})});
+   comparisonInput=body.input;comparisonOwner=body.ownerToken;comparisonCount++;activeComparisonId=`00000000-0000-0000-0000-${String(301+comparisonCount).padStart(12,'0')}`;
+   return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:activeComparisonId,status:'queued',kind:'comparison',input:comparisonInput})});
   }
-  if(body.action==='status'&&body.id==='00000000-0000-0000-0000-000000000302'){
+  if(body.action==='status'&&body.id===activeComparisonId&&comparisonScenario==='baseline-refused'){
+   const partialOutbound=[leg('YHZ','YYZ','301','2026-12-15T07:00:00Z','2026-12-15T09:00:00Z'),leg('YYZ','BCN','302','2026-12-15T12:00:00Z','2026-12-15T20:00:00Z')];
+   const alternative={itineraryKey:'partial-alternative',price:550,currency:'CAD',observedAt:now,expiresAt,outbound:{from:'YHZ',to:'BCN',departureDate:'2026-12-15',departureTime:'07:00',arrivalDate:'2026-12-15',arrivalTime:'20:00',airlines:['AC'],via:['YYZ'],segments:partialOutbound}};
+   const result={status:'source_unavailable',limitation:'The source refused or deferred the baseline request. No route refresh or separate-ticket comparison was sent; any displayed alternatives are partial observations from that response.',coverage:{fareRequestsStarted:1,requestBudget:100,responsesReused:0,interruptedRequests:0,searches:1,searchLimit:100,routeAlternativesDiscovered:1},routeAlternatives:[alternative],routeAlternativeCoverage:{scope:'bounded_resolved_airport_pairs',candidateItinerariesReturned:2,matchingAlternatives:1,alternativesShown:1,displayLimit:8,omittedMatchingAlternatives:0,providerCompletionKnown:true,providerReportedComplete:false,alternateAirportPairsPlanned:3,alternateAirportPairsAttempted:0,alternateAirportPairsAttemptedList:[],alternateAirportPairsSearched:0,alternateAirportPairsSearchedList:[],alternateAirportPairsStoppedList:[],alternateAirportPairsNotSearched:[{origin:'YHZ',destination:'LAX'},{origin:'YUL',destination:'BCN'},{origin:'YUL',destination:'LAX'}],airportPairSearchLimit:8,exhaustive:false},plans:[]};
+   return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:body.id,status:'complete',kind:'comparison',input:comparisonInput,result})});
+  }
+  if(body.action==='status'&&body.id===activeComparisonId){
    const result={status:'observed',tripType:'one-way',limitation:'Fixture quote evidence; simultaneous inventory and seller issuance remain unverified.',coverage:{fareRequestsStarted:3,responsesReused:0,uniqueTicketBlocks:2,pricedTicketBlocks:2,completePlans:1,eligibleTicketPartitions:1},ticketBlockCoverage:[{direction:'outbound',segmentStart:1,segmentEnd:1,status:'priced',exactFlights:[{carrier:'AC',flight:'100',from:'YHZ',to:'YUL',departureAt:outbound[0].departure_time_utc,arrivalAt:outbound[0].arrival_time_utc}],fareRequests:1,qualifyingQuotes:1,responses:[{sources:[{provider:'Ignav',status:'ok',received:1,accepted:1}]}]},{direction:'outbound',segmentStart:2,segmentEnd:2,status:'unpriced',exactFlights:[{carrier:'AC',flight:'200',from:'YUL',to:'BCN',departureAt:outbound[1].departure_time_utc,arrivalAt:outbound[1].arrival_time_utc}],fareRequests:1,qualifyingQuotes:0,responses:[{sources:[{provider:'Ignav',status:'ok',received:5,accepted:5}]}]}],routeAlternativeCoverage:{matchingAlternatives:0,alternativesShown:0,providerCompletionKnown:true,providerReportedComplete:true,scope:'bounded_resolved_airport_pairs',alternateAirportPairsPlanned:3,alternateAirportPairsAttempted:3,alternateAirportPairsAttemptedList:[{origin:'YHZ',destination:'LAX'},{origin:'YUL',destination:'BCN'},{origin:'YUL',destination:'LAX'}],alternateAirportPairsSearched:3,alternateAirportPairsSearchedList:[{origin:'YHZ',destination:'LAX'},{origin:'YUL',destination:'BCN'},{origin:'YUL',destination:'LAX'}],alternateAirportPairsStoppedList:[],alternateAirportPairsNotSearched:[],exhaustive:false},baseline:{price:600,currency:'CAD',observedAt:now,expiresAt,itineraryKey:'ui-test-itinerary'},plans:[{price:350,currency:'CAD',observedAt:now,expiresAt,differenceBeforeExtras:250,comparison:'lower_before_extras',connectionsMinutes:[240],tickets:[{direction:'outbound',segment:1,segmentEnd:1,adults:1,price:100,currency:'CAD',cabin:'economy',ignavId:'fare_block_1',observedAt:now,expiresAt,segments:[outbound[0]]},{direction:'outbound',segment:2,segmentEnd:2,adults:1,price:250,currency:'CAD',cabin:'economy',ignavId:'fare_block_2',observedAt:now,expiresAt,segments:[outbound[1]]}]}]};
    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({id:body.id,status:'complete',kind:'comparison',input:comparisonInput,result})});
   }
@@ -64,6 +70,15 @@ try{
  await result.getByRole('button',{name:'Load provider handoff links'}).first().click();
  await result.getByText(/Selected ticket block match: matched/).waitFor({timeout:5000});
  assert.equal(handoffRequest.ignavId,'fare_block_1');assert.equal(handoffRequest.ownerToken,comparisonOwner);
+ comparisonScenario='baseline-refused';
+ await result.getByRole('button',{name:'Compare separate segment tickets'}).click();
+ const partialResult=page.locator('.booking-options').filter({has:page.getByRole('button',{name:'Compare separate segment tickets'})});
+ await partialResult.getByText('CAD 550 · observed').waitFor({timeout:10000});
+ const partialText=await partialResult.innerText();
+ assert.match(partialText,/No route refresh or separate-ticket comparison was sent/);
+ assert.match(partialText,/0 of 3 additional resolved airport pairs returned responses without a provider stop/);
+ assert.match(partialText,/Airport pairs not searched: YHZ–LAX, YUL–BCN, YUL–LAX/);
+ assert.doesNotMatch(partialText,/All additional pairs in the selected airport sets returned responses without a provider stop/);
  assert.deepEqual(pageErrors,[]);
- console.log(JSON.stringify({ui:'separate-ticket-results',verifiedCabin:'economy',exactFlightSegments:['AC 100 YHZ–YUL','AC 200 YUL–BCN'],comparisonOwnerHandedToExactTicketLookup:true,providerAndJobRequestsIntercepted:true,externalRequestsBlocked:true,pageErrors:pageErrors.length}));
+ console.log(JSON.stringify({ui:'separate-ticket-results',verifiedCabin:'economy',exactFlightSegments:['AC 100 YHZ–YUL','AC 200 YUL–BCN'],comparisonOwnerHandedToExactTicketLookup:true,baselineRefusalCoverageChecked:true,providerAndJobRequestsIntercepted:true,externalRequestsBlocked:true,pageErrors:pageErrors.length}));
 }finally{await browser.close();}

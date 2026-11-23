@@ -18,7 +18,8 @@ function routeCoverageText(coverage){
   if(coverage.omittedMatchingAlternatives)parts.push(`${coverage.omittedMatchingAlternatives} matching itineraries were omitted by the ${coverage.displayLimit}-route display limit.`);
   parts.push(coverage.providerCompletionKnown?(coverage.providerReportedComplete?'Every provider response was marked complete.':'At least one provider response was incomplete; additional itineraries may exist.'):'Provider response completeness is unknown.');
   if(coverage.alternateAirportPairsNotSearched?.length)parts.push(`Airport pairs not searched: ${coverage.alternateAirportPairsNotSearched.map(pair=>`${pair.origin}–${pair.destination}`).join(', ')}.`);
-  else if(coverage.scope==='bounded_resolved_airport_pairs'&&!coverage.alternateAirportPairsStoppedList?.length)parts.push('All additional pairs in the selected airport sets returned responses without a provider stop.');
+  else if(coverage.scope==='bounded_resolved_airport_pairs'&&coverage.alternateAirportPairsPlanned===0)parts.push('No alternate airport pairs were selected for this comparison.');
+  else if(coverage.scope==='bounded_resolved_airport_pairs'&&coverage.alternateAirportPairsSearched===coverage.alternateAirportPairsPlanned&&coverage.alternateAirportPairsAttempted===coverage.alternateAirportPairsPlanned&&!coverage.alternateAirportPairsNotSearched?.length&&!coverage.alternateAirportPairsStoppedList?.length)parts.push('All additional pairs in the selected airport sets returned responses without a provider stop.');
   else if(coverage.scope!=='bounded_resolved_airport_pairs')parts.push('No alternate airport pairs were selected for this comparison.');
   parts.push('This is not exhaustive route coverage.');
   return parts.join(' ');
