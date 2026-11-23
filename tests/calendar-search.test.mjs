@@ -43,6 +43,21 @@ test('Google price grid is skipped when active filters need itinerary evidence',
  await searchFareCalendar({...base,filters:{airlinesInclude:['AC']}},{providerOptions:{searchGoogle:ordinary,searchGoogleCalendar:async()=>{grids++;return {priceObservations:[],noPriceDates:[],coverage:{}};}}});
  assert.equal(grids,0);assert.equal(searches,1);
 });
+
+test('all-source fixed-return calendars include the Google price grid alongside other configured sources',async()=>{
+ let googleCalls=0,ignavCalls=0,matrixCalls=0;const observedAt=new Date().toISOString();
+ const sourceUrl='https://www.google.com/travel/flights?'+new URLSearchParams({q:'Flights from YHZ to LHR on 2099-04-15 through 2099-04-20',hl:'en-CA',gl:'CA',curr:'CAD'});
+ const result=await searchFareCalendar({origin:'YHZ',destination:'LHR',originAirports:['YHZ'],destinationAirports:['LHR'],start:'2099-04-15',end:'2099-04-15',tripType:'round-trip',returnStart:'2099-04-20',returnEnd:'2099-04-20',adults:1,children:0,childrenAges:[],cabin:'economy',filters:{},source:'all',searchLimit:3},{providerOptions:{
+  searchGoogleCalendar:async query=>{googleCalls++;return {observedAt,priceObservations:[{provider:'Google Flights',source:'Google Flights price calendar RPC',from:query.origin,to:query.destination,date:query.start,calendarStart:query.start,calendarEnd:query.end,tripType:'round-trip',returnDate:'2099-04-20',price:701,currency:'CAD',observedAt,sourceUrl,priceScope:'round-trip one adult economy; return 2099-04-20; itinerary details not returned',itineraryVerified:false,bookingStatus:'Price-only calendar observation; no round-trip itinerary, seller availability, baggage or final charges verified.'}],noPriceDates:[],coverage:{datesReturned:1,endpointResponses:1},limitations:['No itinerary details returned.']};},
+  searchIgnav:async()=>{ignavCalls++;return {offers:[],sources:[{provider:'Ignav',status:'ok',received:0,accepted:0}]};},
+  searchMatrix:async()=>{matrixCalls++;return {offers:[],priceObservations:[],sources:[{provider:'ITA Matrix',status:'ok',received:0,accepted:0,priceObservations:0}]};},
+ }});
+ assert.deepEqual([googleCalls,ignavCalls,matrixCalls],[1,1,1]);
+ assert.equal(result.dates[0].priceObservations.length,1);assert.equal(result.dates[0].priceObservations[0].provider,'Google Flights');
+ assert.equal(result.dates[0].providerCoverage.find(row=>row.provider==='Google Flights').operation,'GetCalendarPicker');
+ assert.equal(result.coverage.fareRequestsStarted,3);assert.equal(result.coverage.providerResponsesReceived,3);
+ assert.equal(calendarWorkerResultError(result),null);
+});
 test('regional native Google selection receives the exact calendar filters before supplier work',async()=>{
  const seen=[],filters={maxStops:2,airlinesExclude:['WS'],countriesExclude:['US'],minLayover:60,maxLayover:240};
  const result=await searchFareCalendar({...input,cabin:'economy',source:'google',children:1,childrenAges:[15],filters},{providerOptions:{searchGoogleRoundTrip:async q=>{seen.push(q);return {offers:[],sources:[{provider:'Google Flights',status:'ok'}]};}}});
