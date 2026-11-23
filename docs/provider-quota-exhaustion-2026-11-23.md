@@ -11,7 +11,7 @@ This uses the documented [Omkar API rate-limit response headers](https://www.omk
 ## Verification
 
 - `node --test tests/source-fetch.test.mjs`: **15/15 passed**.
-- Regression uses a successful synthetic response with zero remaining and a future reset, checks that the body remains readable, and confirms a second job is rejected by the durable policy without another fetch.
+- Regression uses a successful synthetic response with zero remaining and a future reset, checks that the body remains readable, and confirms a second worker using an independent SQLite connection is rejected without another fetch.
 - `node --test tests/source-fetch.test.mjs tests/ignav.test.mjs`: **39/39 passed** after the compatibility fix for numeric deterministic clock overrides.
 - Full `npm test`: **663/663 passed**.
 - `npm run build`: passed on the retry after Next.js 16.4.3 emitted its known-security advisory and requested the same command be retried.

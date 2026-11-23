@@ -35,15 +35,15 @@ test('429 with exhausted provider quota honors the documented quota reset over a
  }finally{policy.close();}
 });
 
-test('successful response that consumes the last provider quota unit blocks later jobs until reset',async()=>{
- let at=Date.now(),calls=0;const resetAt=Math.ceil((at+26*24*60*60_000)/1000)*1000,policy=createJobStore({path:':memory:',now:()=>at});
- const options={policy,now:()=>at,fetcher:async()=>{calls++;return Response.json({ok:true},{headers:{'X-RateLimit-Requests-Remaining':'0','X-RateLimit-Requests-Reset':String(resetAt/1000)}});}};
+test('successful response that consumes the last provider quota unit blocks another worker until reset',async()=>{
+ let at=Date.now(),calls=0;const directory=await mkdtemp(join(tmpdir(),'provider-success-quota-')),path=join(directory,'jobs.sqlite'),resetAt=Math.ceil((at+26*24*60*60_000)/1000)*1000,first=createJobStore({path,now:()=>at}),second=createJobStore({path,now:()=>at});
+ const fetcher=async()=>{calls++;return Response.json({ok:true},{headers:{'X-RateLimit-Requests-Remaining':'0','X-RateLimit-Requests-Reset':String(resetAt/1000)}});};
  try{
-  const response=await fetchSource('Expedia via Omkar','https://example.com',{},options);
+  const response=await fetchSource('Expedia via Omkar','https://example.com',{}, {policy:first,now:()=>at,fetcher});
   assert.equal(response.status,200);assert.deepEqual(await response.json(),{ok:true});
-  await assert.rejects(fetchSource('Expedia via Omkar','https://example.com',{},options),error=>error.sourceStatus==='rate_limited'&&error.retryAt===resetAt);
-  assert.equal(calls,1,'a later job must not spend a request while the successful response reports exhausted quota');
- }finally{policy.close();}
+  await assert.rejects(fetchSource('Expedia via Omkar','https://example.com',{}, {policy:second,now:()=>at,fetcher}),error=>error.sourceStatus==='rate_limited'&&error.retryAt===resetAt);
+  assert.equal(calls,1,'a second worker must observe the shared cooldown without another fetch');
+ }finally{first.close();second.close();await rm(directory,{recursive:true,force:true});}
 });
 
 test('successful response quota inspection accepts numeric deterministic clock overrides',async()=>{
