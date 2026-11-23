@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## P0 package worker status schema — 2026-11-23
+
+The durable package worker now accepts only `observed` results. It rejects `currency_unverified` envelopes before persistence because they lack observed coverage/source evidence; the lower-level normalizer still emits that explicit status when currency is unverified. A test-first regression reproduced the prior acceptance; focused tests passed 25/25, full `npm test` passed 725/725, build passed, audit found 0 vulnerabilities, and Markdown links passed for 138 files. No provider request. [Evidence](docs/package-worker-status-guard-2026-11-23.md).
+
 ## P0 hotel worker query-envelope guard — 2026-11-23
 
 Hotel worker persistence now rejects unrecognized result-query keys and checks any resolved `cityId` against destination evidence. A test-first regression reproduced acceptance of an injected source field; focused tests passed 14/14 and full `npm test` passed 725/725. Build passed, audit found 0 vulnerabilities, and Markdown links passed for 137 files. Fixture-only, no provider call. This advances the strict-schema item but does not establish live hotel availability, occupancy eligibility, fees, or checkout totals. [Evidence](docs/hotel-worker-query-envelope-2026-11-23.md).

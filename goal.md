@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — package worker status schema
+
+The package worker boundary rejects unverified-currency results that lack an observed result envelope. The normalizer still reports unverified currency directly. Focused tests passed 25/25; full `npm test` passed 725/725, build passed, audit found 0 vulnerabilities, and Markdown links passed for 138 files. No live source call. Broader package and §17 acceptance remains open. [Evidence](docs/package-worker-status-guard-2026-11-23.md).
+
 ## 2026-11-23 continuation — hotel worker query envelope
 
 Hotel result validation rejects unrecognized query fields and mismatched resolved city identifiers. The injected-field regression failed before the fix; focused tests passed 14/14 and full `npm test` passed 725/725 afterward. Build passed, audit found 0 vulnerabilities, Markdown links passed for 137 files. No provider call was made. This advances only the worker-schema portion; the live hotel and checkout acceptance criteria remain open. [Evidence](docs/hotel-worker-query-envelope-2026-11-23.md).

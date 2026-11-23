@@ -147,7 +147,7 @@ test('package worker rejects result-page expansion outside the selected page bud
 test('package worker permits empty observed results while retaining honest coverage',()=>{
  const empty=makeResult();empty.offers=[];empty.received=0;empty.rejected=0;
  assert.equal(packageWorkerResultError(empty,input,now),null);
- assert.equal(packageWorkerResultError({status:'currency_unverified',query:input,offers:[]},input,now),null);
+ assert.match(packageWorkerResultError({status:'currency_unverified',query:input,offers:[]},input,now),/unknown provider status/);
  const invalid=makeResult();invalid.offers=[null];invalid.received=1;invalid.rejected=0;
  assert.match(packageWorkerResultError(invalid,input,now),/invalid package offer/);
 });

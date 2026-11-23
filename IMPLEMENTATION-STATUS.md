@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Package worker status schema — 2026-11-23
+
+Durable package output now permits only observed results, so `currency_unverified` cannot bypass coverage and source-evidence requirements. The normalizer still exposes that state directly when currency is unverified. Focused tests passed 25/25; full `npm test` passed 725/725; build passed; audit found 0 vulnerabilities; Markdown links passed for 138 files. No provider call. This is a schema improvement, not live package acceptance. [Evidence](docs/package-worker-status-guard-2026-11-23.md).
+
 ## Hotel worker query-envelope validation — 2026-11-23
 
 Hotel persistence rejects unknown result-query fields and mismatched resolved city IDs. The test-first injected-field regression passed after the fix; focused tests passed 14/14 and full `npm test` passed 725/725. Build passed, audit found 0 vulnerabilities, and Markdown links passed for 137 files. This is one strict-schema improvement, not full hotel acceptance. No live source call; availability, charges, and checkout totals remain open. [Evidence](docs/hotel-worker-query-envelope-2026-11-23.md).

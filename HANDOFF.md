@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Package worker status schema — 2026-11-23
+
+The durable package worker now accepts only `observed` results. A red regression reproduced acceptance of a minimal `currency_unverified` envelope without coverage or source evidence. The lower-level normalizer still reports unverified currency when evidence is missing; the durable worker rejects that as a successful result. Focused package-worker and normalizer tests passed 25/25; full `npm test` passed 725/725. Build passed, audit found 0 vulnerabilities, and Markdown links passed for 138 files. No provider request. [Evidence](docs/package-worker-status-guard-2026-11-23.md).
+
 ## Hotel worker query-envelope validation — 2026-11-23
 
 The hotel result guard now rejects unrecognized query-envelope keys and requires resolved `cityId` metadata to match its verified destination. A red regression reproduced acceptance of an injected source field; focused hotel worker tests passed 14/14 and full `npm test` passed 725/725. The build passed, audit found 0 vulnerabilities, and Markdown links passed for 137 files. Fixture-only, with no provider request. Full hotel result-schema, live property, fee, availability, and checkout evidence remain open. [Evidence](docs/hotel-worker-query-envelope-2026-11-23.md).
