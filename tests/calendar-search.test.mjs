@@ -126,6 +126,26 @@ test('all-source calendar publishes each valid source fare before a later source
  assert.equal(result.dates[0].price,400);assert.equal(result.dates[0].status,'observed');assert.equal(result.coverage.fullyScanned,true);
 });
 
+test('all-source calendar publishes a fast provider while an earlier provider is still pending',async()=>{
+ const query={origin:'YHZ',destination:'BCN',start:'2099-04-15',end:'2099-04-15',tripType:'one-way',adults:1,children:0,childrenAges:[],cabin:'economy',filters:{},source:'all',searchLimit:20};
+ let releaseIgnav,resolvePreview;const waitingForIgnav=new Promise(resolve=>{releaseIgnav=resolve;});
+ const firstPreview=new Promise(resolve=>{resolvePreview=resolve;});
+ const empty=provider=>async()=>({offers:[],sources:[{provider,status:'ok'}]});
+ const pending=searchFareCalendar(query,{providerOptions:{
+  searchIgnav:async q=>{await waitingForIgnav;return response([offer(q,500)]);},
+  searchGoogle:async q=>({offers:[offer(q,400,{provider:'Google Flights',source:'Google Flights live search'})],sources:[{provider:'Google Flights',status:'ok'}]}),
+  searchExpedia:empty('Expedia'),searchSkyscanner:empty('Skyscanner'),searchAirCanada:empty('Air Canada NDC'),searchMatrix:empty('ITA Matrix'),searchOmkarExpedia:empty('Expedia via Omkar'),
+ },onProgress:progress=>{const cell=progress.calendarPreview?.dates?.[0];if(cell?.offer?.provider==='Google Flights')resolvePreview(progress.calendarPreview);}});
+ const early=await Promise.race([firstPreview,new Promise(resolve=>setTimeout(()=>resolve(null),50))]);
+ releaseIgnav();
+ const result=await pending;
+ assert.ok(early,'the faster Google result should stream without waiting for the first configured provider');
+ assert.equal(early.dates[0].offer.provider,'Google Flights');assert.equal(early.dates[0].price,400);
+ assert.equal(early.dates[0].status,'partial_route_coverage');assert.equal(early.coverage.pairQueriesChecked,0);
+ assert.ok(early.coverage.providerResponsesReceived<early.coverage.providerResponsesPlanned);
+ assert.equal(result.dates[0].price,400);assert.equal(result.dates[0].status,'observed');assert.equal(result.coverage.fullyScanned,true);
+});
+
 test('all-source calendar keeps earlier offers and exposes a later provider failure',async()=>{
  const query={origin:'YHZ',destination:'BCN',start:'2099-04-15',end:'2099-04-15',tripType:'one-way',adults:1,children:0,childrenAges:[],cabin:'economy',filters:{},source:'all',searchLimit:20};
  const empty=provider=>async()=>({offers:[],sources:[{provider,status:'ok'}]});

@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## All-source calendar provider streaming — 2026-11-23
+
+All-source calendar providers now run in a bounded two-provider pool for each exact airport-pair/date query. Each completed source publishes progress immediately, so a fast provider no longer waits behind a slower provider that appears earlier in source order. Route/date traversal stays sequential; request budgets, refusal handling, coverage counts, and final provider ordering remain intact. Calendar tests pass 55/55, full suite 655/655, build passes after retrying Next.js's reminder, and the production calendar-streaming browser fixture passes with provider/job traffic intercepted and zero page errors. No live provider request was made. One moderate Next.js 16.4.3 audit finding remains. [Evidence](docs/all-source-calendar-provider-streaming-2026-11-23.md). The broader reverse-endpoint goal and work.md §17 remain open.
+
 ## Google calendar grids for multiple airport pairs — 2026-11-23
 
 The opt-in Google date-grid adapter now handles bounded multi-airport/region calendars when Google is selected alone or alongside other providers in an all-source search. It issues one exact-route grid per airport pair and reuses its date rows, while request budgeting counts every logical date/pair and `wireResponses` reports actual grid calls. Google remains limited to one adult, economy, no identified party, no active filters, and one-way or fixed-return trips; variable-return round trips and filtered price-only scans use other paths. The all-source path keeps each other configured provider's ordinary adapter and accepts Google price-only rows only with matching Google route coverage.

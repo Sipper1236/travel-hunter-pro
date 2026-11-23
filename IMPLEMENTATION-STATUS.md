@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## All-source calendar provider streaming — 2026-11-23
+
+All-source calendar providers now run in a bounded two-provider pool for each exact airport-pair/date query. Each completed source publishes progress immediately, so a fast provider no longer waits behind a slower provider that appears earlier in source order. Route/date traversal stays sequential; request budgets, refusal handling, coverage counts, and final provider ordering remain intact. Calendar tests pass 55/55, full suite 655/655, build passes after retrying Next.js's reminder, and the production calendar-streaming browser fixture passes with provider/job traffic intercepted and zero page errors. No live provider request was made. One moderate Next.js 16.4.3 audit finding remains. [Evidence](docs/all-source-calendar-provider-streaming-2026-11-23.md). The broader reverse-endpoint goal and work.md §17 remain open.
+
 ## Google multi-airport calendar grid — 2026-11-23
 
 Expanded the experimental Google date-grid operation from one route pair to bounded multi-airport/region calendars. It now memoizes a separate grid by exact route, trip/date range, party, cabin and filters, then reuses date rows within that route. It can run as the Google-only source or alongside the ordinary adapters selected by an all-source calendar. The exact-request budget still counts logical date/pair combinations; source coverage counts the smaller actual wire-call number. Google price-only rows in all-source results require an exact Google route-coverage record. Active filters, identified parties and variable-return round trips remain excluded from this price-only endpoint.
