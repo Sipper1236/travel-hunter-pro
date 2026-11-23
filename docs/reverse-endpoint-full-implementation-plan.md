@@ -1,0 +1,77 @@
+# Reverse-endpoint implementation map and completion plan
+
+Updated: 2026-11-14
+
+## Purpose and status
+
+This document maps the source adapters in the current tree and defines what “fully implemented” means for a reverse/structured endpoint. It is an engineering plan, not a claim that every endpoint is public, stable, authorized for automation, configured, or returning live inventory.
+
+The fastest useful design is to send one exact provider request through the narrowest available structured interface, validate its response immediately, and publish validated results as they arrive. It must not skip provider pacing, query budgets, age/occupancy checks, or evidence labels. “Reverse endpoint” means an observed structured interface; it does not make a private web-app RPC a supported API.
+
+Current work already includes several structured partner APIs, first-party web-app RPCs, bounded parsers, durable jobs, shared source cooldowns, caching, and progressive results. Some sources still use ordinary browser flows because server authorization or a supported price endpoint is missing. The canonical acceptance authority remains [`work.md` §17](../work.md#17-acceptance-criteria); every applicable criterion is still to be evidenced independently.
+
+## What counts as a complete adapter
+
+An endpoint is complete for a stated query shape only when all of the following are implemented end to end:
+
+1. **Request contract:** exact route/location, dates, trip type, traveler ages/seating, cabin/room allocation, currency, filters and language are built from validated input. Unsupported shapes are rejected before network work.
+2. **Access contract:** credentials come from a provider-issued or user-configured secret source. Normal UI authentication is not copied into code, logs or durable job output. Provider account scope and rate rules are recorded when available.
+3. **Fast transport:** reuse connections where possible; bound DNS/connect/response time and bytes; honor Retry-After; never replay non-idempotent requests automatically; use a durable per-source concurrency/rate gate.
+4. **Parser and provenance:** parse only expected response shapes; reject malformed, conflicting, wrong-currency, wrong-query or over-limit data. Preserve provider, operation, query identity, observation timestamp, currency evidence and source coverage.
+5. **Domain validation:** verify chronological offset-aware flight segments, exact traveler fare scope, hotel property/destination/date/occupancy/all-in total, or package route/stay/occupancy as applicable. A date-level amount remains a price observation, not an itinerary quote.
+6. **Cache and deduplication:** cache only by a canonical exact-query key; retain original observation time and freshness; never let a cache satisfy a different traveler, airport pair, filter, return date or property. Apply bounded TTL, size and eviction.
+7. **Progress and recovery:** stream each validated response to durable job progress, expose provider-level failures and unsearched coverage, support owner-bound resume/cancel, and do not turn timeouts into “no inventory”.
+8. **User and seller boundary:** show observed, refreshed, seller-verified and booked states distinctly. Booking, reservation, payment or paid commitment are outside this implementation.
+9. **Verification:** unit/contract tests for malformed and boundary cases, end-to-end worker/UI checks for supported query shapes, and at least one current authorized live observation before claiming runtime support. Fixtures prove parser behavior only.
+
+## Current source map
+
+| Source | Structured/reverse interface in the tree | Present integration | Fast-path completion gap |
+|---|---|---|---|
+| Ignav | `https://ignav.com/api` in `lib/ignav.mjs` | Flight search, round trips, exact fare refresh/booking links, cheapest-date and airport operations; cached by exact query/job machinery. | Verify current provider schema, credential entitlement and source cadence; expand exact-party shapes only on provider evidence. Keep actual fare IDs, segments and timestamps through refresh/handoff. |
+| Google Flights | `GetShoppingResults`, `GetBookingResults` in `lib/google-native.mjs` and `lib/google-round-trip.mjs`; `GetCalendarPicker` in `lib/google-calendar.mjs` | Ordinary browser session observes native RPC responses. Calendar grid is opt-in, worker-validated and rendered separately as price-only. Fixed-return round trip was live-observed for 8/8 departure dates in CAD; a one-way request returned bounded marker 4. | This is a web-app RPC, not a public API. Reproduce each query shape; monitor response drift. Keep one adult/economy/one pair/no-filter restriction. Add no itinerary, bag or seller claims from the date grid. API Anything `priceCalendar` remains unusable (internal error 13). |
+| ITA Matrix | `https://content-alkalimatrix-pa.googleapis.com/batch` in `lib/ita-matrix.mjs`, plus UI path in `lib/matrix-browser.mjs` | Structured batch and native page flow; bounded response bodies, route/party parsing, price-only observation distinction, detailed itinerary expansion behind a request ceiling. | This is a first-party app interface. Confirm unattended scope, documented rate limits and key refresh behavior; add schema drift alerting. Matrix price-only data must stay separate from fully verified segments. |
+| Expedia | Partner `https://apim.expedia.com/flights/listings` in `lib/expedia.mjs`; wrapper in `lib/omkar-expedia.mjs` | Partner adapter is implemented but needs issued key/entitlement. Omkar wrapper has narrow one-way/one-adult support and recently returned HTTP 500. Search URL builder supports seller handoff but is not inventory. | Obtain/configure partner access and validate exact fare/party schema. Do not promote the wrapper’s failure or a URL into a quote. Add round-trip/age support only from actual response evidence. |
+| Skyscanner | Partner v3 live flights in `lib/skyscanner.mjs` | Create/poll/fetch adapter, session limits, exact itinerary/time validation and calendar integration. | `SKYSCANNER_API_KEY` and partner scope are absent locally. Confirm account quota/poll cadence and live result shape before enabling. |
+| Air Canada NDC | SOAP NDC 17.2 `AirShopping`/`OfferPrice` in `lib/air-canada.mjs` | XML request/parser and selected-offer refresh exist; no booking action. | Requires Air Canada-issued key, SellerID, IATA/TIDS and Agency ID. Finish onboarding/certification and test exact traveler price in an approved environment. |
+| Booking.com | Demand API `/3.3/common/autocomplete`, `/accommodations/search`, `/accommodations/details` in `lib/booking.mjs`; browser flow in `lib/booking-browser.mjs` | Read-only partner adapter, exact ages, multi-room allocation, CAD all-in parsing, shared durable cooldown and bounded bodies; web search remains a separate fallback. | Demand token and affiliate ID are absent. Verify product/fee semantics with live approved calls. Browser page byte/latency controls remain less complete than API transport; CAPTCHA/challenges remain manual. |
+| Air Canada Vacations | Widget suggestions `/geo-insight/suggestions` and ordinary-widget JSON `GET /packages-search/search` in `lib/vacation-search.mjs` | The adult-only, one-page (20 result) path listens to the normal widget response, caps/decodes JSON, binds the exact listing/query, joins package/hotel/itinerary maps, matches hotel `destinationId` to request `dest`, validates inclusive zero-based pagination, observed economy codes (`Y`) and adult pax marker (`A`), dates, CAD and comparable totals. The durable worker rechecks party and reference evidence. A live local website-to-worker run returned 20/20 accepted/rendered and reported 78 total; focused tests passed 34/34. | This is one live supported-shape observation, not checkout or latency proof. Direct unauthenticated suggestions returned 401; do not extract/replay widget auth. Itinerary entries are summaries without complete offset-aware segments. Multi-room allocation, child/infant and 40-result schemas, checkout availability, local charges and all-in prices remain open. |
+| Reservit / official hotels | Public property booking-engine availability in `lib/reservit.mjs`, orchestrated by `lib/official-hotels.mjs` | One engine family, real discovered properties and API Anything mediation; exact observed stay/party and currency validation. | Expand only when the property-to-engine relationship and access are verified. Mews/Cloudbeds access gates are documented; do not label directories or mocks as inventory. |
+| CAA / Costco / Visa | Official public benefits/deal pages in `lib/member-offers.mjs` | Bounded read-only source checks, terms/date caveats, membership/eligibility separation. | No discount is applied without current exact eligibility and a comparable offer. These are not fare-search endpoints. |
+| Airports / regions | OurAirports, Wikidata and M49 in `lib/ourairports.mjs`, `lib/regions.mjs` and resolver modules | Location classification, popularity ordering, geographic exclusion and explicit bounded coverage. | These are directories, not inventory. Report each unsearched airport/pair, resolver snapshot age and transcontinental/overlap convention. |
+
+The source inventory in [`reverse-endpoint-implementation.md`](reverse-endpoint-implementation.md) records endpoint limits, decoded response caps and query capabilities in more detail.
+
+## Fast request path
+
+1. Normalize and validate the user query once. Construct a canonical identity including every field that can change provider pricing: route/pair, local departure and return dates, party identities/ages/seating, cabin/rooms, filters, locale and currency.
+2. Check an exact fresh cache entry. Return the original `observedAt` and source state; do not refresh or extend its freshness. Cache only successful, validated read responses; use bounded TTL and cardinality.
+3. Resolve only missing locations, in parallel only when providers permit it. Apply airport limits and request-budget math before creating jobs.
+4. Dispatch configured eligible providers with a small bounded concurrency (currently default 2, hard maximum 4), while a durable per-provider gate controls cross-job pacing and cooldown. Do not dispatch an unconfigured source.
+5. Enforce deadlines and decoded/streamed byte limits as data arrives. Retry only safe idempotent reads and only for allowed transient failures. Respect 401/403/429 cooldown; do not hammer an error frame.
+6. Parse and validate each response as soon as it arrives. Persist the source status and exact observation before waiting for slower providers; the UI may render progressive validated results.
+7. Compute route/date/party coverage from completed, failed, unsupported and not-started operations. Never call partial scans exhaustive.
+8. Require a separate exact-date request to obtain segment evidence when the fast endpoint exposes only calendar prices. Recheck freshness and seller handoff on demand.
+
+Latency targets are goals, not evidence: first validated result under 1 second for a warm exact cache hit; under 3 seconds for a first provider response in the local environment; 5 seconds or less to persist and render it. Measure provider time, parsing, durable write, polling and DOM render separately over enough real observations for p50/p95. Existing local fixture browser samples are not provider latency or a production p95.
+
+## Implementation order
+
+1. **Finish live evidence for existing structured adapters.** Record provider account/permission scope and request ceilings for user-authorized reverse RPCs; verify each supported query shape live without challenge bypass. Add safe schema-drift detection that records field paths/status, never payloads or secrets.
+2. **Wire supported fast APIs to the normal result pipeline.** Ensure each adapter has the same query validation, normalized offer/observation shape, source coverage and worker-result validator. Avoid a second hidden code path that bypasses query budgets.
+3. **Make progress and caching source-consistent.** Audit every cache key for exact party, trip, filter, location and currency. Confirm cache hits preserve original timestamps and coverage, and progressive previews cannot pass worker validation with mismatched sources.
+4. **Complete provider-gated adapters.** Expedia Redirect, Skyscanner partner, Air Canada NDC and Booking.com Demand need their account credentials/entitlements. Continue code-level contract work with fixtures, but leave the source unconfigured until approved credentials and live results exist.
+5. **Keep browser-backed sources bounded.** For Google/Matrix/ACV/Booking page flows, reuse a serialized browser per provider where safe, apply source cooldown/deadline and response-size bounds before parsing, stop on challenges, and expose only observed traffic. No CAPTCHA solving, account creation, session-token extraction, or private commitment.
+6. **Measure before raising concurrency.** Add cross-job low-cardinality telemetry that excludes query URLs, traveler data and payloads. Compare adapter response and persistence/render percentiles by provider; change concurrency only within verified provider terms.
+
+## Current evidence and open limits
+
+- `TMPDIR=/dev/shm npm test`: 631 passed, 0 failed on 2026-11-14.
+- `npm run build`: passed on Next.js 16.4.3.
+- `npm audit`: 0 vulnerabilities.
+- Live ordinary Google Flights `GetCalendarPicker`: fixed-return YHZ–LAX, 2026-12-01 through 2026-12-08, one adult/economy, CAD visibly confirmed; 8/8 requested departure rows were parsed in about 7.5 seconds wall time including browser launch, page load and parsing. This does not meet the aspirational 3-second first-provider target. Amounts were not promoted to itinerary quotes and no seller, baggage or fee details were verified.
+- Live ordinary ACV widget submission returned a structured 20-package JSON page from `/packages-search/search`, 88,189 bytes, for adult-only YHZ–Barcelona Apr 15–25 2027. Only endpoint/response shape metadata was retained; child/multi-room API shapes and direct server access were not verified. See [discovery note](acv-structured-package-endpoint-discovery-2026-11-14.md).
+- The Google one-way calendar query remains unsupported in the latest adapter attempt (numeric error marker 4). The experiment remains off by default.
+- Partner keys/entitlements are missing for Expedia Redirect, Skyscanner, Air Canada NDC and Booking.com Demand. ACV direct server authentication is not approved/available. Matrix and Google web-app RPCs are not public stable APIs.
+- The observed Google grid cannot verify fare rules or that every departure/return combination is bookable at the displayed amount. No booking, reservation or purchase is performed.
+- `work.md` §17 remains the acceptance authority. Passing tests and one live grid do not complete its broader live-source, regional-coverage, seller, security or deployment criteria.

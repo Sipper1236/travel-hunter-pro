@@ -1,0 +1,14 @@
+# Official hotel-engine access recheck — 2026-11-14
+
+## Current local configuration
+
+`lib/official-hotel-search.mjs` routes official-property pricing through the Reservit adapter only. The hotel API route requires `BOOKING_API_TOKEN` and `BOOKING_AFFILIATE_ID` for Booking.com Demand; both expected entries are absent from `.env.local`. No secret values were read or printed. No Cloudbeds/Mews production credentials or property authorizations are configured.
+
+## Current first-party access requirements
+
+- **Mews:** its Booking Engine API requires a client name pre-registered with Mews Support and access to a known enterprise. The vendor says the Booking Engine API is intended for front-end clients and is unsuitable for continuous polling from one server because anti-scraping protection can reject it. The server-to-server Connector API requires a client token plus a property/enterprise access token, and production credentials follow certification. Do not add the public widget/API as a multi-property polling source without an approved path. [Authentication](https://docs.mews.com/booking-engine-guide/booking-engine-api/guidelines/authentication), [usage guidelines](https://docs.mews.com/booking-engine-guide/booking-engine-api/guidelines), [Connector API authentication](https://docs.mews.com/connector-api/guidelines/authentication).
+- **Cloudbeds:** its partner API uses client credentials, permission scopes and property authorization; property users must connect the app. Its current FAQ says technology partners should expect a partnership review and five pilot properties (up to ten for official go-live), and gives enforced partner limits of 10 requests/second with a recommendation of up to 6–8 API method calls depending on use case. No partner account, approved scopes, connected pilot properties, or per-property key is configured here. [Partner authentication](https://developers.cloudbeds.com/docs/api-keys-authentication-guide-for-technology-partners), [partnership and rate-limit FAQ](https://developers.cloudbeds.com/v1.2/docs/faq).
+
+## Decision and next action
+
+No Mews or Cloudbeds inventory adapter was added: public booking pages do not establish server polling permission or property-wide inventory access. To make P10 implementation actionable, obtain the relevant approved partner integration and property connections, document exact read-only availability/rate endpoints, supported child/room/date/currency fields and terms, then provide credentials through the private local configuration path. The app currently has no authorized second direct-booking engine to implement. P10 remains Partial; Reservit is the only configured official hotel engine. No live hotel booking source was queried in this access review, and no reservation or purchase operation was used.

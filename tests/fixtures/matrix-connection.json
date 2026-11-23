@@ -1,0 +1,382 @@
+{
+  "summary": {
+    "displayTotal": "CAD10579.11",
+    "ext": {
+      "totalPrice": "CAD10579.11"
+    },
+    "passengerCount": 3,
+    "pricings": [
+      {
+        "ext": {
+          "pax": {
+            "adults": 1,
+            "youth": 1
+          }
+        }
+      },
+      {
+        "ext": {
+          "pax": {
+            "children": 1
+          }
+        }
+      }
+    ],
+    "itinerary": {
+      "ext": {
+        "dominantCarrier": {
+          "code": "TK",
+          "shortName": "Turkish Airlines"
+        }
+      },
+      "slices": [
+        {
+          "origin": {
+            "code": "YVR",
+            "name": "Vancouver International"
+          },
+          "destination": {
+            "code": "IST",
+            "name": "Istanbul"
+          },
+          "arrival": "2099-11-11T18:00+03:00",
+          "departure": "2099-11-10T20:00-07:00",
+          "flights": [
+            "TK76"
+          ],
+          "cabins": [
+            "COACH"
+          ],
+          "segments": [
+            {
+              "pricings": [
+                {
+                  "paxCount": 2
+                },
+                {
+                  "paxCount": 1
+                }
+              ]
+            }
+          ],
+          "duration": 720,
+          "ext": {
+            "warnings": {
+              "types": [
+                "OVERNIGHT"
+              ],
+              "overnight": true
+            }
+          }
+        },
+        {
+          "origin": {
+            "code": "IST",
+            "name": "Istanbul"
+          },
+          "destination": {
+            "code": "YVR",
+            "name": "Vancouver International"
+          },
+          "arrival": "2099-11-15T21:09-07:00",
+          "departure": "2099-11-15T15:35+03:00",
+          "flights": [
+            "TK203",
+            "AC8811"
+          ],
+          "stops": [
+            {
+              "code": "SEA",
+              "name": "Seattle-Tacoma International"
+            }
+          ],
+          "cabins": [
+            "COACH"
+          ],
+          "segments": [
+            {
+              "pricings": [
+                {
+                  "paxCount": 2
+                },
+                {
+                  "paxCount": 1
+                }
+              ]
+            },
+            {
+              "pricings": [
+                {
+                  "paxCount": 2
+                },
+                {
+                  "paxCount": 1
+                }
+              ]
+            }
+          ],
+          "duration": 934
+        }
+      ],
+      "carriers": [
+        {
+          "code": "TK",
+          "shortName": "Turkish Airlines"
+        },
+        {
+          "code": "AC",
+          "shortName": "Air Canada"
+        }
+      ],
+      "singleCarrier": {
+        "code": "*",
+        "shortName": "Multiple Carriers"
+      },
+      "distance": {
+        "units": "MI",
+        "value": 12134
+      }
+    },
+    "id": "fixture-connection"
+  },
+  "details": {
+    "displayTotal": "CAD10579.11",
+    "passengerCount": 3,
+    "pricings": [
+      {
+        "ext": {
+          "pax": {
+            "adults": 1,
+            "youth": 1
+          }
+        }
+      },
+      {
+        "ext": {
+          "pax": {
+            "children": 1
+          }
+        }
+      }
+    ],
+    "itinerary": {
+      "slices": [
+        {
+          "origin": {
+            "city": {
+              "name": "Vancouver"
+            },
+            "code": "YVR",
+            "name": "Vancouver International"
+          },
+          "destination": {
+            "city": {
+              "name": "Istanbul"
+            },
+            "code": "IST",
+            "name": "Istanbul"
+          },
+          "departure": "2099-11-10T20:00-07:00",
+          "arrival": "2099-11-11T18:00+03:00",
+          "stopCount": 0,
+          "segments": [
+            {
+              "origin": {
+                "city": {
+                  "name": "Vancouver"
+                },
+                "code": "YVR"
+              },
+              "destination": {
+                "city": {
+                  "name": "Istanbul"
+                },
+                "code": "IST"
+              },
+              "departure": "2099-11-10T20:00-07:00",
+              "arrival": "2099-11-11T18:00+03:00",
+              "duration": 720,
+              "carrier": {
+                "code": "TK",
+                "shortName": "Turkish Airlines"
+              },
+              "flight": {
+                "number": 76
+              },
+              "bookingInfos": [
+                {
+                  "bookingCode": "M",
+                  "cabin": "COACH"
+                },
+                {
+                  "bookingCode": "M",
+                  "cabin": "COACH"
+                }
+              ],
+              "legs": [
+                {
+                  "origin": {
+                    "city": {
+                      "name": "Vancouver"
+                    },
+                    "code": "YVR"
+                  },
+                  "destination": {
+                    "city": {
+                      "name": "Istanbul"
+                    },
+                    "code": "IST",
+                    "name": "Istanbul"
+                  },
+                  "departure": "2099-11-10T20:00-07:00",
+                  "arrival": "2099-11-11T18:00+03:00",
+                  "duration": 720
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "origin": {
+            "city": {
+              "name": "Istanbul"
+            },
+            "code": "IST",
+            "name": "Istanbul"
+          },
+          "destination": {
+            "city": {
+              "name": "Vancouver"
+            },
+            "code": "YVR",
+            "name": "Vancouver International"
+          },
+          "departure": "2099-11-15T15:35+03:00",
+          "arrival": "2099-11-15T21:09-07:00",
+          "stopCount": 1,
+          "segments": [
+            {
+              "origin": {
+                "city": {
+                  "name": "Istanbul"
+                },
+                "code": "IST"
+              },
+              "destination": {
+                "city": {
+                  "name": "Seattle"
+                },
+                "code": "SEA"
+              },
+              "departure": "2099-11-15T15:35+03:00",
+              "arrival": "2099-11-15T17:10-08:00",
+              "duration": 755,
+              "carrier": {
+                "code": "TK",
+                "shortName": "Turkish Airlines"
+              },
+              "flight": {
+                "number": 203
+              },
+              "bookingInfos": [
+                {
+                  "bookingCode": "S",
+                  "cabin": "COACH"
+                },
+                {
+                  "bookingCode": "S",
+                  "cabin": "COACH"
+                }
+              ],
+              "connection": {
+                "duration": 115
+              },
+              "legs": [
+                {
+                  "origin": {
+                    "city": {
+                      "name": "Istanbul"
+                    },
+                    "code": "IST"
+                  },
+                  "destination": {
+                    "city": {
+                      "name": "Seattle"
+                    },
+                    "code": "SEA",
+                    "name": "Seattle-Tacoma International"
+                  },
+                  "departure": "2099-11-15T15:35+03:00",
+                  "arrival": "2099-11-15T17:10-08:00",
+                  "duration": 755
+                }
+              ]
+            },
+            {
+              "origin": {
+                "city": {
+                  "name": "Seattle"
+                },
+                "code": "SEA"
+              },
+              "destination": {
+                "city": {
+                  "name": "Vancouver"
+                },
+                "code": "YVR"
+              },
+              "departure": "2099-11-15T19:05-08:00",
+              "arrival": "2099-11-15T21:09-07:00",
+              "duration": 64,
+              "carrier": {
+                "code": "AC",
+                "shortName": "Air Canada"
+              },
+              "flight": {
+                "number": 8811
+              },
+              "bookingInfos": [
+                {
+                  "bookingCode": "T",
+                  "cabin": "COACH"
+                },
+                {
+                  "bookingCode": "T",
+                  "cabin": "COACH"
+                }
+              ],
+              "codeshare": true,
+              "ext": {
+                "operationalDisclosure": "OPERATED BY AIR CANADA EXPRESS - JAZZ"
+              },
+              "legs": [
+                {
+                  "origin": {
+                    "city": {
+                      "name": "Seattle"
+                    },
+                    "code": "SEA"
+                  },
+                  "destination": {
+                    "city": {
+                      "name": "Vancouver"
+                    },
+                    "code": "YVR",
+                    "name": "Vancouver International"
+                  },
+                  "departure": "2099-11-15T19:05-08:00",
+                  "arrival": "2099-11-15T21:09-07:00",
+                  "duration": 64
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "id": "fixture-connection",
+    "ext": {
+      "totalPrice": "CAD10579.11"
+    }
+  }
+}

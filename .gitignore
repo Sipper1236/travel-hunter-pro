@@ -1,0 +1,11 @@
+node_modules/
+.next/
+/.next*/
+/.next-local-stack-check-*/
+/.impeccable/
+.env*
+!.env.example
+
+.cache/
+
+.venv-laya/

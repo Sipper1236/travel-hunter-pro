@@ -1,0 +1,37 @@
+import assert from 'node:assert/strict';
+import {chromium} from 'playwright-core';
+const base=process.env.TRAVEL_CHECK_URL||'http://127.0.0.1:3000';
+const date=new Date(Date.now()+7*86400000).toISOString().slice(0,10);
+const infantBirth=new Date(Date.parse(`${date}T12:00:00Z`)-365*86400000).toISOString().slice(0,10);
+const browser=await chromium.launch({executablePath:process.env.API_ANYTHING_BROWSER||'/usr/bin/chromium',headless:true});
+try{
+ const page=await browser.newPage();
+ const pageErrors=[],externalRequests=[];page.on('pageerror',error=>pageErrors.push(error.message));
+ const localOrigin=new URL(base).origin;
+ await page.route('**/*',route=>{if(new URL(route.request().url()).origin!==localOrigin){externalRequests.push(route.request().url());return route.abort();}return route.continue();});
+ await page.route('**/api/airports',route=>route.fulfill({json:{items:[]}}));
+ await page.goto(base,{waitUntil:'domcontentloaded'});
+ await page.getByLabel('Use birth dates and infant seating').check();
+ await page.getByText(/ITA Matrix can submit validated lap\/seat infant counts for economy searches/i).waitFor();
+ await page.getByLabel('Use birth dates and infant seating').uncheck();
+ const flight=page.locator('.search form').nth(1);
+ await page.getByLabel('From',{exact:true}).fill('YYZ');await page.getByLabel('To',{exact:true}).fill('LAX');
+ await flight.getByLabel('Trip type',{exact:false}).selectOption('round-trip');
+ await flight.locator('input[type=date]').first().fill(date);
+ await flight.getByLabel('Adults',{exact:true}).fill('1');await flight.getByLabel('Children and youths',{exact:false}).fill('2');
+ await flight.getByLabel('Age at departure · traveler 1',{exact:true}).fill('8');await flight.getByLabel('Age at departure · traveler 2',{exact:true}).fill('14');
+ await page.getByLabel('Search date options').selectOption('calendar');
+ const calendar=page.locator('details.coverage').filter({hasText:'Flexible departure dates'});
+ await calendar.getByRole('radio',{name:'One date only'}).check();
+ await calendar.getByRole('button',{name:new Date(date+'T00:00:00Z').toLocaleDateString('en-CA',{dateStyle:'full',timeZone:'UTC'}),exact:true}).click();
+ await calendar.getByRole('radio',{name:'Fixed stay length',exact:true}).check();
+ await calendar.getByLabel('Stay length (nights)').fill('5');
+ await calendar.getByLabel('Calendar source').selectOption('ita-matrix');
+ await calendar.locator('.provider-preflight').getByText(/ITA Matrix: query shape supported/).waitFor();
+ const response=await page.request.post(base+'/api/search/capabilities',{headers:{Origin:base},data:{source:'ita-matrix',origin:'YYZ',destination:'LAX',start:date,end:date,tripType:'round-trip',nights:5,adults:1,children:2,childrenAges:[8,14],cabin:'economy'}});
+ assert.equal(response.status(),200);const body=await response.json();const row=body.providers.find(x=>x.id==='ita-matrix');assert.equal(row.eligible,true,JSON.stringify(row));
+ const infantResponse=await page.request.post(base+'/api/search/capabilities',{headers:{Origin:base},data:{source:'ita-matrix',origin:'YYZ',destination:'LAX',start:date,end:date,nights:0,tripType:'round-trip',cabin:'economy',travelers:[{id:'adult',birthDate:'1970-01-01'},{id:'infant',birthDate:infantBirth,guardianId:'adult',infantSeating:'lap'}]}});
+ assert.equal(infantResponse.status(),200);const infantBody=await infantResponse.json();const infantRow=infantBody.providers.find(x=>x.id==='ita-matrix');assert.equal(infantRow.eligible,true,JSON.stringify(infantRow));assert.match(infantRow.reason,/validated lap\/seat infant counts/i);
+ assert.equal(pageErrors.length,0,JSON.stringify(pageErrors));
+ console.log(JSON.stringify({ui:'matrix-family',clientPreflight:'supported',serverPreflight:row.status,infantPreflight:infantRow.status,party:'1 adult, 1 youth, 1 child; infant eligibility unverified',providerSearchesSubmitted:0,externalRequestsBlocked:true,externalRequestCount:externalRequests.length,pageErrors:pageErrors.length}));
+}finally{await browser.close();}
