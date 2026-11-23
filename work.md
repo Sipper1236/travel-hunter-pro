@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## Reverse-endpoint live check — Ignav exact-query cache — 2026-11-23
+
+A bounded live Ignav YHZ→LAX Dec 16 one-adult/economy query returned 12 validator-accepted offers in 3,893 ms; the identical immediate query returned a same-process in-memory SQLite cache hit in 2 ms and preserved the original observation timestamp. No fares or offer identifiers were recorded. This verifies one adapter/cache query shape only, not p95, persistent restart/cross-worker reuse, or durable website rendering. Other provider cache behavior remains unverified. See [live cache evidence](docs/ignav-live-warm-cache-2026-11-23.md).
+
 ## Reverse-endpoint audit — Google one-way API Anything projection — 2026-11-23
 
 A bounded tier-1 `api-anything` `search` request for YHZ→LAX, one-way, 2026-12-15 returned five rows in 1,328 ms. Sanitized schema inspection found only route-level price/time fields and no segment array, flight number, or response-side currency field. This is one upstream operation, not end-to-end latency or p95 evidence. Existing tests confirm those rows are withheld by complete-offer validation. Keep Google one-way incomplete until a segment mapping or native selection flow, CAD evidence, timezone/chronology validation, and worker/UI path are reproduced. Google remains an undocumented web-app RPC/API Anything integration; unattended-use scope and rate terms are not established. See [Google one-way gap evidence](docs/google-api-anything-one-way-gap-2026-11-23.md). This audit does not close any §17 criterion.

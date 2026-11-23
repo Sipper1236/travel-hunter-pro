@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Ignav live cache-path evidence — 2026-11-23
+
+One bounded exact YHZ→LAX Dec 16 one-adult/economy call returned 12 fresh validated offers in 3,893 ms. Repeating through the same in-memory SQLite job store returned 12 offers from cache in 2 ms and preserved the original observation time. No prices or identifiers were recorded. This confirms the adapter cache path for one query; it does not prove p95, persisted restart/cross-worker reuse or website rendering. See [evidence](docs/ignav-live-warm-cache-2026-11-23.md).
+
 ## Google one-way reverse-result audit — 2026-11-23
 
 The one-way `api-anything` wrapper only projects route-level price and time fields; it omits exact per-segment identity and response-side currency confirmation. A bounded tier-1 YHZ→LAX one-way `search` returned 5 rows in 1,328 ms; sanitized inspection confirmed those fields were absent. This is one upstream call, not end-to-end latency or p95 evidence. The canonical validator rejects those rows rather than inventing a complete itinerary. Native selected round-trip RPC support does not cover one-way. The Google one-way structured result remains incomplete; implementation requires a verified segment mapping or a separately validated native one-way flow, plus CAD evidence and end-to-end worker/UI proof. See [gap evidence](docs/google-api-anything-one-way-gap-2026-11-23.md).
