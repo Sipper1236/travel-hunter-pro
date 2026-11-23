@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Skyscanner polling budget hardening — 2026-11-23
+
+The partner adapter now validates poll configuration before dispatch, caps search and refresh at eight poll calls, enforces a 1–10 s configured poll interval (the shared transport also enforces source pacing), and reports polls used/remaining in its result. A zero-poll budget returns any initial partial results with explicit exhausted coverage instead of silently waiting. Skyscanner credentials are absent in this environment; these are fixture checks, not live partner evidence. Focused tests pass 14/14; full `npm test` passes 675/675; production build passes after retrying Next.js's security reminder. [Source inventory](docs/reverse-endpoint-implementation.md).
+
 ## All-source Matrix partial-result forwarding — 2026-11-23
 
 Fixed a streaming gap in `searchProviders`: the bounded all-source fan-out had removed `onProviderResult` before calling each adapter, so ITA Matrix's existing partial API/browser updates were discarded and only its final result reached the durable job. All-source fan-out now forwards the callback with the correct source index/count; route progress replaces that provider's partial snapshot with the final snapshot when Matrix completes. Added a regression that failed before the fix and verifies both partial and final Matrix events. Focused provider regressions pass 2/2; full `npm test` passes 674/674; production build passes after retrying Next.js's security reminder. No provider call or UI latency check was made for this fix. [Plan and source map](docs/reverse-endpoint-implementation.md).

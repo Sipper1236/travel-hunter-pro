@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## Reverse-endpoint progress — bounded Skyscanner polling — 2026-11-23
+
+Skyscanner search and refresh now hard-cap at eight poll requests, reject invalid poll counts or intervals below the local one-second pacing floor, and report poll use and remaining capacity on partial/completed results. Fixture tests cover no-poll partial completion and reject attempts to exceed the budget before provider dispatch. Focused tests pass 14/14; full suite passes 675/675; build passes after retrying Next.js's security reminder. `SKYSCANNER_API_KEY` is absent, so live partner access, result shape, and account quota remain unverified. See [reverse-endpoint inventory](docs/reverse-endpoint-implementation.md); broader reverse-endpoint and §17 work remains open.
+
 ## Reverse-endpoint progress — all-source Matrix partial results — 2026-11-23
 
 Fixed the all-source `searchProviders` path so it forwards Matrix's intermediate result updates rather than suppressing them. The callback carries the correct source index/count, and the final provider result replaces the partial route snapshot. A regression reproduced the missing partial before the change. Focused provider tests pass 2/2, full `npm test` passes 674/674, and `npm run build` passes after retrying the Next.js security reminder. This is fixture evidence only; no live Matrix query or persisted-to-visible timing check was made. See [reverse-endpoint inventory](docs/reverse-endpoint-implementation.md). Reverse-endpoint completion and §17 remain open.

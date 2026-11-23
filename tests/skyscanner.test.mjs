@@ -25,6 +25,15 @@ test('Skyscanner API Anything adapter creates, polls, and normalizes live-price 
   assert.equal(result.offers[0].currency, 'CAD');
   assert.equal(result.offers[0].airlines[0], 'Air Canada');
   assert.equal(result.offers[0].sourceUrl, 'https://www.skyscanner.net/transport/flights/yhz/bcn/270415/');
+  assert.deepEqual(result.sources[0].polling,{pollsRequested:1,maxPolls:8,remainingPolls:7});
+});
+
+test('Skyscanner poll budgets are capped and report remaining calls when the search stays partial',async()=>{
+ let calls=0;const partial=await searchSkyscanner(input,{loadTimezones:async()=>timeEvidence(),apiKey:'key',maxPolls:0,fetcher:async()=>{calls++;return Response.json({...response('RESULT_STATUS_INCOMPLETE'),sessionToken:'partial-session'});}});
+ assert.equal(calls,1);assert.equal(partial.complete,false);assert.deepEqual(partial.sources[0].polling,{pollsRequested:0,maxPolls:0,remainingPolls:0});
+ calls=0;await assert.rejects(searchSkyscanner(input,{apiKey:'key',maxPolls:9,fetcher:async()=>{calls++;return Response.json({});}}),/poll budget/);assert.equal(calls,0);
+ await assert.rejects(searchSkyscanner(input,{apiKey:'key',pollIntervalMs:999,fetcher:async()=>{calls++;return Response.json({});}}),/poll interval/);assert.equal(calls,0);
+ await assert.rejects(refreshSkyscanner({...input,sessionToken:'session-123',itineraryId:'it-1'},{apiKey:'key',maxPolls:9,fetcher:async()=>{calls++;return Response.json({});}}),/poll budget/);assert.equal(calls,0);
 });
 
 test('Skyscanner refresh reprices one itinerary within its original session', async () => {
@@ -38,6 +47,7 @@ test('Skyscanner refresh reprices one itinerary within its original session', as
   assert.equal(JSON.parse(calls[0].init.body).itineraryId, 'it-1');
   assert.equal(result.status, 'refreshed');
   assert.equal(result.offers[0].price, 820.5);
+  assert.deepEqual(result.polling,{pollsRequested:0,maxPolls:8,remainingPolls:8});
 });
 
 function roundTripResponse(){
