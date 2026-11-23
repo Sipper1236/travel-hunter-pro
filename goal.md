@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — calendar worker query binding
+
+Calendar result validation now compares its durable envelope to the original submitted job query, including filters, party, route labels, dates, source, stay, Matrix settings and budgets. Airport candidates are constrained to the submitted list; region expansion requires matching location evidence and airport-pair reconstruction. Focused tests passed 67/67; full suite passed 723/723; build passed; audit found 0 vulnerabilities; 136 Markdown files passed local-link checks. No live fare query. Regional and seller acceptance criteria remain open. [Evidence](docs/calendar-worker-query-guard-2026-11-23.md).
+
 ## 2026-11-23 continuation — comparison exact-itinerary result guard
 
 Comparison validation now parses exact nested round-trip keys, compares operating carriers, and validates party-split plans against connected segments, airport-local/UTC times, requested dates, round-trip chronology and rebuilt itinerary keys. Fixture tests reject placeholder segments, changed flights/operators, invalid airport times and malformed keys. Focused tests passed 10/10; full suite passed 721/721; build passed; audit found 0 vulnerabilities. No live fare or seller query; `work.md` §17 split-ticket acceptance remains open. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).

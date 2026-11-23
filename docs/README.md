@@ -1,5 +1,6 @@
 # Travel Hunter Pro documentation index
 
+- [Calendar worker submitted-query binding (2026-11-23)](calendar-worker-query-guard-2026-11-23.md) — exact request constraints, airport-resolution evidence, omission disclosure, fixture checks, and live-coverage limits.
 - [Comparison worker exact-itinerary validation (2026-11-23)](comparison-roundtrip-worker-guard-2026-11-23.md) — nested round-trip keys, operating-carrier matching, and connected/timestamp-validated party-split segments; fixture-only evidence and live seller limits.
 - [GitHub repository release audit (2026-11-23)](github-repository-release-audit-2026-11-23.md) — public repository preparation, dependency update, clean-install verification, UI check results, and remaining release gates.
 - [Flight worker exact-query integrity (2026-11-23)](flight-worker-exact-query-guard-2026-11-23.md) — exact party, child-age, identified DOB/guardian/infant-seating, and filter preservation at the flight worker boundary, with fixture-only evidence and remaining schema gaps.

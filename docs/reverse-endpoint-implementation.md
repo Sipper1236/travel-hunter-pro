@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## Calendar worker submitted-query binding — 2026-11-23
+
+The result guard now receives the original calendar job input and binds request fields, candidate airports, location evidence and exact derived route pairs before persistence. Focused calendar tests passed 67/67; full suite passed 723/723; build and audit passed. This is fixture-only and adds no live source coverage. [Evidence](calendar-worker-query-guard-2026-11-23.md).
+
 ## Comparison worker exact-itinerary validation — 2026-11-23
 
 The worker parses nested outbound/return keys and validates party-split itinerary segments against exact routes, dates, timezone-coherent timestamps, chronology and the rebuilt exact-flight key. Full `npm test` passed 721/721; build passed; audit found 0 vulnerabilities. Fixture-only; no new live provider or seller evidence. Route discovery, inventory, issueability, baggage/fees, and `work.md` §17 remain open. [Evidence](comparison-roundtrip-worker-guard-2026-11-23.md).

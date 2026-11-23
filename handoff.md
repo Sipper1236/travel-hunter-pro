@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Detailed Handoff (updated 2026-11-23)
 
+## 2026-11-23 continuation — calendar worker submitted-query binding
+
+Fixed a worker boundary that validated calendars only against the query echoed by the result. The runner now supplies the original job input; the validator preserves requested filters, party, dates, stay settings, source, airport limit, budget and Matrix options. Selected airport pairs must come from the submitted candidates; resolved city/region airports require matching location evidence, and removed submitted candidates need omission coverage. Focused suites passed 67/67, full suite 723/723, build passed, audit found 0 vulnerabilities and Markdown links passed for 136 files. No live source call. Regional source coverage, price freshness beyond existing checks, seller availability and checkout remain open. [Evidence](docs/calendar-worker-query-guard-2026-11-23.md).
+
 ## 2026-11-23 continuation — comparison exact-itinerary result guard
 
 Corrected round-trip split-ticket parsing and added exact-itinerary validation for party-split plans. Results now require connected segments, requested route/date, airport-local/UTC agreement, outbound/return chronology, matching inbound summary fields and a rebuilt nine-field itinerary key. Regressions cover placeholder flights, unknown signature fields, changed marketing/operating carriers, wrong airport times and changed/impossible return flights. Focused suites passed 10/10; full suite passed 721/721; build passed; audit found 0 vulnerabilities. No live query. Seller availability, simultaneous inventory, carrier eligibility, baggage and mandatory charges remain open. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).

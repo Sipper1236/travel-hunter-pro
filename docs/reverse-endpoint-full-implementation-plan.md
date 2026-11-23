@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Calendar worker query integrity — 2026-11-23
+
+Calendar worker results are now validated against the submitted job query, with explicit handling for resolver-selected airport sets and omitted candidates. Full tests passed 723/723; build and audit passed. No live fare evidence. [Evidence](calendar-worker-query-guard-2026-11-23.md).
+
 ## Comparison worker exact-itinerary validation — 2026-11-23
 
 Comparison worker validation now handles canonical nested round-trip keys, verifies operator identity, and checks party-split segment route/timezone/date/chronology evidence before persistence. Full suite passed 721/721, build passed and audit found 0 vulnerabilities. This closes result-integrity gaps only; live source availability, seller confirmation, simultaneous inventory and §17 acceptance evidence remain open. [Evidence](comparison-roundtrip-worker-guard-2026-11-23.md).

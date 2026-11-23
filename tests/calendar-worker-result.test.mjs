@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {searchFareCalendar} from '../lib/calendar-search.mjs';
-import {calendarWorkerResultError} from '../lib/calendar-worker-result.mjs';
+import {calendarWorkerResultError as validateCalendarWorkerResult} from '../lib/calendar-worker-result.mjs';
 import {itineraryKey} from '../lib/ignav.mjs';
+
+const calendarWorkerResultError=(result,input=result?.query)=>validateCalendarWorkerResult(result,input);
 
 async function observedCalendar(){
  const query={origin:'YHZ',destination:'LHR',start:'2099-04-15',end:'2099-04-15',tripType:'one-way',nights:null,adults:1,children:0,childrenAges:[],cabin:'economy',filters:{},source:'ignav',searchLimit:1};
@@ -13,6 +15,19 @@ async function observedCalendar(){
 test('a complete calendar worker result has an exact date grid and internally matching observed prices',async()=>{
  const result=await observedCalendar();
  assert.equal(calendarWorkerResultError(result),null);
+});
+
+test('calendar worker result preserves the submitted filter constraints',async()=>{
+ const result=await observedCalendar(),submitted={...result.query,filters:{...result.query.filters,airlinesExclude:['BA']}};
+ assert.match(calendarWorkerResultError(result,submitted),/submitted calendar query/);
+});
+
+test('calendar worker accepts verified region resolution while preserving the submitted region query',async()=>{
+ const submitted={origin:'Europe',originType:'auto',destination:'YYZ',destinationType:'place',destinationAirports:['YYZ'],start:'2099-04-15',end:'2099-04-15',tripType:'one-way',nights:null,cabin:'economy',adults:1,children:0,childrenAges:[],filters:{},source:'ignav',searchLimit:1};
+ const result=await searchFareCalendar(submitted,{detectDestination:async()=>({type:'region',canonicalName:'Europe'}),resolveRegion:async()=>({method:'Fixture region resolver',airports:[{code:'FRA',name:'Frankfurt'}],uncheckedAirports:[],moreAvailable:false}),searcher:async()=>({sources:[{provider:'Ignav',status:'ok',received:0,accepted:0}],offers:[]})});
+ assert.equal(calendarWorkerResultError(result,submitted),null);
+ const changed=structuredClone(result);changed.query.destination='LHR';
+ assert.match(calendarWorkerResultError(changed,submitted),/submitted calendar query field destination/);
 });
 
 test('calendar worker result rejects a displayed amount that differs from its exact observed offer',async()=>{

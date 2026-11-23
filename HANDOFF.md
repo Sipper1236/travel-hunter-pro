@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Calendar worker submitted-query binding — 2026-11-23
+
+The calendar runner now supplies the original job input to the worker-result guard. The validator binds dates/stays, party, source, cabin, filters, Matrix settings, candidate airport sets and request budget; it rejects altered filters/destination and route pairs outside the selected airports. Region resolution remains valid only when the result carries matching location evidence. Focused calendar suites passed 67/67; full suite passed 723/723; build passed; audit found 0 vulnerabilities; Markdown links passed for 136 files. Fixture-only; no live source request. Regional coverage, seller availability and total costs remain open. [Evidence](docs/calendar-worker-query-guard-2026-11-23.md).
+
 ## Comparison worker exact-itinerary validation — 2026-11-23
 
 Comparison results now bind round-trip split tickets to both nested direction keys and validate party-split plans against exact connected segments, airport-local/UTC timestamps, dates, return chronology and a rebuilt itinerary key. Tests reject changed operators/flights, malformed signatures, placeholder segments and incorrect airport times. Focused suites passed 10/10; full `npm test` passed 721/721; build passed; audit found 0 vulnerabilities. Fixture-only; no provider or seller query occurred. Live availability, simultaneous inventory, eligibility, baggage, fees and seller issuance remain unverified. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).

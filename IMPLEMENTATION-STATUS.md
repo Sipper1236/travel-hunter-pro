@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Calendar worker submitted-query binding — 2026-11-23
+
+Calendar persistence now binds its result envelope to the exact submitted job constraints while allowing verified airport resolution and bounded candidate omissions. Focused worker/search tests passed 67/67; full `npm test` passed 723/723; build passed; audit found 0 vulnerabilities; Markdown links passed for 136 files. No live query. This closes a query-integrity gap only; source/seller evidence and regional minimums remain incomplete. [Evidence](docs/calendar-worker-query-guard-2026-11-23.md).
+
 ## Comparison worker exact-itinerary validation — 2026-11-23
 
 The comparison validator now checks nested round-trip keys, operating-carrier identity, and party-split flight segments against route, requested date, airport-local/UTC timestamps, chronology, return summary and rebuilt itinerary key. Focused comparison suites passed 10/10; full `npm test` passed 721/721; build passed; audit found 0 vulnerabilities. Fixture-only; no live query. Seller, inventory, eligibility and all-in-cost evidence remain open. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).
