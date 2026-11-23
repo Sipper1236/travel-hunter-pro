@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Flight worker exact-query integrity — 2026-11-23
+
+Flight worker persistence and streaming now require exact traveler and filter query evidence. Count parties preserve adult/child counts and exact ages; identified parties preserve traveler IDs, DOBs, guardians, and infant seating. Unsupported filter fields and altered normalized filters fail closed. Skyscanner's partial result metadata now preserves identified assignments without forwarding identity data to the provider. Focused suites passed 30/30, full `npm test` passed 719/719, build passed, audit found 0 vulnerabilities, and Markdown links passed for 134 files. Fixture-based only; no live provider request. This improves, but does not complete, P0 worker schemas: calendar, comparison, hotel, package, source-specific chronology, and seller verification remain open. [Evidence](docs/flight-worker-exact-query-guard-2026-11-23.md).
+
 ## Booking.com Demand API bounded pagination — 2026-11-23
 
 Booking.com Demand v3.3 now checks at most two 30-row pages (60 total), forwarding only the provider-issued continuation token as `page`. Per-page property details and timestamps are retained; the hotel worker independently validates coverage counters, offer/page timestamps, and partial-failure states. Earlier validated offers survive a later page or detail failure. Focused adapter/worker tests passed 29/29; full `npm test` passed 715/715, production build passed, audit found 0 vulnerabilities, and Markdown links passed for 133 files. Production Chromium verified the visible failure explanation with provider calls intercepted and zero browser errors. No live request, result, or speed claim: `BOOKING_API_TOKEN` and `BOOKING_AFFILIATE_ID` are absent. P4 remains Partial pending authorized live occupancy/property/fee/seller evidence. [Evidence](docs/booking-demand-bounded-pagination-2026-11-23.md).

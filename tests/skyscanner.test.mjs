@@ -8,6 +8,7 @@ import { refreshSkyscanner, searchSkyscanner } from '../lib/skyscanner.mjs';
 import {searchProviders} from '../lib/providers.mjs';
 import {createJobStore} from '../lib/job-store.mjs';
 import {skyscannerResponseCacheKey} from '../lib/skyscanner-response-cache.mjs';
+import {flightWorkerResultError} from '../lib/flight-worker-result.mjs';
 
 const input = { origin: 'YHZ', destination: 'BCN', date: '2099-04-15', adults: 1, cabin: 'economy', market: 'CA', currency: 'CAD', locale: 'en-CA' };
 const response = status => ({ status, content: { results: {
@@ -51,6 +52,19 @@ test('Skyscanner publishes validated incomplete results before the polling loop 
  assert.equal(result.complete,true);assert.equal(calls.length,2);
 });
 
+test('Skyscanner partial query evidence retains exact identified traveler assignments without sending them upstream',async()=>{
+ const updates=[],travelers=[{id:'guardian',birthDate:'2060-01-01'},{id:'child',birthDate:'2089-05-01',guardianId:'guardian'}],{adults,...countInput}=input;
+ await searchSkyscanner({...countInput,tripType:'round-trip',returnDate:'2099-04-22',travelers},{loadTimezones:async()=>timeEvidence(),apiKey:'offline',maxPolls:0,onUpdate:update=>updates.push(update),fetcher:async(_url,init)=>{
+  const sent=JSON.stringify(JSON.parse(init.body));assert.ok(!sent.includes('2089-05-01'));assert.ok(!sent.includes('guardian'));
+  return Response.json({...roundTripResponse('RESULT_STATUS_INCOMPLETE'),sessionToken:'identified-partial'});
+ }});
+ assert.equal(updates.length,1);
+ assert.deepEqual(updates[0].query.travelers,travelers);
+ assert.equal(updates[0].query.adults,undefined);
+ assert.equal(updates[0].query.children,undefined);
+ assert.equal(flightWorkerResultError(updates[0],{...countInput,tripType:'round-trip',returnDate:'2099-04-22',travelers}),null,'identified partial evidence should pass the durable flight-worker query guard');
+});
+
 test('Skyscanner refresh reprices one itinerary within its original session', async () => {
   const calls = [];
   const result = await refreshSkyscanner({ ...input, sessionToken: 'session-123', itineraryId: 'it-1' }, { loadTimezones: async()=>timeEvidence(), apiKey: 'key', sleep: async () => {}, fetcher: async (url, init) => {
@@ -65,8 +79,8 @@ test('Skyscanner refresh reprices one itinerary within its original session', as
   assert.deepEqual(result.polling,{pollsRequested:0,maxPolls:8,remainingPolls:8});
 });
 
-function roundTripResponse(){
- const data=response('RESULT_STATUS_COMPLETE'),results=data.content.results;
+function roundTripResponse(status='RESULT_STATUS_COMPLETE'){
+ const data=response(status),results=data.content.results;
  results.itineraries['it-1'].legIds.push('leg-return');results.legs['leg-return']={segmentIds:['seg-return'],durationInMinutes:660};
  results.segments['seg-return']={...results.segments['seg-1'],originPlaceId:'place-bcn',destinationPlaceId:'place-yhz',departureDateTime:{year:2099,month:4,day:22,hour:12,minute:0},arrivalDateTime:{year:2099,month:4,day:22,hour:18,minute:0}};
  return data;

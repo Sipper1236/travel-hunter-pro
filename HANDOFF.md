@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Flight worker exact-query integrity — 2026-11-23
+
+The durable flight-result guard now rejects results that change or omit child ages, identified DOB/guardian/infant-seating assignments, or the submitted filters. Skyscanner's partial result metadata now retains the exact identified party while the upstream request still sends no names, IDs, DOBs, or guardian links. Regression coverage was added for matching and tampered query envelopes. Focused flight-worker/Skyscanner/location-streaming suites passed 30/30; full `npm test` passed 719/719, `npm run build` passed, `npm audit --audit-level=low` found 0 vulnerabilities, and Markdown links passed for 134 files. No live provider request was made. This advances only the flight part of P0 strict worker schemas; other worker types and live seller/eligibility evidence remain open. [Evidence](docs/flight-worker-exact-query-guard-2026-11-23.md).
+
 ## Booking.com Demand API bounded pagination — 2026-11-23
 
 Implemented one opaque v3.3 `next_page` continuation, capped at two 30-property search pages and 60 properties. Each page receives a separate details request and observation timestamp; duplicate property IDs are removed. The result and worker validator reconcile page/offer counts and expose a partial outcome if later search/details work fails, while keeping provider tokens out of result data. Focused Booking adapter/worker tests passed 29/29; full `npm test` passed 715/715, production build passed, audit found 0 vulnerabilities, and Markdown links passed for 133 files. Production Chromium confirmed the partial-coverage notice with provider calls intercepted and no browser errors. No live Demand API call was made because partner credentials are absent. P4 and `work.md` §17 remain Partial. See [evidence](docs/booking-demand-bounded-pagination-2026-11-23.md).

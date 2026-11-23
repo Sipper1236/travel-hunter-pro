@@ -1,4 +1,8 @@
-# Travel Hunter Pro — Detailed Handoff (updated 2026-11-14)
+# Travel Hunter Pro — Detailed Handoff (updated 2026-11-23)
+
+## 2026-11-23 continuation — Flight worker exact-query integrity
+
+Hardened the durable flight-worker result boundary so it rejects changed or missing count-party child ages, identified traveler IDs/DOBs/guardian assignments/infant seating, and normalized search filters. Skyscanner partial progress now includes the validated identified-party assignment in local result metadata while keeping identities and DOBs out of the upstream request. Regression tests cover valid and tampered party/filter envelopes and the progress boundary. Full `npm test` passed 719/719; `npm run build` passed; audit found 0 vulnerabilities; Markdown links passed for 134 files. This is fixture evidence, not live fare or seller evidence. Other worker result types, provider chronology, carrier eligibility, and seller validation remain open. [Evidence](docs/flight-worker-exact-query-guard-2026-11-23.md).
 
 ## 2026-11-23 continuation — Booking.com Demand pagination
 

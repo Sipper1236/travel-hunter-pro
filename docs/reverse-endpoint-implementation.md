@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## Flight worker exact-query boundary — 2026-11-23
+
+Flight results are now checked against the submitted traveler and filter envelope before durable progress or completion. Count parties bind exact ages; identified parties bind IDs, DOBs, guardians and infant seating. Skyscanner partial metadata preserves the same assignments without sending identities upstream. Full tests pass 719/719, build passes, audit reports 0 vulnerabilities, and Markdown links pass for 134 files. No live provider request was made; other worker contracts and source access/runtime evidence remain open. [Evidence](flight-worker-exact-query-guard-2026-11-23.md).
+
 ## Expedia Travel Redirect exact-query cache — 2026-11-23
 
 The Expedia partner listings adapter now uses the durable cache for exact positive searches only. Identity covers Canadian route/dates/trip/party/ages/cabin/filters and hashes the effective key plus authorization value. Cache reuse is capped at 30 seconds and offer freshness; reads revalidate source counts, CAD itinerary, exact selected-flight mapping, current observation age, and Expedia HTTPS seller host. Invalid rows are evicted. Empty, partial-price, stale and identified-party results bypass the cache; seller refresh is still sent to Expedia. Focused Expedia/provider tests pass 25/25; full `npm test` passes 703/703 and `npm run build` passes. One moderate Next.js audit finding remains. Expedia partner credentials are not configured locally; no live inventory or latency claim is made. [Evidence](expedia-response-cache-2026-11-23.md).

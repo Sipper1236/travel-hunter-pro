@@ -21,6 +21,42 @@ test('flight worker result rejects missing schemas, invalid source status, and s
  assert.ok(flightWorkerResultError(result({offers:[offer({observedAt:'2020-01-01T00:00:00Z'})]}),input));
 });
 
+test('flight worker query preserves exact count-party ages and every submitted filter',()=>{
+ const submitted={...input,adults:2,children:2,childrenAges:[7,15],filters:{maxPrice:900,maxDurationMinutes:840,airlinesInclude:['AC'],countriesExclude:['US']}};
+ const exactQuery={...result().query,adults:2,children:2,childrenAges:[7,15],filters:submitted.filters};
+ const empty={query:exactQuery,observedAt:new Date().toISOString(),offers:[],priceObservations:[],sources:[],complete:false};
+ assert.equal(flightWorkerResultError(empty,submitted),null);
+ assert.match(flightWorkerResultError({...empty,query:{...exactQuery,childrenAges:[8,15]}},submitted),/exact child ages/);
+ assert.match(flightWorkerResultError({...empty,query:{...exactQuery,childrenAges:undefined}},submitted),/exact child ages/);
+ assert.match(flightWorkerResultError({...empty,query:{...exactQuery,filters:{...submitted.filters,maxPrice:901}}},submitted),/flight filters/);
+ assert.match(flightWorkerResultError({...empty,query:{...exactQuery,filters:{...submitted.filters,airlinesInclude:['DL']}}},submitted),/flight filters/);
+ assert.match(flightWorkerResultError({...empty,query:{...exactQuery,filters:{...submitted.filters,unrecognized:true}}},submitted),/unsupported flight filters/);
+});
+
+test('flight worker query accepts omitted count defaults only when their meaning is unchanged',()=>{
+ const submitted={...input},query={...result().query};
+ for(const key of ['adults','children','childrenAges']){delete submitted[key];delete query[key];}
+ const empty={query,observedAt:new Date().toISOString(),offers:[],priceObservations:[],sources:[],complete:false};
+ assert.equal(flightWorkerResultError(empty,submitted),null);
+ assert.match(flightWorkerResultError({...empty,query:{...query,childrenAges:[8]}},submitted),/exact child ages/);
+});
+
+test('flight worker query preserves identified DOBs, guardian assignments, and infant seating',()=>{
+ const travelers=[
+  {id:'guardian',birthDate:'1980-01-01'},
+  {id:'minor',birthDate:'2016-04-16',guardianId:'guardian'},
+  {id:'infant',birthDate:'2098-10-20',guardianId:'guardian',infantSeating:'seat'},
+ ];
+ const submitted={origin:'YHZ',destination:'LHR',date:'2099-04-15',tripType:'one-way',cabin:'economy',travelers,filters:{}};
+ const exactQuery={origin:'YHZ',destination:'LHR',date:'2099-04-15',tripType:'one-way',returnDate:null,cabin:'economy',travelers,filters:{}};
+ const empty={query:exactQuery,observedAt:new Date().toISOString(),offers:[],priceObservations:[],sources:[],complete:false};
+ assert.equal(flightWorkerResultError(empty,submitted),null);
+ assert.match(flightWorkerResultError({...empty,query:{...exactQuery,travelers:travelers.map(person=>person.id==='minor'?{...person,birthDate:'2016-04-17'}:person)}},submitted),/birth dates/);
+ assert.match(flightWorkerResultError({...empty,query:{...exactQuery,travelers:travelers.map(person=>person.id==='minor'?{...person,guardianId:'missing'}:person)}},submitted),/guardians/);
+ assert.match(flightWorkerResultError({...empty,query:{...exactQuery,travelers:travelers.map(person=>person.id==='infant'?{...person,infantSeating:'lap'}:person)}},submitted),/infant seating/);
+ assert.match(flightWorkerResultError({...empty,query:{...exactQuery,travelers:travelers.slice(0,2)}},submitted),/traveler identities/);
+});
+
 test('each priced offer requires a matching successful provider row with accepted coverage',()=>{
  assert.match(flightWorkerResultError(result({sources:[]}),input),/no matching successful source status/);
  assert.match(flightWorkerResultError(result({sources:[{provider:'Google Flights',status:'ok',received:1,accepted:1}]}),input),/no matching successful source status/);
