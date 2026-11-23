@@ -128,6 +128,7 @@ test('Skyscanner cache bypasses partial results and identified travelers',async(
   for(let attempt=0;attempt<2;attempt++){const partial=await searchProviders(query,{providerCache:cache,maxPolls:0,skyscannerOptions:{apiKey:'fixture-account'},searchSkyscanner:partialSearch});assert.equal(partial.sources[0].status,'partial');}
   assert.equal(calls,2,'partial results are not cached');
   assert.equal(skyscannerResponseCacheKey({...query,travelers:people},{apiKey:'fixture-account'}),null,'identified travelers are not cache eligible');
+  assert.equal(skyscannerResponseCacheKey({...query,date:'2099-02-30'},{apiKey:'fixture-account'}),null,'invalid dates are not cache eligible');
  }finally{cache.close();}
 });
 
