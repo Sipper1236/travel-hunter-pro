@@ -6,6 +6,10 @@ Updated: 2026-11-23
 
 The ACV ordinary-widget structured response adapter now supports adult-only multiple-room results when the exact room allocations appear in the provider listing URL. Live evidence for two adults/two rooms showed `r0` and `r1` with one adult each; weighted per-passenger totals reconciled with every one of the 20 returned package totals. The adapter accepted 20/20 and the durable worker result guard accepted the output. This was a direct adapter invocation, not a durable UI job. Children across multiple rooms and infants remain unsupported. Current full test suite: 642/642; production build passed after the Next.js reminder retry; audit reports one moderate Next.js issue whose available fix is outside the declared version range. P6 remains incomplete.
 
+## Latest implementation evidence — Ignav production path
+
+On 2026-11-23, a direct YHZ→LAX one-way Ignav call (2027-01-15, one adult/economy) returned 58 rows, 25 accepted and 33 rejected. An owner-bound production-server/worker job for the exact query completed in 3,056 ms with 25 accepted and persisted progress. A corrected browser-form run completed in 3,108 ms; 58 returned rows were all withheld (25 stale under the 15-minute quote-age rule, 33 unusable), the page showed its completion announcement and rendered zero cards without browser errors. This verifies the live request/worker path and the stale-result UI behavior. A separate fixture browser check rendered partial then final offers in 479 ms after persistence but used intercepted synthetic data; positive live browser card rendering and source p95 remain open. The adapter already has a stale-quote regression. Detailed sanitized counts and limits: [Ignav evidence](ignav-live-adapter-check-2026-11-23.md).
+
 ## Purpose and status
 
 This document maps the source adapters in the current tree and defines what “fully implemented” means for a reverse/structured endpoint. It is an engineering plan, not a claim that every endpoint is public, stable, authorized for automation, configured, or returning live inventory.
