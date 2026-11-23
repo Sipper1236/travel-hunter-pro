@@ -28,7 +28,7 @@ Commands run on 2026-11-23:
 
 UI checks used local fixtures and blocked external/provider traffic. They do not establish live inventory, traveler eligibility, seller-confirmed price, or booking availability. No provider search or booking was made for this audit.
 
-The first hosted CI run exposed two Node 22 test failures: an encrypted-backup authentication message differed from Node 26, and a persistent calendar-cache test missed its cache-hit marker once. A later run cancelled two Google timeout tests when Node's event loop became idle. Backup error normalization was fixed; the timeout tests now hold a referenced timer while exercising deliberately unreferenced abort deadlines. The full suite passed locally under Node 22.13.1 after the fixes. Hosted CI then passed all steps on commit `a4d05ff`: clean install, audit, Markdown links, 705 tests, and production build. GitHub Actions emits a Node 20 deprecation warning for the v4 actions but completes successfully.
+Hosted CI initially exposed a Node 22 OpenSSL authentication-message difference and several intermittently cancelled/partial browser-worker tests under parallel load. Backup error normalization was fixed; deadline tests now keep Node's event loop alive while exercising deliberately unreferenced abort timers. The hosted CI test command now runs files serially to avoid starving process/browser fixtures, while local `npm test` retains its two-worker setting. The full suite passed locally under Node 22.13.1. Hosted CI passed all steps on commit `a4d05ff`; the newer GitHub Actions v7 runner update triggered another CI run, which exposed one additional calendar-worker flake before this serial-CI adjustment. Final hosted verification is pending.
 
 ## GitHub publication and application boundary
 

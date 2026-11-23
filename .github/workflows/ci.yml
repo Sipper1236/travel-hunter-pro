@@ -26,5 +26,5 @@ jobs:
       - run: npm ci
       - run: npm audit --audit-level=low
       - run: npm run check:markdown-links
-      - run: npm test
+      - run: npm run test:ci
       - run: npm run build

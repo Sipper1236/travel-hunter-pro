@@ -9,6 +9,7 @@
     "build": "next build",
     "start": "next start --hostname 127.0.0.1",
     "test": "node --test --test-concurrency=2 tests/*.test.mjs",
+    "test:ci": "node --test --test-concurrency=1 tests/*.test.mjs",
     "check:markdown-links": "node scripts/check-markdown-links.mjs",
     "jobs:database": "node scripts/job-database.mjs",
     "worker": "node --env-file-if-exists=.env.local scripts/search-worker.mjs",
