@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Current ACV widget entry point — 2026-11-23
+
+The public Flight & Hotel page currently returns promotional content without the widget selectors used by the package adapter. The local site now stops location/package work with a safe unavailable status; no direct endpoint or private credential replay is substituted. Explicit challenge pages are blocked and cooled down without interaction. No fresh package result or latency evidence is available. [Current evidence](acv-current-widget-entrypoint-2026-11-23.md). Continue with other authorized sources while P6 remains open.
+
 ## Calendar worker query integrity — 2026-11-23
 
 Calendar worker results are now validated against the submitted job query, known terminal statuses, resolver-selected airport sets and omitted candidates. Full tests passed 724/724; build and audit passed. No live fare evidence. [Evidence](calendar-worker-query-guard-2026-11-23.md).

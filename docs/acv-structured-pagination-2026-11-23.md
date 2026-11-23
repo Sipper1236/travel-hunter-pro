@@ -1,5 +1,9 @@
 # ACV structured package pagination — 2026-11-23
 
+## Current widget entry-point recheck — 2026-11-23
+
+A fresh local website attempt and paced public-page inspection now establish why no post-change website-to-worker result is available: the current official Flight & Hotel page returns HTTP 200 but displays promotional content without the search inputs used by this adapter. The canonical no-trailing-slash path has the same behavior, and the site's Book navigation returns to the promotional page. No explicit access challenge appeared. The local UI now reports a bounded unavailable status before sending a location or package query. See the [current entry-point investigation](acv-current-widget-entrypoint-2026-11-23.md). This does not establish that the provider has no other supported booking flow.
+
 ## Implementation
 
 The ordinary Air Canada Vacations Flight + Hotel widget path now supports structured responses for a bounded 20- or 40-result query when the party shape is already supported by the normalizer: adults with up to three exact-age children in one room, or adult-only multi-room occupancy with provider-exposed room assignments. It observes requests only after the user query is submitted through the public widget; it does not construct or replay private request credentials.

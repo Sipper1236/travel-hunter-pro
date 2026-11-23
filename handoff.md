@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Detailed Handoff (updated 2026-11-23)
 
+## 2026-11-23 continuation — ACV current widget entry point
+
+The website's ACV origin lookup previously returned HTTP 400 with a raw locator timeout because the expected provider field never appeared. The public Flight & Hotel page now renders promotions and no visible search inputs; the canonical no-trailing-slash route behaves the same, and the site's Book navigation leads through an options page back to that promotion route. A paced read-only inspection saw no explicit CAPTCHA/human challenge. The local website now returns HTTP 503 `temporarily_unavailable` with a safe message and sends no location/package query. Challenge detection blocks and cools down ACV for five minutes without interacting with the challenge. Focused ACV tests pass 35/35; full suite passes 731/731, isolated build passes, audit finds 0 vulnerabilities, and 141 Markdown files pass link checks. No current package fare was obtained; P6/§17 remain open. [Evidence](docs/acv-current-widget-entrypoint-2026-11-23.md).
+
 ## 2026-11-23 continuation — hotel worker status schema
 
 Hotel worker validation now rejects fabricated statuses such as `booked`; any status on priced results must be `complete` or `partial`. Focused hotel/Booking.com/Reservit/Flight + Hotel suites passed 71/71; full `npm test` passed 726/726, build passed, audit found 0 vulnerabilities, and Markdown links passed for 140 files. Fixed a test isolation issue by constructing the cache store with `{path: db}`. No live source request. [Evidence](docs/hotel-worker-status-guard-2026-11-23.md).

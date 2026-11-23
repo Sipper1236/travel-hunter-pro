@@ -29,6 +29,23 @@ test('lookup reads the widget response and closes browser; provider refusals do 
  await assert.rejects(lookupVacationSuggestions({kind:'from',term:'YHZ'},{launch:makeLaunch(401),policy:null,cache:new Map()}),/temporarily unavailable/);assert.equal(closes,2);
  await assert.rejects(lookupVacationSuggestions({kind:'to',term:'Barcelona'},{launch:makeLaunch(200),policy:null,cache:new Map()}),/Select a provider origin/);
 });
+test('location lookup stops on an access challenge, records a cooldown, and never types into it',async()=>{
+ const now=1_800_000_000_000,deferred=[];let closed=0,typed=false,fieldWaits=0;
+ const field={waitFor:async()=>{fieldWaits++;},click:async()=>{typed=true;},press:async()=>{typed=true;},pressSequentially:async()=>{typed=true;},inputValue:async()=>'YHZ'};
+ const page={goto:async()=>{},title:async()=>'Security verification',locator:selector=>selector==='body'?{innerText:async()=>'Please verify that you are human before continuing.'}:selector.includes('iframe')?{count:async()=>0}:field,getByRole:()=>({isVisible:async()=>false})};
+ const launch=async()=>({close:async()=>{closed++;},newPage:async()=>page});
+ const policy={reserveSource:()=>({waitMs:0}),deferSource:(...args)=>deferred.push(args)};
+ await assert.rejects(lookupVacationSuggestions({kind:'from',term:'YHZ'},{launch,policy,cache:new Map(),now:()=>now}),error=>error.sourceStatus==='blocked'&&error.providerCode==='access_challenge'&&error.retryAt===now+5*60_000);
+ assert.deepEqual(deferred,[['Air Canada Vacations',now+5*60_000,'blocked']]);assert.equal(fieldWaits,0);assert.equal(typed,false);assert.equal(closed,1);
+});
+test('missing location widget returns a bounded provider error without leaking Playwright selectors',async()=>{
+ let typed=false;
+ const field={waitFor:async()=>{throw Error('locator #flight_hotel_tab-from-input timed out');},click:async()=>{typed=true;},press:async()=>{typed=true;},pressSequentially:async()=>{typed=true;},inputValue:async()=>'YHZ'};
+ const page={goto:async()=>{},title:async()=>'Air Canada Vacations',locator:selector=>selector==='body'?{innerText:async()=>'Flight and hotel packages'}:selector.includes('iframe')?{count:async()=>0}:field,getByRole:()=>({isVisible:async()=>false})};
+ const launch=async()=>({close:async()=>{},newPage:async()=>page});
+ await assert.rejects(lookupVacationSuggestions({kind:'from',term:'YHZ'},{launch,policy:null,cache:new Map()}),error=>error.sourceStatus==='temporarily_unavailable'&&error.providerCode==='widget_unavailable'&&!error.message.includes('locator'));
+ assert.equal(typed,false);
+});
 test('exact ACV autocomplete repeats use a bounded five-minute cache with original observation time',async()=>{
  const cache=new Map(),body=JSON.stringify({term:'YHZ',suggestions:[{entities:[{name:'Halifax Airport',type:'AIRPORTGROUP',code:'YHZ'}]}]});let calls=0,at=1_800_000_000_000;
  const launch=async()=>{calls++;return {close:async()=>{},newPage:async()=>({goto:async()=>{},locator:()=>({waitFor:async()=>{},click:async()=>{},press:async()=>{},pressSequentially:async()=>{},inputValue:async()=>'YHZ'}),getByRole:()=>({isVisible:async()=>false}),waitForResponse:async()=>({ok:()=>true,headers:()=>({}),body:async()=>Buffer.from(body)})})};};

@@ -1,5 +1,9 @@
 # Air Canada Vacations browser discovery
 
+## Current public search entry-point recheck — 2026-11-23
+
+The public Flight & Hotel path now shows promotional content and has no visible search input; the local package-location lookup consequently stops with a safe unavailable status before sending a query. The normal Book → All Booking Options → Flight & Hotel navigation returns to the same promotional route. A public product-detail link also showed no visible date/occupancy controls in the inspected state. No challenge appeared and no search/booking action was submitted. See the [current entry-point evidence](acv-current-widget-entrypoint-2026-11-23.md). Earlier dated widget observations below remain historical and do not establish current package availability.
+
 ## Live child/room widget limit — 2026-11-08
 
 The public Flight + Hotel widget was opened in headless Chromium through ordinary UI interaction. With its default adult count, selecting a second room produced a retained two-room count and disabled the widget's **Add child** control. Returning to one room re-enabled child occupancy; selecting one child at age 7 was retained by the age dropdown. No package search was submitted and checkout was not opened.

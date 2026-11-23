@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## Current ACV widget entry point — 2026-11-23
+
+The package adapter still depends on ordinary Flight & Hotel widget traffic. Current public-page inspection found a promotional page with no visible search inputs, so the local application now returns `temporarily_unavailable` before sending location or package data. An explicit access challenge is treated as blocked and receives a five-minute source cooldown; no challenge is interacted with. This is a fail-closed behavior improvement, not a repaired live search. [Evidence](acv-current-widget-entrypoint-2026-11-23.md).
+
 ## Calendar worker submitted-query binding — 2026-11-23
 
 The result guard now receives the original calendar job input and binds request fields, known terminal status, candidate airports, location evidence and exact derived route pairs before persistence. Focused calendar tests passed 68/68; full suite passed 724/724; build and audit passed. This is fixture-only and adds no live source coverage. [Evidence](calendar-worker-query-guard-2026-11-23.md).

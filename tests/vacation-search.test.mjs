@@ -108,6 +108,14 @@ test('package browser authorization and rate refusals persist cooldowns and clos
  await assert.rejects(searchVacation(query,{policy,fetcher:async()=>new Response('All prices are in Canadian currency, unless otherwise indicated'),launch:async()=>browser}),error=>error.sourceStatus==='rate_limited'&&error.retryAt>Date.now());
  assert.equal(deferred.length,1);assert.equal(deferred[0][0],'Air Canada Vacations');assert.equal(deferred[0][2],'rate_limited');assert.ok(closes>=1);
 });
+test('package search stops on a security challenge before form use and persists a cooldown',async()=>{
+ const deferred=[];let closes=0,fieldWaits=0;
+ const page={setDefaultTimeout(){},on(){},goto:async()=>{},title:async()=>'Security verification',locator:selector=>selector==='body'?{innerText:async()=>'Please verify that you are human before continuing.'}:selector.includes('iframe')?{count:async()=>0}:{waitFor:async()=>{fieldWaits++;},count:async()=>1}};
+ const browser={newPage:async()=>page,close:async()=>{closes++;}};
+ const policy={reserveSource:()=>({waitMs:0}),deferSource:(...args)=>deferred.push(args)};
+ await assert.rejects(searchVacation(query,{policy,fetcher:async()=>new Response('All prices are in Canadian currency, unless otherwise indicated'),launch:async()=>browser}),error=>error.sourceStatus==='blocked'&&error.providerCode==='access_challenge'&&error.retryAt>Date.now());
+ assert.equal(deferred.length,1);assert.deepEqual([deferred[0][0],deferred[0][2]],['Air Canada Vacations','blocked']);assert.ok(deferred[0][1]>Date.now());assert.equal(fieldWaits,0);assert.ok(closes>=1);
+});
 test('temporary safe currency-terms GET failures retry once, while rate limits do not retry',async()=>{
  let calls=0,launches=0;
  const browser={newPage:async()=>({setDefaultTimeout(){},goto:async()=>{throw Error('Provider navigation failed');},on(){},locator:()=>({waitFor:async()=>{},count:async()=>0})}),close:async()=>{}};

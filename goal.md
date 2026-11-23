@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — ACV widget access and safe stop
+
+The current official Flight & Hotel page returns promotional content without the search widget expected by the adapter. The website's location lookup now reports a sanitized `temporarily_unavailable` status without sending a location or package query. Explicit challenges are stopped and cooled down without interaction. Focused tests pass 35/35; full suite passes 731/731, isolated build passes, audit finds 0 vulnerabilities, and 141 Markdown files pass link checks. No live price/result was obtained; the active completion goal remains open while the current supported ACV search entry point is unresolved. [Evidence](docs/acv-current-widget-entrypoint-2026-11-23.md).
+
 ## 2026-11-23 continuation — hotel worker status schema
 
 Hotel persistence rejects unrecognized statuses and prevents priced results from carrying a failure or booking state. Focused hotel/Booking.com/Reservit/Flight + Hotel tests passed 71/71; full `npm test` passed 726/726, build passed, audit found 0 vulnerabilities, and Markdown links passed for 140 files. No provider request. The cache test now uses an isolated DB path. Broader hotel availability and checkout acceptance remain open. [Evidence](docs/hotel-worker-status-guard-2026-11-23.md).

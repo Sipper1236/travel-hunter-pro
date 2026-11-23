@@ -1,5 +1,6 @@
 # Travel Hunter Pro documentation index
 
+- [ACV current widget entry point and safe-stop behavior (2026-11-23)](acv-current-widget-entrypoint-2026-11-23.md) — current public page has no visible search form; local UI stops safely, with no query or fare, and challenge handling is tested.
 - [Hotel worker status schema (2026-11-23)](hotel-worker-status-guard-2026-11-23.md) — known search outcomes, no booking claims, and a cache-test isolation correction.
 - [Comparison worker status schema (2026-11-23)](comparison-worker-status-guard-2026-11-23.md) — mode-specific terminal status validation at the durable worker boundary.
 - [Package worker status schema (2026-11-23)](package-worker-status-guard-2026-11-23.md) — rejects unverified-currency outputs at the durable worker boundary while preserving explicit normalizer behavior.

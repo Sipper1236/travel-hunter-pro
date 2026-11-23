@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## ACV current widget entry point — 2026-11-23
+
+Current public-page inspection found no visible Flight & Hotel search form at the route the adapter uses. The local website lookup now returns HTTP 503 `temporarily_unavailable` and stops before sending location or package data; the previous raw Playwright timeout is no longer exposed. Explicit access challenges are classified as `blocked` with a five-minute cooldown and are never interacted with. Focused ACV tests pass 35/35; full suite passes 731/731, isolated build passes, audit finds 0 vulnerabilities, and Markdown links pass for 141 files. No live package result or current price was observed. P6 and §17 remain incomplete until the current supported ACV search entry point works end to end. [Evidence](docs/acv-current-widget-entrypoint-2026-11-23.md).
+
 ## Hotel worker status schema — 2026-11-23
 
 Hotel result validation now rejects invented top-level status labels and restricts priced results to the producer's `complete`/`partial` outcomes. Focused hotel/Booking.com/Reservit/Flight + Hotel tests passed 71/71; full `npm test` passed 726/726; build passed; audit found 0 vulnerabilities; Markdown links passed for 140 files. The official-hotel cache test now opens its intended temporary SQLite path rather than the default job database. No provider request. [Evidence](docs/hotel-worker-status-guard-2026-11-23.md).
