@@ -2,7 +2,7 @@
 
 ## Ignav fare-calendar cache — 2026-11-23
 
-Calendar worker dispatch now shares the durable provider cache used by ordinary flight searches. Exact fresh Ignav calendar responses can be reused across independent worker/store connections without changing the source observation timestamp; the result still passes normal offer and calendar validation. Focused calendar/provider tests pass 71/71; full `npm test` passes 679/679 and `npm run build` passes after retrying past Next.js 16.4.3's security reminder, with no live call or latency claim. Empty/stale/invalid observations and identified/infant parties are not cacheable. [Evidence](ignav-calendar-cache-2026-11-23.md). Other provider cache coverage and access-gated integrations remain open.
+Calendar worker dispatch now shares the durable provider cache used by ordinary flight searches. Exact fresh Ignav calendar responses can be reused across independent worker/store connections without changing the source observation timestamp; the result still passes normal offer and calendar validation. Focused calendar/provider tests pass 71/71; full `npm test` passes 680/680 and `npm run build` passes after retrying past Next.js 16.4.3's security reminder, with no live call or latency claim. Empty/stale/invalid observations and identified/infant parties are not cacheable. [Evidence](ignav-calendar-cache-2026-11-23.md). Other provider cache coverage and access-gated integrations remain open.
 
 ## Bounded regional airport-pair overlap — 2026-11-23
 

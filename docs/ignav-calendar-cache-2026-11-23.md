@@ -14,7 +14,7 @@ Cache eligibility remains deliberately narrow: count parties only; exact route, 
 - the fare's original `observedAt` is unchanged;
 - the calendar source coverage reports `cacheStatus: hit`.
 
-The regression failed before wiring because the second calendar search invoked the provider again. After wiring, focused calendar/provider suites pass **71/71**, full `npm test` passes **679/679**, and `npm run build` passes after retrying past Next.js 16.4.3's security reminder. No live provider query was made; there is no measured provider latency improvement or live quote evidence in this change.
+The regression failed before wiring because the second calendar search invoked the provider again. A durable worker integration also runs the same exact query in two worker processes against one SQLite database and verifies the second process returns `cacheStatus: hit` with the original fare timestamp. After wiring, focused calendar/provider suites pass **71/71**, full `npm test` passes **680/680**, and `npm run build` passes after retrying past Next.js 16.4.3's security reminder. No live provider query was made; there is no measured provider latency improvement or live quote evidence in this change.
 
 ## Files
 

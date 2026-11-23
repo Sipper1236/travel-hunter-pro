@@ -2,7 +2,7 @@
 
 ## Ignav cache coverage for fare calendars — 2026-11-23
 
-Calendar worker searches now receive the durable SQLite provider cache already used by ordinary flight workers. Each exact Ignav route/date/party/cabin/filter query therefore reuses a still-fresh validated count-party result across jobs, retaining its original `observedAt`; empty, stale, invalid, mismatched, identified-traveler and infant results remain ineligible. The regression failed before cache wiring and now proves one provider invocation across two independent persistent connections. Focused calendar/provider tests pass 71/71; full `npm test` passes 679/679 and `npm run build` passes after retrying past Next.js 16.4.3's security reminder. No live endpoint or latency benchmark was used. See [dated evidence](ignav-calendar-cache-2026-11-23.md). Other provider caches and reverse-endpoint completion remain open.
+Calendar worker searches now receive the durable SQLite provider cache already used by ordinary flight workers. Each exact Ignav route/date/party/cabin/filter query therefore reuses a still-fresh validated count-party result across jobs, retaining its original `observedAt`; empty, stale, invalid, mismatched, identified-traveler and infant results remain ineligible. The regression failed before cache wiring and now proves one provider invocation across two independent persistent connections. Focused calendar/provider tests pass 71/71; full `npm test` passes 680/680 and `npm run build` passes after retrying past Next.js 16.4.3's security reminder. No live endpoint or latency benchmark was used. See [dated evidence](ignav-calendar-cache-2026-11-23.md). Other provider caches and reverse-endpoint completion remain open.
 
 ## Skyscanner polling budget and coverage — 2026-11-23
 

@@ -9,6 +9,21 @@ import {startSearchWorker} from '../lib/search-worker.mjs';
 const input={origin:'YHZ',destination:'BCN',start:'2099-04-15',end:'2099-04-16',tripType:'round-trip',nights:5,cabin:'business',adults:2,children:2,childrenAges:[10,15],searchLimit:3,filters:{maxStops:0}};
 // Forked workers share CPU with Chromium fixtures; allow process startup without relaxing result assertions.
 const waitFor=async predicate=>{const end=Date.now()+30000;while(!predicate()){if(Date.now()>end)throw Error('Calendar worker timed out.');await new Promise(r=>setTimeout(r,10));}};
+test('calendar worker reuses an exact Ignav response after restart through the persistent job store',async()=>{
+ const directory=await mkdtemp(join(tmpdir(),'calendar-cache-worker-')),path=join(directory,'jobs.sqlite'),query={origin:'YHZ',destination:'BCN',originAirports:['YHZ'],destinationAirports:['BCN'],start:'2099-04-15',end:'2099-04-15',tripType:'one-way',cabin:'economy',adults:1,children:0,childrenAges:[],searchLimit:1,filters:{},source:'ignav'};
+ const children=[];let store,worker;
+ const launch=()=>startSearchWorker({store,pollMs:10,spawn:()=>{const child=fork(new URL('../scripts/flight-job-runner.mjs',import.meta.url),[],{execArgv:['--import',new URL('./fixtures/calendar-transport.mjs',import.meta.url).href],env:{...process.env,IGNAV_API_KEY:'test-only-no-real-key',TRAVEL_JOB_DB:path,TRAVEL_SOURCE_GAP_MS:'0'},stdio:['ignore','ignore','ignore','ipc']});children.push(child);return child;}});
+ const run=async requestKey=>{const job=store.submit(query,requestKey,{kind:'calendar'});await waitFor(()=>['complete','error'].includes(store.get(job.id).status));const done=store.get(job.id);assert.equal(done.status,'complete',JSON.stringify(done.error));return done.result;};
+ try{
+  store=createJobStore({path});worker=launch();
+  const first=await run('calendar_cache_first');assert.equal(first.dates[0].providerCoverage.find(row=>row.provider==='Ignav')?.cacheStatus,undefined);
+  worker.stop();worker=null;await waitFor(()=>children[0].exitCode!==null);store=null;
+  store=createJobStore({path});worker=launch();
+  const second=await run('calendar_cache_second');
+  assert.equal(second.dates[0].providerCoverage.find(row=>row.provider==='Ignav')?.cacheStatus,'hit');
+  assert.equal(second.dates[0].offer.observedAt,first.dates[0].offer.observedAt);
+ }finally{if(worker){worker.stop();worker=null;store=null;}else store?.close();for(const child of children)if(child.exitCode===null)child.kill('SIGKILL');await rm(directory,{recursive:true,force:true});}
+});
 test('actual worker prices native Google regional return/night combinations with the complete teen family',async()=>{
  const directory=await mkdtemp(join(tmpdir(),'google-calendar-worker-')),path=join(directory,'jobs.sqlite'),store=createJobStore({path}),children=[];let worker;
  const regional={origin:'Canada',destination:'Europe',originType:'region',destinationType:'region',originAirports:['YHZ'],destinationAirports:['LHR','BCN'],start:'2099-04-15',end:'2099-04-15',source:'google',tripType:'round-trip',nightsMin:5,nightsMax:6,cabin:'economy',adults:2,children:1,childrenAges:[15],searchLimit:4,filters:{maxStops:0}};
