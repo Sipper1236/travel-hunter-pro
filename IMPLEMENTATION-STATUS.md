@@ -1963,3 +1963,7 @@ Empty hotel results now require validated source-status rows or a schema-checked
 
 Streaming calendar UI has one concise polite announcement on result changes with response/date counts and running/completion state. Repetitive worker polling counters are visual only. Fresh production build, `check:calendar-streaming` (streaming/provisional/final result and announcement assertions, provider calls intercepted, zero browser errors), full `npm test` 599/599, and `npm audit --audit-level=low` (0 vulnerabilities) passed. Screen-reader/manual and broader dynamic-state validation remain open. A current bounded Omkar Expedia recheck returned HTTP 500 on both adapter attempts; no fare evidence was obtained and affected all-source coverage remains incomplete. [Evidence](docs/calendar-live-announcement-2026-11-14.md).
 
+# Fresh Ignav adapter evidence — 2026-11-23
+
+One bounded, read-only direct adapter query used the configured Ignav credential for YHZ→LAX on 2027-01-15, one-way, one adult/economy, Canada market. It completed in 7,438 ms: 58 rows received, 25 accepted, 33 rejected. This confirms only this direct adapter call; no website/durable-worker job, exact price, seller availability, or freshness verification was performed. See [the dated evidence note](docs/ignav-live-adapter-check-2026-11-23.md). Keep end-to-end source validation open.
+

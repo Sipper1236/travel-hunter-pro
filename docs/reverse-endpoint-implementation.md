@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## Ignav live adapter check — 2026-11-23
+
+One read-only direct adapter request ran with the configured Ignav credential: YHZ→LAX, 2027-01-15, one-way, one adult, economy, Canada market. It returned `ok` in 7,438 ms with 58 flight rows received, 25 accepted and 33 rejected. No itinerary, price, seller, or booking details were printed or captured in this note. This confirms the adapter can receive and normalize results for this exact shape; it does not confirm durable job persistence, website rendering, fare freshness, seller availability, or broader source coverage. See [the dated evidence note](ignav-live-adapter-check-2026-11-23.md).
+
 ## ACV adult multi-room update — 2026-11-23
 
 The ACV structured widget adapter now validates adult-only multi-room occupancy against exact provider listing `r0..rN` allocations and group totals derived from passenger row totals multiplied by passenger counts. Live two-adult/two-room evidence: 20/20 package rows reconciled; all 20 passed adapter normalization and the worker-result guard. This is not durable UI evidence. Child multi-room and infant queries remain unsupported. Tests: 641/641; build passed after retrying past the Next.js security reminder; audit reports one moderate Next.js issue, with the fix outside the declared range.
