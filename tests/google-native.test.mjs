@@ -92,6 +92,12 @@ test('native overall deadline closes the browser and retains bounded attempt evi
  const keepEventLoopAlive=setInterval(()=>{},1000);context.after(()=>clearInterval(keepEventLoopAlive));
  await assert.rejects(searchGoogleRoundTrip(query,{...options(),timeoutMs:100}),error=>error.providerCode==='native_query_timeout'&&error.nativeCoverage.nativeRpcRequests===0);
 });
+test('native timezone lookup failures expose only an allow-listed error code',async()=>{
+ const secret='private timezone directory detail';
+ await assert.rejects(searchGoogleRoundTrip(query,{...options(),loadTimezones:async()=>{throw Object.assign(Error(secret),{code:'ENOENT'});}}),error=>{
+  assert.equal(error.nativeCoverage.failureStage,'timezones');assert.equal(error.nativeCoverage.failureCode,'ENOENT');assert.doesNotMatch(JSON.stringify(error),/private timezone directory detail/);return true;
+ });
+});
 test('native refresh keeps the exact originally selected flights and never substitutes another itinerary',async()=>{
  const first=await searchGoogleRoundTrip(query,options());
  const selected=first.offers[0].googleFlightSelection;
