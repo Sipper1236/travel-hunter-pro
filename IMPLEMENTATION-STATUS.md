@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Expedia-via-Omkar currency diagnostics — 2026-11-23
+
+A policy-gated, read-only YHZ–LAX one-way request for 2026-12-17 returned 85 flight rows and 273 fare options. No uppercase three-letter currency values were present in inspected fare metadata/display fields, and none of 223 timestamp pairs carried offsets. The adapter now separates missing/conflicting currency evidence, non-CAD currency and invalid amounts into sanitized rejection counters; `tests/omkar-expedia.test.mjs` passes **12/12**, full `npm test` passes **661/661**, and `npm run build` passes after retrying Next.js's security reminder. The last audit still reports one moderate Next.js advisory; its suggested fix is outside the declared range. No offer or price observation was accepted, no CAD was inferred, and no live request followed the diagnostic code change. Expedia partner access remains unconfigured. [Evidence](docs/omkar-expedia-currency-recheck-2026-11-23.md).
+
 ## Provider-wide 5xx cooldown — 2026-11-23
 
 After a final HTTP 5xx, shared transport now records a durable 30-second cooldown unless `Retry-After` gives a longer interval. Safe GET/HEAD requests get their existing one retry before cooldown; POST remains non-replayed. Regional calendar fan-out suppresses only providers with an observed HTTP 5xx for the rest of that job and continues healthy sources, reporting suppressed coverage. Query-local temporary errors without an HTTP 5xx remain route-local. Focused transport/calendar tests pass **67/67**, full `npm test` passes **661/661**, and `npm run build` passed after the Next.js security reminder retry. `npm audit --audit-level=low` reports one moderate Next.js 16.4.3 advisory; the suggested 16.4.6 fix is outside the declared range. No live provider request was made. See [evidence](docs/source-5xx-cooldown-2026-11-23.md).

@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Expedia-via-Omkar currency diagnostics — 2026-11-23
+
+One bounded read-only YHZ–LAX query returned HTTP 200, 85 flights and 273 fare options, but zero accepted prices/offers. Aggregate schema inspection found no uppercase three-letter currency values and no offset-bearing timestamp pairs in 223 inspected segments. The adapter now reports low-cardinality counters for missing currency, conflicting currency, non-CAD currency and malformed amounts. Omkar fixture tests pass **12/12**, full `npm test` passes **661/661**, and `npm run build` passes after retrying Next.js 16.4.3's security reminder. The last audit still reports one moderate Next.js advisory; its suggested fix is outside the declared range. No live request followed the diagnostics change; the wrapper still cannot yield a CAD price or complete itinerary from the observed response. [Evidence](docs/omkar-expedia-currency-recheck-2026-11-23.md).
+
 ## Shared 5xx source cooldown — 2026-11-23
 
 The shared HTTP transport now retries safe GET/HEAD calls at most once, then records a durable 30-second provider cooldown after an unhinted HTTP 5xx; a longer provider `Retry-After` takes precedence. POST is not replayed. Regional calendars suppress a provider across remaining route pairs after a 5xx while continuing healthy providers and preserving partial-coverage labels. Query-local failures without an HTTP 5xx still allow other routes. Focused transport/calendar tests pass **67/67**, full `npm test` passes **661/661**, and `npm run build` passes after retrying Next.js 16.4.3's security reminder. `npm audit --audit-level=low` reports one moderate Next.js 16.4.3 advisory; the suggested 16.4.6 fix is outside the declared range. No live provider request was made. [Evidence](docs/source-5xx-cooldown-2026-11-23.md).

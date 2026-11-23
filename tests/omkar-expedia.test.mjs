@@ -11,7 +11,7 @@ const payload={flights:[{offer_id:'flight-1',departure_time:'8:20am',arrival_tim
 test('Omkar adapter keeps fares price-only when segment times lack offset-aware timestamps',async()=>{
  let request;const result=await searchOmkarExpedia(query,{apiKey:'test-key',fetcher:async(url,init)=>{request={url:new URL(url),init};return Response.json(payload);}});
  assert.equal(request.url.origin+request.url.pathname,'https://expedia-scraper.omkar.cloud/expedia/flights/one-way');assert.equal(request.url.searchParams.get('departure_airport_code'),'YHZ');assert.equal(request.url.searchParams.get('arrival_airport_code'),'BCN');assert.equal(request.url.searchParams.get('departure_date'),query.date);assert.equal(request.url.searchParams.get('cabin_class'),'coach');assert.equal(request.init.headers['API-Key'],'test-key');
- assert.equal(result.offers.length,0);assert.equal(result.priceObservations.length,1);assert.equal(result.priceObservations[0].price,845.5);assert.equal(result.priceObservations[0].currency,'CAD');assert.deepEqual(result.sources[0].diagnostics,{flightsReceived:1,routeMismatchFlights:0,flightsWithoutFareOptions:0,fareOptionsExamined:1,unverifiedPrice:0,unverifiedTravelerScope:0,priceOnlyObservations:1,verifiedOffers:0});
+ assert.equal(result.offers.length,0);assert.equal(result.priceObservations.length,1);assert.equal(result.priceObservations[0].price,845.5);assert.equal(result.priceObservations[0].currency,'CAD');assert.deepEqual(result.sources[0].diagnostics,{flightsReceived:1,routeMismatchFlights:0,flightsWithoutFareOptions:0,fareOptionsExamined:1,unverifiedPrice:0,missingCurrencyEvidence:0,conflictingCurrencyEvidence:0,nonCadCurrency:0,invalidPriceAmount:0,unverifiedTravelerScope:0,priceOnlyObservations:1,verifiedOffers:0});
 });
 
 test('Omkar journey duration is derived from ordered offset-aware segment timestamps including layovers',async()=>{
@@ -49,7 +49,15 @@ test('Omkar rejects conflicting fare-tier passenger scope despite a generic one-
 
 test('Omkar rejects unknown currency, wrong price scope, and non-one-adult requests',async()=>{
  const data=structuredClone(payload);delete data.flights[0].fare_options[0].currency;data.flights[0].fare_options[0].display_price='$845.50';data.flights[0].fare_options[0].price_detail='$845.50 one way for 1 traveler';
- const unknown=await searchOmkarExpedia(query,{apiKey:'test-key',fetcher:async()=>Response.json(data)});assert.equal(unknown.offers.length,0);assert.equal(unknown.priceObservations.length,0);assert.equal(unknown.sources[0].diagnostics.unverifiedPrice,1);
+ const unknown=await searchOmkarExpedia(query,{apiKey:'test-key',fetcher:async()=>Response.json(data)});assert.equal(unknown.offers.length,0);assert.equal(unknown.priceObservations.length,0);assert.equal(unknown.sources[0].diagnostics.unverifiedPrice,1);assert.equal(unknown.sources[0].diagnostics.missingCurrencyEvidence,1);
+ const nonCad=structuredClone(payload);nonCad.flights[0].fare_options[0].currency='EUR';nonCad.flights[0].fare_options[0].display_price='EUR 845.50';nonCad.flights[0].fare_options[0].price_detail='EUR 845.50 one way for 1 traveler';
+ assert.equal((await searchOmkarExpedia(query,{apiKey:'test-key',fetcher:async()=>Response.json(nonCad)})).sources[0].diagnostics.nonCadCurrency,1);
+ const conflicting=structuredClone(payload);conflicting.flights[0].fare_options[0].currency='USD';
+ assert.equal((await searchOmkarExpedia(query,{apiKey:'test-key',fetcher:async()=>Response.json(conflicting)})).sources[0].diagnostics.conflictingCurrencyEvidence,1);
+ const conflictingPrefixes=structuredClone(payload);delete conflictingPrefixes.flights[0].fare_options[0].currency;conflictingPrefixes.flights[0].fare_options[0].price_detail='CAD 845.50 one way for 1 traveler';conflictingPrefixes.flights[0].fare_options[0].display_price='USD 845.50';
+ assert.equal((await searchOmkarExpedia(query,{apiKey:'test-key',fetcher:async()=>Response.json(conflictingPrefixes)})).sources[0].diagnostics.conflictingCurrencyEvidence,1);
+ const invalid=structuredClone(payload);invalid.flights[0].fare_options[0].display_price='CAD unknown';
+ assert.equal((await searchOmkarExpedia(query,{apiKey:'test-key',fetcher:async()=>Response.json(invalid)})).sources[0].diagnostics.invalidPriceAmount,1);
  const wrongScope=structuredClone(payload);wrongScope.flights[0].fare_type='Round trip';wrongScope.flights[0].fare_options[0].price_detail='CAD 845.50 for 2 travelers';
  assert.equal((await searchOmkarExpedia(query,{apiKey:'test-key',fetcher:async()=>Response.json(wrongScope)})).offers.length,0);
  await assert.rejects(searchOmkarExpedia({...query,adults:2},{apiKey:'test-key',fetcher:()=>{throw Error('must not fetch');}}),/one adult only/);

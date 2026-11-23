@@ -1,6 +1,10 @@
 # Expedia via Omkar live duration probe — 2026-11-09
 
-## Current wrapper recheck — 2026-11-23
+## Current currency/timestamp recheck — 2026-11-23
+
+A second bounded read-only YHZ–LAX one-adult/economy call for 2026-12-17 returned HTTP 200 with 85 flight records and 273 fare options, but no accepted CAD offers or price-only observations. Aggregate inspection found zero uppercase three-letter currency values in the inspected metadata fields, zero uppercase three-letter prefixes in inspected fare display fields, and zero CAD prefixes. The 223 inspected segment timestamp pairs had no UTC offsets. These values were counted without logging payload fields, raw strings, identifiers, amounts or credentials. Exact details and the limits of the inspection are in [the currency evidence note](omkar-expedia-currency-recheck-2026-11-23.md). The adapter now reports separate low-cardinality counters for missing/conflicting currency, non-CAD currency and invalid amount; fixture tests pass 12/12. No additional live request was made after the diagnostics change.
+
+## Earlier wrapper recheck — 2026-11-23 (departure 2026-12-10)
 
 One bounded authorized adapter request for YHZ–LAX, 2026-12-10, one adult/economy/one-way returned HTTP 200 with 80 flights. The normalizer accepted zero offers and emitted zero price-only observations; the previous combined counter reported 227 route/fare rejections. A schema-only view of the first sampled flight/fare recorded field names, types and booleans: no currency metadata field was present and segment times did not carry UTC offsets. The formatted price text was not inspected for a currency code, and this is not evidence that every result row has identical fields or the same rejection reason. No names, IDs, amounts, raw response data or key values were logged. The app withholds the results because the exact CAD and itinerary evidence has not been established. Expedia partner access remains unconfigured, and no seller handoff or availability was verified.
 
