@@ -11,7 +11,7 @@ const payload={flights:[{offer_id:'flight-1',departure_time:'8:20am',arrival_tim
 test('Omkar adapter keeps fares price-only when segment times lack offset-aware timestamps',async()=>{
  let request;const result=await searchOmkarExpedia(query,{apiKey:'test-key',fetcher:async(url,init)=>{request={url:new URL(url),init};return Response.json(payload);}});
  assert.equal(request.url.origin+request.url.pathname,'https://expedia-scraper.omkar.cloud/expedia/flights/one-way');assert.equal(request.url.searchParams.get('departure_airport_code'),'YHZ');assert.equal(request.url.searchParams.get('arrival_airport_code'),'BCN');assert.equal(request.url.searchParams.get('departure_date'),query.date);assert.equal(request.url.searchParams.get('cabin_class'),'coach');assert.equal(request.init.headers['API-Key'],'test-key');
- assert.equal(result.offers.length,0);assert.equal(result.priceObservations.length,1);assert.equal(result.priceObservations[0].price,845.5);assert.equal(result.priceObservations[0].currency,'CAD');
+ assert.equal(result.offers.length,0);assert.equal(result.priceObservations.length,1);assert.equal(result.priceObservations[0].price,845.5);assert.equal(result.priceObservations[0].currency,'CAD');assert.deepEqual(result.sources[0].diagnostics,{flightsReceived:1,routeMismatchFlights:0,flightsWithoutFareOptions:0,fareOptionsExamined:1,unverifiedPrice:0,unverifiedTravelerScope:0,priceOnlyObservations:1,verifiedOffers:0});
 });
 
 test('Omkar journey duration is derived from ordered offset-aware segment timestamps including layovers',async()=>{
@@ -19,7 +19,7 @@ test('Omkar journey duration is derived from ordered offset-aware segment timest
  segments[0].departure_time='2099-04-15T08:20:00-03:00';segments[0].arrival_time='2099-04-15T10:00:00-04:00';
  segments[1].departure_time='2099-04-15T11:00:00-04:00';segments[1].arrival_time='2099-04-15T20:32:00+02:00';
  const result=await searchOmkarExpedia(query,{apiKey:'test-key',fetcher:async()=>Response.json(data)});
- assert.equal(result.offers.length,1);assert.equal(result.offers[0].durationMinutes,432);assert.equal(result.offers[0].departureDate,query.date);assert.equal(result.offers[0].arrivalDate,'2099-04-15');assert.deepEqual(result.offers[0].via,['YYZ']);
+ assert.equal(result.offers.length,1);assert.equal(result.offers[0].durationMinutes,432);assert.equal(result.offers[0].departureDate,query.date);assert.equal(result.offers[0].arrivalDate,'2099-04-15');assert.deepEqual(result.offers[0].via,['YYZ']);assert.equal(result.sources[0].diagnostics.verifiedOffers,1);
  segments[1].departure_time='2099-04-15T09:30:00-04:00';
  const outOfOrder=await searchOmkarExpedia(query,{apiKey:'test-key',fetcher:async()=>Response.json(data)});assert.equal(outOfOrder.offers.length,0);assert.equal(outOfOrder.priceObservations.length,1);
  segments[1].departure_time='2099-04-15T11:00:00';
@@ -49,7 +49,7 @@ test('Omkar rejects conflicting fare-tier passenger scope despite a generic one-
 
 test('Omkar rejects unknown currency, wrong price scope, and non-one-adult requests',async()=>{
  const data=structuredClone(payload);delete data.flights[0].fare_options[0].currency;data.flights[0].fare_options[0].display_price='$845.50';data.flights[0].fare_options[0].price_detail='$845.50 one way for 1 traveler';
- const unknown=await searchOmkarExpedia(query,{apiKey:'test-key',fetcher:async()=>Response.json(data)});assert.equal(unknown.offers.length,0);assert.equal(unknown.priceObservations.length,0);
+ const unknown=await searchOmkarExpedia(query,{apiKey:'test-key',fetcher:async()=>Response.json(data)});assert.equal(unknown.offers.length,0);assert.equal(unknown.priceObservations.length,0);assert.equal(unknown.sources[0].diagnostics.unverifiedPrice,1);
  const wrongScope=structuredClone(payload);wrongScope.flights[0].fare_type='Round trip';wrongScope.flights[0].fare_options[0].price_detail='CAD 845.50 for 2 travelers';
  assert.equal((await searchOmkarExpedia(query,{apiKey:'test-key',fetcher:async()=>Response.json(wrongScope)})).offers.length,0);
  await assert.rejects(searchOmkarExpedia({...query,adults:2},{apiKey:'test-key',fetcher:()=>{throw Error('must not fetch');}}),/one adult only/);

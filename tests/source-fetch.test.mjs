@@ -26,6 +26,15 @@ test('429 persists a cooldown and a second call sends no network request',async(
  }finally{policy.close();}
 });
 
+test('429 with exhausted provider quota honors the documented quota reset over a short Retry-After',async()=>{
+ let at=Date.now(),calls=0;const resetAt=Math.ceil((at+28*24*60*60_000)/1000)*1000,policy=createJobStore({path:':memory:',now:()=>at});
+ const options={policy,now:()=>at,fetcher:async()=>{calls++;return new Response('',{status:429,headers:{'Retry-After':'60','X-RateLimit-Requests-Remaining':'0','X-RateLimit-Requests-Reset':String(resetAt/1000)}});}};
+ try{
+  await assert.rejects(fetchSource('Expedia via Omkar','https://example.com',{},options),error=>error.sourceStatus==='rate_limited'&&error.retryAt===resetAt);
+  await assert.rejects(fetchSource('Expedia via Omkar','https://example.com',{},options),error=>error.sourceStatus==='rate_limited'&&error.retryAt===resetAt);assert.equal(calls,1);
+ }finally{policy.close();}
+});
+
 test('safe requests retry a transient error once with pacing; POST is not replayed by default',async()=>{
  let at=100000,calls=0;const policy=createJobStore({path:':memory:',now:()=>at});
  try{

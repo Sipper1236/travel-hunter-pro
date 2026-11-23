@@ -1,5 +1,11 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+Verification refresh — 2026-11-23: `npm test` 642/642; build passed after retrying past the Next.js security reminder; audit reports one moderate Next.js issue with a fix outside the declared range.
+
+## 2026-11-23 continuation — Omkar Expedia recheck
+
+One authorized read-only YHZ–LAX one-way request to the locally configured Omkar wrapper returned HTTP 200 with 80 flight rows, but no verified fares or price observations; the old combined rejection counter reported 227 route/fare rejections. The first sampled record lacked currency metadata and offset-bearing timestamps; the formatted price text was not inspected. The provider's official interface has no currency parameter, and its published examples do not establish CAD or absolute segment instants. Added aggregate, low-cardinality diagnostics and taught shared 429 handling to honor documented quota-reset headers when remaining quota is zero. Focused tests passed 35/35. The source remains live but has no proven CAD-price shape; direct Expedia partner access is unconfigured and the broader goal remains open.
+
 ## 2026-11-23 continuation — ACV adult multi-room
 
 Implemented the ACV structured JSON path for adult parties in multiple rooms, using provider-observed `r0..rN` listing parameters as exact occupancy evidence. The live two-adult/two-room response had 20 packages; weighted per-passenger totals reconciled for all 20, and the adapter accepted all 20 through the worker validator. The results UI displays verified room allocations. Focused suite 40/40; full suite 641/641; production build passed after the Next.js security reminder retry. Audit still reports one moderate Next.js vulnerability, with a fix outside the declared dependency range. The overall goal remains incomplete: child multi-room/infant support, durable UI proof, >20 results, complete segment chronology, final availability and fees remain open.
