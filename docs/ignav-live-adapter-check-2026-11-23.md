@@ -23,3 +23,7 @@ The same bounded query was then submitted to an isolated local production server
 ## Next verification
 
 Run a browser-visible query against the local production stack to verify that persisted Ignav results render progressively. Record source-specific latency and coverage without printing fare details or secrets; this single run is not p95 evidence.
+
+## Browser attempt — inconclusive
+
+A headless Chromium attempt used the visible flight form against an isolated local production app and waited up to 90 seconds for the completion announcement. The expected announcement was not observed. The harness did not preserve the submitted job ID or inspect the final job/card state after that timeout, and its `finally` cleanup removed the disposable database. Therefore this attempt does not establish whether the UI job completed, failed, or rendered cards; browser-visible end-to-end evidence remains open. Do not treat the locator timeout as a provider failure. The successful owner-bound HTTP/worker job above remains separate evidence.
