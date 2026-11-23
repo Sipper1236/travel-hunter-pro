@@ -11,6 +11,14 @@ test('exact-airport Google round trips dispatch through the configured provider 
  assert.equal(result.sources[0].provider,'Google Flights');
 });
 
+test('exact-airport Google one-way searches dispatch through the native provider path',async()=>{
+ const query={origin:'YHZ',destination:'LAX',originType:'place',destinationType:'place',date:'2099-11-12',tripType:'one-way',adults:1,children:0,cabin:'economy',source:'google',filters:{maxStops:1}};
+ let dispatched,providerOptions;const sources=[{provider:'Google Flights',status:'ok',operation:'native-one-way'}];
+ const result=await executeFlightSearch(query,{providerOptions:{tag:'test-options'},searchProvidersImpl:async(input,options)=>{dispatched=input;providerOptions=options;return {offers:[],sources};}});
+ assert.equal(dispatched,query);assert.deepEqual(providerOptions,{tag:'test-options'});assert.equal(result.sources[0].operation,'native-one-way');
+ assert.equal(result.originDetection.kind,'airport');assert.equal(result.destinationDetection.kind,'airport');
+});
+
 test('normal flight search forwards the durable provider cache to location and source dispatch',async()=>{
  const query={origin:'YHZ',destination:'LAX',originType:'place',destinationType:'place',date:'2099-11-12',tripType:'one-way',adults:1,children:0,cabin:'economy',source:'ignav'},providerCache={getProviderResponse(){},setProviderResponse(){}};let received;
  await executeFlightSearch(query,{providerCache,searchLocationsImpl:async(_input,_detections,options)=>{received=options.providerCache;return {offers:[],sources:[]};}});
