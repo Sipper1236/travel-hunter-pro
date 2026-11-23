@@ -28,9 +28,15 @@ A first headless Chromium attempt used the visible flight form against an isolat
 
 A corrected headless Chromium run submitted the same exact Ignav-only query through the visible form and captured the owner-bound job state. It completed in 3,108 ms. Ignav returned 58 rows, accepted 0, and rejected 25 for `quote_freshness` and 33 as `unusable`; the UI rendered 0 offer cards and showed its completion announcement without displaying an error. Browser errors: 0; external browser requests: 0; the job used a disposable database and was removed after inspection. This verifies the live empty/stale-result path and confirms that stale rows are withheld. It does not demonstrate positive live offer-card rendering; the separate production-build fixture check below verifies card rendering using fixture data only.
 
+The source row's visible `reason` now translates these two internal rejection codes into user-readable explanations while retaining the original `rejectionReasons` codes/counts for diagnostics. The stale-result test asserts the 15-minute explanation and machine-readable counts.
+
 ## Next verification
 
 Repeat a browser-visible query only after respecting source pacing and when fresh Ignav inventory is observed, then verify positive live offer-card rendering. This single 3.1-second job is not p95 evidence.
+
+## Readable rejection summary implementation — 2026-11-23
+
+`lib/ignav.mjs` now maps `quote_freshness` to “stale or expired quote (15-minute freshness limit)” and `unusable` to “row without usable fare or itinerary evidence”. Other reason codes are rendered as words instead of underscore-separated identifiers. The structured `rejectionReasons` object remains unchanged for diagnostics; no fares or source payloads are added to the explanation. Red/green focused regression: `node --test tests/ignav.test.mjs` **24/24**. Full suite: `npm test` **642/642**. `npm run build` stopped once at the Next.js security reminder and succeeded on identical retry. `npm audit --audit-level=low` reports one moderate Next.js 16.4.3 vulnerability; fix 16.4.6 is outside the declared range. No dependency upgrade was applied.
 
 ## Production-build fixture rendering check — 2026-11-23
 

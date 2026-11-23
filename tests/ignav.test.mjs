@@ -38,7 +38,7 @@ test('Ignav source diagnostics count normalized rejection reasons without return
  const stale=new Date(Date.now()-16*60*1000).toISOString(),unusable={...itinerary,price:{amount:0,currency:'CAD',status:'unverified'}};
  const result=await searchIgnav(query,{apiKey:'test',fetcher:async()=>Response.json({observed_at:stale,itineraries:[itinerary,unusable]})});
  assert.equal(result.offers.length,0);
- assert.deepEqual(result.sources[0],{provider:'Ignav',status:'ok',received:2,accepted:0,rejected:2,rejectionReasons:{quote_freshness:1,unusable:1},reason:'2 returned itineraries were excluded: 1 quote_freshness, 1 unusable.'});
+ assert.deepEqual(result.sources[0],{provider:'Ignav',status:'ok',received:2,accepted:0,rejected:2,rejectionReasons:{quote_freshness:1,unusable:1},reason:'2 returned itineraries were excluded: 1 stale or expired quote (15-minute freshness limit), 1 row without usable fare or itinerary evidence.'});
 });
 
 test('Ignav fails closed without credentials or valid route input', async () => {

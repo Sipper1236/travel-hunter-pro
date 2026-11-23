@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Ignav stale-result explanation — 2026-11-23
+
+Changed the visible Ignav source explanation to name stale/expired quotes and unusable fare/itinerary rows instead of exposing internal `quote_freshness`/`unusable` codes; raw reason counts remain available. Focused `tests/ignav.test.mjs`: 24/24; full `npm test`: 642/642. Build passed on retry after the Next.js security reminder. `npm audit --audit-level=low` still finds one moderate Next.js 16.4.3 issue; available fix is outside the declared range. [Evidence](docs/ignav-live-adapter-check-2026-11-23.md).
+
 ## Expedia via Omkar live recheck — 2026-11-23
 
 Current verification: full `npm test` **642/642**; `npm run build` passes after retrying past the Next.js security reminder; audit reports one moderate Next.js issue, with its available fix outside the declared dependency range.

@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Ignav stale-result explanation — 2026-11-23
+
+The Ignav source status now shows readable explanations for stale/expired quotes and rows lacking usable fare/itinerary evidence, while preserving machine-readable rejection counters. Added/updated the stale-result regression. Focused Ignav suite 24/24; full `npm test` 642/642; build succeeded after retrying past the Next.js security reminder; audit still has one moderate Next.js 16.4.3 issue with the available fix outside the declared range. See [dated Ignav evidence](docs/ignav-live-adapter-check-2026-11-23.md).
+
 ## Expedia via Omkar live recheck and diagnostics — 2026-11-23
 
 The configured Omkar wrapper returned HTTP 200 for one read-only YHZ–LAX, 2026-12-10, one-adult/economy query: 80 flight rows, 0 verified offers, 0 price-only observations, and 227 aggregate route/fare rejections (the pre-diagnostics count did not distinguish them). A bounded schema-only inspection (field names, types and booleans; no raw payload, names, IDs, prices or secret values) found no currency metadata field and no offset-aware timestamps on the first sampled fare/segments. The fare display string was not inspected for currency evidence, and this first sample does not establish why each row was rejected. Added low-cardinality result diagnostics for route mismatches, missing fare options, fare records examined, unverified price/scope, price-only observations and verified offers. Official API documentation provides no currency/market parameter and shows dollar strings without ISO currency or offset-bearing local times; it documents reset headers for exhausted monthly quotas, which the shared cooldown now honors. Focused Expedia/provider/transport tests pass **35/35**. Direct Expedia partner API credentials remain absent; Omkar's output still does not meet a live price/itinerary acceptance shape.
