@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Omkar exact-query response cache — 2026-11-23
+
+Added a bounded durable cache to the ordinary `searchProviders` Omkar path for exact, complete, fresh, one-adult one-way CAD offers. The key binds route/date/cabin/filters/airport labels/Canada/CAD and the configured account-key hash; maximum TTL is 30 seconds and never extends offer freshness. Price-only or mixed results, empty/stale/invalid results and unsupported parties do not cache. Provider-seam regressions pass 4/4; full `npm test` passes 697/697; build passes after retrying past the Next.js security reminder. No live cache sample was taken, and recent live Omkar data lacked explicit CAD and offset-aware timestamps. Keep provider terms/schema and live-speed evidence open. [Evidence](docs/omkar-exact-response-cache-2026-11-23.md).
+
 ## Google round-trip failure diagnostics — 2026-11-23
 
 The native Google round-trip failure envelope now forwards an allow-listed internal stage alongside bounded RPC/selection counts and the provider code. A fixture regression failed before the change and passes now; `node --test tests/google-native.test.mjs` passes 16/16 and confirms no route, date, source URL, or payload leaks into serialized diagnostics. No live request was made. The prior live `invalid_response` remains unexplained and was not repeated. This improves future triage but does not complete Google reliability, provider authorization, or round-trip cache live validation. [Evidence](docs/google-roundtrip-failure-stage-2026-11-23.md).

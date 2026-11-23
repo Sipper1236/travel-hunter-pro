@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Omkar exact-query response cache — 2026-11-23
+
+Omkar's validated one-adult, one-way CAD itineraries can now use the durable provider cache through `searchProviders`. The cache binds the exact route/date/cabin/filters/airport labels and configured-key hash; its 30-second maximum is capped by quote freshness. Only complete fresh offers cache. Price-only, mixed, empty, stale and unsupported-party results bypass it. Focused tests pass 4/4, full suite 697/697, and production build passes after retrying Next's security reminder. No live call/cache evidence was made because the latest inspected response lacked currency and offset-time evidence. See [evidence](docs/omkar-exact-response-cache-2026-11-23.md). Omkar terms and live cache speed remain open.
+
 ## Google round-trip failure diagnostics — 2026-11-23
 
 Failure results from the native Google round-trip path now preserve one allow-listed internal stage and bounded request/selection counters through the provider status envelope. A regression failed before this change and now passes; the focused native adapter suite passes 16/16. It confirms fixture behavior only. No live request was repeated, and the earlier live `invalid_response` remains unexplained because its stage was not captured. Google RPC permission/stability and round-trip cache live evidence remain open. [Evidence](docs/google-roundtrip-failure-stage-2026-11-23.md).

@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## Reverse-endpoint progress — exact Omkar response cache — 2026-11-23
+
+The ordinary `searchProviders` path now caches exact, fresh, complete one-adult one-way Omkar CAD itineraries for at most 30 seconds, capped by quote freshness. Cache identity binds route, date, cabin, filters, selected airport labels, Canada/CAD, and a hash of the configured account key; hits retain the original observation time. Price-only/mixed, empty, stale, malformed, identified-party, child, and round-trip results are not cached. A regression failed before the implementation and now verifies one provider call across two identical queries plus cache invalidation on changed inputs. Focused cache tests pass 4/4; full `npm test` passes 697/697; production build passes after the Next.js security-reminder retry. No live Omkar response was cached: the last bounded live response lacked explicit CAD and offset-aware timestamps. This is fixture evidence only and does not prove live latency. [Evidence](docs/omkar-exact-response-cache-2026-11-23.md). Reverse-endpoint implementation and §17 remain open.
+
 ## Reverse-endpoint progress — ITA Matrix live pipeline recheck — 2026-11-23
 
 One bounded live ITA Matrix API search for YYZ→LHR, one-way 2027-02-12, one adult/economy/CAD returned 10 records and accepted 10 complete itinerary offers in 41,688 ms. An identical follow-up through `searchProviders` returned the durable Matrix cache hit, again with 10 accepted results, and passed the normal flight worker-result validator. No prices or payloads were retained. This proves one live route/query plus cross-process cache integration only; the cold response is slow, not p95, and no seller checkout or current access/rate terms were verified. [Evidence](docs/matrix-live-recheck-2026-11-23.md). Broader reverse-endpoint implementation and §17 remain incomplete.
