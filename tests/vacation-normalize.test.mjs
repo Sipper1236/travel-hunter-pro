@@ -49,6 +49,22 @@ test('normalizes a one-child structured package only when request and provider p
  assert.deepEqual(result.offers[0].packageEvidence.paxRows,[{count:1,type:'A'},{count:1,type:'C'}]);
 });
 
+test('normalizes three exact-age children only when the comma-separated request and room allocation match',()=>{
+ const childQuery={...query,childrenAges:[7,12,15]};
+ const childListing=new URL(listingUrl);childListing.searchParams.set('nb_child','3');childListing.searchParams.set('non_adult1','7');childListing.searchParams.set('non_adult2','12');childListing.searchParams.set('non_adult3','15');childListing.searchParams.set('r0','1-adult-0,1-child-7,1-child-12,1-child-15');
+ const childRequest=new URL(apiRequestUrl);childRequest.searchParams.set('child-ages','7,12,15');
+ const response=packageApiResponse();response.results.packages[0].pricing={grandTotal:4400,total:4400,perPaxType:[{paxCount:1,paxType:'A',price:2400,taxFees:200,total:2600},{paxCount:1,paxType:'C',price:500,taxFees:100,total:600},{paxCount:1,paxType:'C',price:500,taxFees:100,total:600},{paxCount:1,paxType:'C',price:500,taxFees:100,total:600}]};
+ const result=normalizeVacationApiResponse(response,{...context,query:childQuery,requestUrl:childRequest.href,sourceUrl:childListing.href,responseBytes:88189});
+ assert.equal(result.offers.length,1);assert.equal(result.offers[0].price,4400);assert.deepEqual(result.offers[0].occupancyEvidence.childrenAgesInListingUrl,[7,12,15]);
+ assert.deepEqual(result.offers[0].packageEvidence.paxRows,[{count:1,type:'A'},{count:1,type:'C'},{count:1,type:'C'},{count:1,type:'C'}]);
+ assert.throws(()=>normalizeVacationApiResponse(response,{...context,query:childQuery,requestUrl:childRequest.href.replace('child-ages=7%2C12%2C15','child-ages=15%2C12%2C7'),sourceUrl:childListing.href,responseBytes:88189}),/request does not match/);
+ const extraRequestParam=new URL(childRequest.href);extraRequestParam.searchParams.set('non_adult3','14');
+ assert.throws(()=>normalizeVacationApiResponse(response,{...context,query:childQuery,requestUrl:extraRequestParam.href,sourceUrl:childListing.href,responseBytes:88189}),/request does not match/);
+ assert.throws(()=>normalizeVacationApiResponse(response,{...context,query:{...childQuery,childrenAges:[7,12,15,16]},requestUrl:childRequest.href,sourceUrl:childListing.href,responseBytes:88189}),/at most three/);
+ const wrongRoom=new URL(childListing.href);wrongRoom.searchParams.set('r0','1-adult-0,1-child-7,1-child-12,1-child-11');
+ assert.throws(()=>normalizeVacationApiResponse(response,{...context,query:childQuery,requestUrl:childRequest.href,sourceUrl:wrongRoom.href,responseBytes:88189}),/rendered provider listing/);
+});
+
 test('structured widget results fail closed on mismatched requests, routes, stays, references, totals, currencies, or unverified parties',()=>{
  const base=packageApiResponse();
  for(const changed of [

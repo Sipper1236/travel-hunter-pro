@@ -1,5 +1,9 @@
 # Reverse-endpoint fan-out and progressive flight results — 2026-11-14
 
+## ACV structured two-child adapter — 2026-11-22
+
+The ordinary widget sent one adult plus ages 7, 12 and 15 through `GET /packages-search/search`; the request had one comma-separated `child-ages` parameter, and all 20 sampled response packages contained one adult plus three child passenger rows. The adapter binds ordered ages across the request, product-listing `non_adult1`–`non_adult3`, exact `r0` room allocation, pax counts and group total; worker validation repeats those checks. A fresh structured adapter invocation accepted 20/20 packages and passed `packageWorkerResultError`. Focused tests passed 38/38, full `npm test` passed 639/639, and the production build passed after retrying past Next.js's security reminder. Audit reports one moderate issue in installed Next.js 16.4.3. No prices, properties, IDs or raw records were printed. An eight-child query was refused by the widget before submission; the maximum supported count is unknown. This was not a durable website job or UI check. Four-plus children, infants, >20-page searches, complete package flight segments, seller availability, checkout fees and final all-in price remain open.
+
 ## ACV exact-child structured path — 2026-11-23
 
 The ACV structured normalizer/worker path now accepts an adult party plus one exact-age child in one room. It validates the child age in the normal widget request, listing URL (`non_adult1` and the explicit `r0` allocation), and passenger pricing rows (adult `A`, child `C`); row counts and their exact-cent tax/fee totals must match the submitted party and package group total. Fixtures cover changed ages, wrong passenger category and mismatched worker evidence. A fresh ordinary-widget API submission for one adult and the previously supplied age-7 child returned 20 records; all 20 normalized and the resulting object passed the package worker result validator. Focused ACV suites passed 36/36.

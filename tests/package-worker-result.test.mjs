@@ -58,6 +58,19 @@ test('package worker accepts structured child pricing only when the exact age, r
  const changedAge=structuredClone(result);changedAge.offers[0].packageEvidence.childrenAges=[8];assert.match(packageWorkerResultError(changedAge,childInput,now),/package evidence/);
 });
 
+test('package worker accepts three structured children only when request, listing, room, and passenger counts agree',()=>{
+ const childInput={...input,childrenAges:[7,12,15]},result=makeResult(childInput),offer=result.offers[0],listing=new URL(offer.sourceUrl);
+ listing.searchParams.set('nb_child','3');listing.searchParams.set('non_adult1','7');listing.searchParams.set('non_adult2','12');listing.searchParams.set('non_adult3','15');listing.searchParams.set('r0','1-adult-0,1-child-7,1-child-12,1-child-15');offer.sourceUrl=listing.href;
+ offer.source='Air Canada Vacations packages-search/search';offer.destinationMatch.evidence='Structured package hotel destination field and selected provider destination ID';offer.hotelStay={checkIn:'2027-04-16',checkOut:'2027-04-25'};offer.price=4400;
+ offer.packageEvidence={responsePackageId:'three-child-package',hotelId:'hotel-1',itineraryId:'itinerary-1',paxRows:[{count:1,type:'A'},{count:1,type:'C'},{count:1,type:'C'},{count:1,type:'C'}],groupTotalCents:440000,adultCount:1,childrenAges:[7,12,15],rooms:1,requestOrigin:'YHZ',requestDestination:'BCN',requestDestinationId:'12345',departureDate:'2027-04-15',returnDate:'2027-04-25',outboundArrivalDate:'2027-04-16'};
+ result.coverage={mode:'structured_widget_response',returnedPackages:1,totalAvailable:80,responseOffset:0,responseLimit:20,resultLimit:20,moreAvailable:true,pagesExpanded:0};
+ result.sourceEvidence={mode:'structured_widget_response',endpoint:'https://vacations-api.aircanada.com/packages-search/search',method:'GET',status:200,responseBytes:88189,observedAt:new Date(now).toISOString(),request:{origin:'YHZ',destination:'BCN',destinationId:'12345',departureDate:'2027-04-15',returnDate:'2027-04-25',adults:1,childrenAges:[7,12,15],rooms:1,cabin:'economy',offset:0,limit:20},response:{returnedPackages:1,totalAvailable:80},packageLinks:[{packageId:'three-child-package',hotelId:'hotel-1',itineraryId:'itinerary-1',destinationId:'12345',totalCents:440000}],currency:'CAD'};
+ assert.equal(packageWorkerResultError(result,childInput,now),null);
+ const changedAges=structuredClone(result);changedAges.offers[0].packageEvidence.childrenAges=[12,7];assert.match(packageWorkerResultError(changedAges,childInput,now),/package evidence/);
+ const missingRow=structuredClone(result);missingRow.offers[0].packageEvidence.paxRows.pop();assert.match(packageWorkerResultError(missingRow,childInput,now),/package evidence/);
+ const fourthChild={...childInput,childrenAges:[7,12,15,16]},unsupported=structuredClone(result);unsupported.query=fourthChild;unsupported.sourceEvidence.request.childrenAges=fourthChild.childrenAges;unsupported.offers[0].query=fourthChild;unsupported.offers[0].packageEvidence.childrenAges=fourthChild.childrenAges;assert.match(packageWorkerResultError(unsupported,fourthChild,now),/one-page party query/);
+});
+
 test('package worker rejects changed query, source dates, destination, and party',()=>{
  assert.match(packageWorkerResultError(makeResult({...makeResult().query,date:'2027-04-16'}),input,now),/query/);
  const changed=makeResult();changed.offers[0].sourceUrl=changed.offers[0].sourceUrl.replace('15%2F04%2F2027','16%2F04%2F2027');
