@@ -18,6 +18,7 @@ Commands run on 2026-11-23:
 | --- | --- |
 | `npm ci` | Passed; 135 packages audited, zero vulnerabilities |
 | `npm test` | Passed; 705 tests on Node 26.13 and again on the workflow's Node 22.13.1 after correcting Node 22's OpenSSL authentication error wording |
+| `npm run test:ci` | Passed in hosted GitHub Actions run [45216692770](https://github.com/Sipper1236/travel-hunter-pro/actions/runs/45216692770) on commit `434865d`; 706/706 tests under Node 22.13.1 |
 | `npm run build` | Passed on Next.js 16.4.6 under Node 26.13 and Node 22.13.1 |
 | `npm audit --audit-level=low` | Passed; zero vulnerabilities |
 | `npm run check:markdown-links` | Passed; 131 Markdown files, no broken local links |
@@ -28,7 +29,7 @@ Commands run on 2026-11-23:
 
 UI checks used local fixtures and blocked external/provider traffic. They do not establish live inventory, traveler eligibility, seller-confirmed price, or booking availability. No provider search or booking was made for this audit.
 
-Hosted CI initially exposed a Node 22 OpenSSL authentication-message difference and several intermittently cancelled/partial browser-worker tests under parallel load. Backup error normalization was fixed; deadline tests now keep Node's event loop alive while exercising deliberately unreferenced abort timers. The hosted CI test command now runs files serially to reduce process/browser fixture contention, while local `npm test` retains its two-worker setting. The regional Google worker fixture also uses a seeded, exact airport-timezone cache instead of parsing a large synthetic directory before exercising the browser flow. The full suite passed locally under Node 22.13.1; the focused cache-seeded regional worker test passes. Hosted CI passed all steps on commit `a4d05ff`; the newer GitHub Actions v7 runner update exposed a calendar-worker fixture failure before this adjustment. Final hosted verification is pending.
+Hosted CI initially exposed a Node 22 OpenSSL authentication-message difference and several intermittently cancelled/partial browser-worker tests under parallel load. Backup error normalization was fixed; deadline tests now keep Node's event loop alive while exercising deliberately unreferenced abort timers. The hosted CI test command runs files serially to reduce process/browser fixture contention, while local `npm test` retains its two-worker setting. The regional Google worker fixture uses a seeded, exact airport-timezone cache. A subsequent hosted failure showed Chromium startup exceeding 15 seconds on the GitHub runner; native Google launch now has a bounded 30-second startup allowance within its existing 45-second overall deadline, and sanitized failure-stage reporting distinguishes browser startup from timezone lookup. The focused cache-seeded worker test passes locally under Node 22.13.1. Final hosted CI passed clean install, audit, Markdown links, 706/706 tests, and production build on commit `434865d` in run [45216692770](https://github.com/Sipper1236/travel-hunter-pro/actions/runs/45216692770).
 
 ## GitHub publication and application boundary
 

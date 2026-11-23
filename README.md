@@ -59,7 +59,7 @@ Job ownership tokens are local capabilities, not user authentication. Do not exp
 
 ## Checks
 
-The latest local verification recorded on 2026-11-23 passed **705 tests** and a production build. The current dependency audit is clean after updating Next.js to 16.4.6. CI repeats these checks on pushes and pull requests.
+The latest hosted verification on 2026-11-23 passed **706/706 tests** and a production build on Node 22.13.1. The dependency audit reports zero vulnerabilities after updating Next.js to 16.4.6. CI repeats these checks on pushes and pull requests.
 
 ```sh
 npm test
