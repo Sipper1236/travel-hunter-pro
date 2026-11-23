@@ -44,6 +44,17 @@ test('safe requests retry a transient error once with pacing; POST is not replay
  }finally{policy.close();}
 });
 
+test('exhausted GET 5xx retries create a shared short cooldown',async()=>{
+ let at=100000,calls=0,lastAttemptAt=at;const policy=createJobStore({path:':memory:',now:()=>at});
+ try{
+  const options={policy,now:()=>at,sleep:async ms=>{at+=ms;},fetcher:async()=>{calls++;lastAttemptAt=at;return new Response('',{status:503});}};
+  await assert.rejects(fetchSource('Expedia via Omkar','https://example.com',{},options),error=>error.sourceStatus==='temporarily_unavailable'&&error.httpStatus===503&&error.retryAt===lastAttemptAt+30_000);
+  assert.equal(calls,2,'a safe GET retries once before opening the cooldown');
+  await assert.rejects(fetchSource('Expedia via Omkar','https://example.com',{},options),error=>error.sourceStatus==='temporarily_unavailable'&&error.retryAt===lastAttemptAt+30_000);
+  assert.equal(calls,2,'the shared source policy prevents another request during the cooldown');
+ }finally{policy.close();}
+});
+
 test('access denial and long service Retry-After never retry automatically',async()=>{
  for(const status of [401,403,503]){
    let calls=0;await assert.rejects(fetchSource('Source','https://example.com',{}, {fetcher:async()=>{calls++;return new Response('',{status,headers:{'Retry-After':'600'}});}}),error=>Boolean(error.retryAt));assert.equal(calls,1);

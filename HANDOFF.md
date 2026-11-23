@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Shared 5xx source cooldown — 2026-11-23
+
+The shared HTTP transport now retries safe GET/HEAD calls at most once, then records a durable 30-second provider cooldown after an unhinted HTTP 5xx; a longer provider `Retry-After` takes precedence. POST is not replayed. Regional calendars suppress a provider across remaining route pairs after a 5xx while continuing healthy providers and preserving partial-coverage labels. Query-local failures without an HTTP 5xx still allow other routes. Focused transport/calendar tests pass **67/67**, full `npm test` passes **661/661**, and `npm run build` passes after retrying Next.js 16.4.3's security reminder. `npm audit --audit-level=low` reports one moderate Next.js 16.4.3 advisory; the suggested 16.4.6 fix is outside the declared range. No live provider request was made. [Evidence](docs/source-5xx-cooldown-2026-11-23.md).
+
 ## Google flexible-return calendar grids — 2026-11-23
 
 The opt-in Google date-grid adapter now supports variable return-date ranges for one-adult economy calendars without active filters or identified travelers. It obtains one fixed-return grid per eligible return date, covering eligible departure dates, then maps results to exact route/date pairs. Logical budget accounting still charges each requested pair; `wireResponses` records actual grid calls. A regression verifies four exact pairs covered by two grids, worker provenance rejection for a tampered query date, and preflight refusal below the logical budget. Focused calendar/query/worker tests pass **58/58** and provider-capability/calendar/query/worker tests pass **65/65**. Full `npm test` passes **659/659**; production build passed after retrying the Next.js security reminder. No live Google call was made. [Evidence](docs/google-flexible-return-calendar-2026-11-23.md).

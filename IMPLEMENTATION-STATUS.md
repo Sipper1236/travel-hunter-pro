@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Provider-wide 5xx cooldown — 2026-11-23
+
+After a final HTTP 5xx, shared transport now records a durable 30-second cooldown unless `Retry-After` gives a longer interval. Safe GET/HEAD requests get their existing one retry before cooldown; POST remains non-replayed. Regional calendar fan-out suppresses only providers with an observed HTTP 5xx for the rest of that job and continues healthy sources, reporting suppressed coverage. Query-local temporary errors without an HTTP 5xx remain route-local. Focused transport/calendar tests pass **67/67**, full `npm test` passes **661/661**, and `npm run build` passed after the Next.js security reminder retry. `npm audit --audit-level=low` reports one moderate Next.js 16.4.3 advisory; the suggested 16.4.6 fix is outside the declared range. No live provider request was made. See [evidence](docs/source-5xx-cooldown-2026-11-23.md).
+
 ## Google flexible-return calendar grids — 2026-11-23
 
 Enabled the opt-in Google `GetCalendarPicker` path for variable return-date calendars. For each exact return date, it shares one response across departure dates up to that return, preserving exact route/date pairing and the original grid query date. It still obeys the search budget (logical pair count) and separately records actual `wireResponses`. Worker validation checks the original source-query date and fixed return date. Support remains one adult, economy, no identified travelers, no active filters, with the existing RPC opt-in. Focused calendar/query/worker tests pass **58/58**; capability-inclusive focused tests pass **65/65**; full suite passes **659/659**. The production build passed after retrying the Next.js security reminder. No live Google request was made. See [evidence](docs/google-flexible-return-calendar-2026-11-23.md).

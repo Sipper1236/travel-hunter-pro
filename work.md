@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## Reverse-endpoint progress — shared provider 5xx cooldown — 2026-11-23
+
+Shared structured HTTP transport persists a 30-second per-provider cooldown after a final 5xx when `Retry-After` does not specify a longer interval. Safe GET/HEAD requests may make one bounded retry before the cooldown; POST is not replayed. Regional calendars stop querying that failed source for additional airport pairs while continuing healthy providers and disclosing the suppressed coverage. Query-local failures without 5xx remain route-local. Focused transport/calendar suites pass 67/67, full `npm test` passes 661/661, and production build passes after retrying Next.js's security reminder. No live provider request was made; reverse-endpoint completion and §17 remain open. [Evidence](docs/source-5xx-cooldown-2026-11-23.md).
+
 ## Reverse-endpoint progress — Google flexible-return grids — 2026-11-23
 
 The opt-in Google structured date-grid path now handles one-adult economy round-trip calendars with variable return-date ranges and no active filters or identified travelers. It requests one fixed-return grid for each eligible return date, reuses it across eligible departures, and preserves exact date-pair/URL provenance. The request budget still accounts for every logical pair and `wireResponses` separately counts actual grid RPCs. Focused calendar/query/worker tests pass 58/58, capability-inclusive tests 65/65, full `npm test` passes 659/659, and production build passes after retrying the Next.js security reminder. No live Google call was made. This does not establish endpoint reliability or complete §17. [Evidence](docs/google-flexible-return-calendar-2026-11-23.md).

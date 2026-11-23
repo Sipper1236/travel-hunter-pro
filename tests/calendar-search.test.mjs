@@ -526,6 +526,21 @@ test('all-provider calendars stop a refused source while continuing healthy sour
  assert.equal(result.dates[1].providerCoverage.find(row=>row.provider==='Ignav').suppressed,true);
 });
 
+test('all-provider regional calendars suppress a source after a provider-wide 5xx and continue healthy sources',async()=>{
+ let expediaCalls=0,ignavCalls=0,matrixCalls=0;
+ const result=await searchFareCalendar({...input,source:'all',adults:2,children:0,childrenAges:[],tripType:'one-way',start:input.start,end:input.start,nights:null,cabin:'economy',filters:{},destinationAirports:['BCN','LHR'],searchLimit:6},{providerOptions:{
+  searchIgnav:async q=>{ignavCalls++;return response([offer(q,500,{ignavId:`fare_${q.destination}1234`,itineraryKey:`exact-${q.destination}-itinerary`})]);},
+  searchExpedia:async()=>{expediaCalls++;throw new SourceRequestError('Expedia request failed (HTTP 503).',{status:'temporarily_unavailable',httpStatus:503,retryAt:Date.now()+30_000});},
+  searchMatrix:async()=>{matrixCalls++;return {offers:[],priceObservations:[],sources:[{provider:'ITA Matrix',status:'ok',received:0,accepted:0}]};},
+ }});
+ assert.equal(expediaCalls,1,'the failed Expedia source is not queried again for the next route');
+ assert.equal(ignavCalls,2);assert.equal(matrixCalls,2,'healthy sources continue through all exact routes');
+ assert.equal(result.dates[0].offers.length,2,'both healthy Ignav offers are retained');
+ const expedia=result.dates[0].providerCoverage.filter(row=>row.provider==='Expedia');
+ assert.equal(expedia.length,2);assert.equal(expedia[0].httpStatus,503);assert.equal(expedia[1].suppressed,true);
+ assert.equal(result.coverage.fullyScanned,false,'suppressed Expedia coverage remains explicitly incomplete');
+});
+
 test('recovered calendar retains a provider refusal from its acknowledged checkpoint',async()=>{
  let ignav=0,matrix=0,saved;
  const query={...input,source:'all',children:0,childrenAges:[],adults:2,searchLimit:4};

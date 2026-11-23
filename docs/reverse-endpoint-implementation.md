@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## Shared provider 5xx cooldown — 2026-11-23
+
+The common HTTP transport now retries safe GET/HEAD requests once, then persists a 30-second source cooldown after an HTTP 5xx unless the provider supplies a longer `Retry-After`. POST requests remain non-replayed. Regional calendars stop querying a provider after its 5xx while retaining explicit suppressed-coverage rows and continuing healthy sources. Focused tests pass **67/67**, full suite **661/661**, and production build passes after the Next.js reminder retry. No live request was made. [Evidence](source-5xx-cooldown-2026-11-23.md).
+
 ## Google flexible-return calendar grids — 2026-11-23
 
 The opt-in Google date grid supports variable returns by making one fixed-return grid per return date and sharing it across eligible departures. Every logical date pair remains budgeted and is validated against the exact source query and return date; actual grid RPCs are reported separately. One adult/economy/no-filter scope remains. Focused calendar tests 58/58 and capability-inclusive tests 65/65; full suite 659/659 and build pass after the Next.js reminder retry. No live request. [Evidence](google-flexible-return-calendar-2026-11-23.md).
@@ -73,7 +77,7 @@ The inventory was checked against the current module paths and environment-varia
 
 ## Current transport controls by adapter
 
-These are code-level safeguards, not provider-published quotas or permission records. In production, `fetchSource` uses a durable shared per-provider minimum gap of 1,000 ms by default (`TRAVEL_SOURCE_GAP_MS` accepts 100–60,000 ms), honors `Retry-After`, applies at least 60 seconds of cooldown after HTTP 429 and 300 seconds after 401/403, and uses a 30-second default request deadline. Safe GET/HEAD requests may retry once after transient network/eligible server failures; POST requests are not retried unless a source explicitly opts in. Local test fetchers can bypass the durable source policy. Direct browser requests have their own pacing/deadlines and are excluded from the shared HTTP latency histogram.
+These are code-level safeguards, not provider-published quotas or permission records. In production, `fetchSource` uses a durable shared per-provider minimum gap of 1,000 ms by default (`TRAVEL_SOURCE_GAP_MS` accepts 100–60,000 ms), honors `Retry-After`, applies at least 60 seconds of cooldown after HTTP 429, 300 seconds after 401/403, and 30 seconds after a final HTTP 5xx without a longer hint. Safe GET/HEAD requests may retry once after transient network/eligible server failures; the server-error cooldown starts after the retry fails. POST requests are not retried unless a source explicitly opts in. Local test fetchers can bypass the durable source policy. Regional calendars suppress a provider after an observed 5xx and continue healthy sources; query-local failures without an HTTP 5xx do not suppress other route pairs. Direct browser requests have their own pacing/deadlines and are excluded from the shared HTTP latency histogram.
 
 | Adapter | Current deadline / retry policy | Decoded response bound | Parser and operational gap |
 |---|---|---|---|

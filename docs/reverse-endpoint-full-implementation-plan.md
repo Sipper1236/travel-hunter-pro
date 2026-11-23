@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Shared provider 5xx cooldown — 2026-11-23
+
+Added a durable 30-second provider cooldown after final HTTP 5xx responses without a longer `Retry-After`; safe GET/HEAD retains one retry, POST is not replayed. Regional calendar jobs suppress a provider after its HTTP 5xx while continuing other sources and disclosing incomplete coverage. Focused tests **67/67**, full tests **661/661**, build passes after the Next.js reminder retry; no live provider request was made. [Evidence](source-5xx-cooldown-2026-11-23.md).
+
 ## Google flexible-return calendar grids — 2026-11-23
 
 Added opt-in variable-return date-grid handling: one Google fixed-return grid per eligible return date is shared across departure dates, while budget and durable source-date validation remain exact for every logical pair. Fixture-backed calendar tests pass 58/58 and capability-inclusive tests pass 65/65; full suite passes 659/659; build passes after retrying Next.js's security reminder. No live endpoint request was made. Scope remains one adult, economy, no filters or identified travelers. See [evidence](google-flexible-return-calendar-2026-11-23.md).
