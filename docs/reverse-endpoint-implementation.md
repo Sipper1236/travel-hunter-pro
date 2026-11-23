@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## ACV adult multi-room update — 2026-11-23
+
+The ACV structured widget adapter now validates adult-only multi-room occupancy against exact provider listing `r0..rN` allocations and group totals derived from passenger row totals multiplied by passenger counts. Live two-adult/two-room evidence: 20/20 package rows reconciled; all 20 passed adapter normalization and the worker-result guard. This is not durable UI evidence. Child multi-room and infant queries remain unsupported. Tests: 641/641; build passed after retrying past the Next.js security reminder; audit reports one moderate Next.js issue, with the fix outside the declared range.
+
 **Reviewed:** 2026-11-22
 **Scope:** Existing Travel Hunter Pro provider integrations and the requested direction to use structured site endpoints for most sources. This is an implementation plan and code inventory; it does not assert that every source is configured, entitled, currently responding, or suitable for automated use.
 

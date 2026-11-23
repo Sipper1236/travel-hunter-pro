@@ -1,6 +1,10 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
-## ACV structured two-child continuation — 2026-11-22
+## 2026-11-23 continuation — ACV adult multi-room
+
+Implemented the ACV structured JSON path for adult parties in multiple rooms, using provider-observed `r0..rN` listing parameters as exact occupancy evidence. The live two-adult/two-room response had 20 packages; weighted per-passenger totals reconciled for all 20, and the adapter accepted all 20 through the worker validator. The results UI displays verified room allocations. Focused suite 40/40; full suite 641/641; production build passed after the Next.js security reminder retry. Audit still reports one moderate Next.js vulnerability, with a fix outside the declared dependency range. The overall goal remains incomplete: child multi-room/infant support, durable UI proof, >20 results, complete segment chronology, final availability and fees remain open.
+
+## ACV structured three-child continuation — 2026-11-22
 
 Extended ACV's fast ordinary-widget response path to three exact-age children in one room. A live widget request used a comma-separated age value and all 20 sampled packages had one adult plus three child passenger rows; 20/20 normalized results passed the worker guard for ages 7, 12 and 15. Exact age order, listing ages, `r0` allocation, passenger counts and totals are preserved. Focused tests pass 38/38 and the full suite 639/639; the build passes after the Next.js reminder. Audit reports one moderate Next.js issue; no upgrade was applied. A one-adult/eight-child UI query was refused before package search, so the provider's max count is unknown. Four-plus children and infants remain off the structured path; no durable UI/job run, complete flight segments, seller availability or checkout total was verified. Overall reverse-endpoint and §17 goals remain active and incomplete.
 

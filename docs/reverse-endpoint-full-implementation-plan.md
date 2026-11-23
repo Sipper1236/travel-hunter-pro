@@ -1,6 +1,10 @@
 # Reverse-endpoint implementation map and completion plan
 
-Updated: 2026-11-22
+Updated: 2026-11-23
+
+## Latest implementation evidence — ACV adult multi-room
+
+The ACV ordinary-widget structured response adapter now supports adult-only multiple-room results when the exact room allocations appear in the provider listing URL. Live evidence for two adults/two rooms showed `r0` and `r1` with one adult each; weighted per-passenger totals reconciled with every one of the 20 returned package totals. The adapter accepted 20/20 and the durable worker result guard accepted the output. This was a direct adapter invocation, not a durable UI job. Children across multiple rooms and infants remain unsupported. Full test suite: 641/641; production build passed after the Next.js reminder retry; audit reports one moderate Next.js issue whose available fix is outside the declared version range. P6 remains incomplete.
 
 ## Purpose and status
 

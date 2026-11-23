@@ -1,6 +1,10 @@
 # Reverse-endpoint fan-out and progressive flight results — 2026-11-14
 
-## ACV structured two-child adapter — 2026-11-22
+## ACV adult multi-room structured results — 2026-11-22 live evidence / 2026-11-23 implementation
+
+The ordinary widget exposed two exact room entries (`r0=1-adult-0`, `r1=1-adult-0`) for a two-adult/two-room search. In a direct adapter run, each of 20 returned packages reconciled only when passenger-row totals were multiplied by their passenger counts; the adapter accepted 20/20 and the worker result validator accepted the result. UI cards now expose those validated room allocations. This does not verify child+multi-room or infant occupancy, a durable browser-to-worker UI path, more than 20 records, complete package segment chronology, seller availability or final fees. Current full suite is 641/641; production build passed after the Next.js reminder retry; audit reports one moderate Next.js vulnerability.
+
+## ACV structured three-child adapter — 2026-11-22
 
 The ordinary widget sent one adult plus ages 7, 12 and 15 through `GET /packages-search/search`; the request had one comma-separated `child-ages` parameter, and all 20 sampled response packages contained one adult plus three child passenger rows. The adapter binds ordered ages across the request, product-listing `non_adult1`–`non_adult3`, exact `r0` room allocation, pax counts and group total; worker validation repeats those checks. A fresh structured adapter invocation accepted 20/20 packages and passed `packageWorkerResultError`. Focused tests passed 38/38, full `npm test` passed 639/639, and the production build passed after retrying past Next.js's security reminder. Audit reports one moderate issue in installed Next.js 16.4.3. No prices, properties, IDs or raw records were printed. An eight-child query was refused by the widget before submission; the maximum supported count is unknown. This was not a durable website job or UI check. Four-plus children, infants, >20-page searches, complete package flight segments, seller availability, checkout fees and final all-in price remain open.
 

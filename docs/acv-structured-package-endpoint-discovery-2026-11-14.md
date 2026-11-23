@@ -1,5 +1,11 @@
 # Air Canada Vacations structured package response discovery — 2026-11-14
 
+## Adult multi-room follow-up — live observation 2026-11-22, implementation 2026-11-23
+
+A direct `searchVacation()` call for YHZ–BCN, Apr 15–25 2027, two adults and two rooms used the ordinary widget flow. Its provider listing URL exposed `numberOfRooms=2`, `r0=1-adult-0`, and `r1=1-adult-0`. The structured API returned 20 package rows. Across the sampled rows, summing `paxCount × per-passenger total` matched each package group total in 20/20; summing unweighted row totals matched 0/20. The normalized adapter accepted 20/20, retained the two room allocations, and the worker result validator returned no error. No package names, prices, IDs or raw payloads were printed or saved.
+
+Implementation adds exact, contiguous `r0..rN` parsing and requires at least one adult per room, aggregate adults equal to the submitted count, and no child assignment for multi-room searches. Package and occupancy evidence must agree with the provider listing URL. UI cards display the provider-listed allocation. Regression tests cover accepted weighted totals, missing room parameters and modified worker evidence. These live observations do not establish support for children across multiple rooms, infants, durable website/worker execution, complete offset-aware flight segments, more than the first 20 packages, checkout inventory, or mandatory/local fees.
+
 ## Observation
 
 An exact adult-only YHZ–BCN Flight + Hotel query was submitted through Air Canada Vacations’ ordinary widget: Halifax Stanfield Intl. Airport (YHZ), Barcelona city, Apr 15–25 2027, one adult, one room. The browser received a **GET 200 JSON** response from:

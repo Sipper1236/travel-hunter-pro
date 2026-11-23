@@ -39,6 +39,20 @@ test('normalizes the ordinary widget JSON response with exact route, stay, hotel
  assert.equal(normalizeVacationApiResponse(actualAdultMarker,{...context,requestUrl:apiRequestUrl,sourceUrl:listingUrl,responseBytes:88189}).offers.length,1);
 });
 
+test('normalizes adult multi-room packages only when every provider room allocation and weighted group total match',()=>{
+ const multiRoomQuery={...query,adults:2,rooms:2};
+ const multiRoomListing=new URL(listingUrl);multiRoomListing.searchParams.set('nb_adult','2');multiRoomListing.searchParams.set('numberOfRooms','2');multiRoomListing.searchParams.set('r0','1-adult-0');multiRoomListing.searchParams.set('r1','1-adult-0');
+ const multiRoomRequest=new URL(apiRequestUrl);multiRoomRequest.searchParams.set('adults','2');multiRoomRequest.searchParams.set('rooms','2');
+ const response=packageApiResponse();response.results.packages[0].pricing={grandTotal:6400,total:6400,perPaxType:[{paxCount:2,paxType:'A',price:3000,taxFees:200,total:3200}]};
+ const result=normalizeVacationApiResponse(response,{...context,query:multiRoomQuery,requestUrl:multiRoomRequest.href,sourceUrl:multiRoomListing.href,responseBytes:88189});
+ assert.equal(result.offers.length,1);assert.equal(result.offers[0].price,6400);
+ assert.equal(result.offers[0].occupancyEvidence.perRoomAllocation,'provider_listing_verified');
+ assert.deepEqual(result.offers[0].occupancyEvidence.roomAllocations,[{adults:1,childrenAges:[]},{adults:1,childrenAges:[]}]);
+ assert.deepEqual(result.offers[0].packageEvidence.roomAllocations,[{adults:1,childrenAges:[]},{adults:1,childrenAges:[]}]);
+ const wrongRoomCount=new URL(multiRoomListing.href);wrongRoomCount.searchParams.delete('r1');
+ assert.throws(()=>normalizeVacationApiResponse(response,{...context,query:multiRoomQuery,requestUrl:multiRoomRequest.href,sourceUrl:wrongRoomCount.href,responseBytes:88189}),/exact rendered provider listing/);
+});
+
 test('normalizes a one-child structured package only when request and provider party rows preserve the exact age',()=>{
  const childQuery={...query,childrenAges:[7]};
  const childListing=new URL(listingUrl);childListing.searchParams.set('nb_child','1');childListing.searchParams.set('non_adult1','7');childListing.searchParams.set('r0','1-adult-0,1-child-7');
