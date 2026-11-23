@@ -103,6 +103,21 @@ test('fare calendar streams every accepted offer from a completed provider query
  await pending;
 });
 
+test('calendar streams a Matrix partial itinerary before its final provider response',async()=>{
+ const query={origin:'YHZ',destination:'BCN',start:'2099-04-15',end:'2099-04-15',tripType:'one-way',adults:1,children:0,childrenAges:[],cabin:'economy',filters:{},source:'all',searchLimit:2};
+ let releaseMatrix,resolvePreview;const waitingForMatrix=new Promise(resolve=>{releaseMatrix=resolve;});
+ const firstPreview=new Promise(resolve=>{resolvePreview=resolve;});
+ const partial={offers:[offer({...query,date:query.start},400,{provider:'ITA Matrix',source:'ITA Matrix live search'})],priceObservations:[],sources:[{provider:'ITA Matrix',status:'ok',received:1,accepted:1}],observedAt:new Date().toISOString(),complete:false,limitations:[]};
+ const pending=searchFareCalendar(query,{providerOptions:{searchGoogle:async()=>({offers:[],sources:[{provider:'Google Flights',status:'ok',received:0,accepted:0}]}),searchMatrix:async(_matrixQuery,options)=>{await options.onUpdate(partial);await waitingForMatrix;return partial;}},onProgress:progress=>{const cell=progress.calendarPreview?.dates?.[0];if(cell?.offer?.provider==='ITA Matrix')resolvePreview(progress.calendarPreview);}});
+ const early=await Promise.race([firstPreview,new Promise(resolve=>setTimeout(()=>resolve(null),500))]);
+ releaseMatrix();
+ const result=await pending;
+ assert.ok(early,'Matrix should publish its matched partial itinerary before the adapter finishes');
+ assert.equal(early.dates[0].offer.provider,'ITA Matrix');assert.equal(early.dates[0].price,400);
+ assert.equal(early.dates[0].status,'partial_route_coverage');assert.equal(early.coverage.pairQueriesChecked,0);
+ assert.equal(result.dates[0].price,400);assert.equal(result.dates[0].status,'observed');
+});
+
 test('all-source calendar publishes each valid source fare before a later source finishes',async()=>{
  const query={origin:'YHZ',destination:'BCN',start:'2099-04-15',end:'2099-04-15',tripType:'one-way',adults:1,children:0,childrenAges:[],cabin:'economy',filters:{},source:'all',searchLimit:20};
  let releaseExpedia,completed=false,resolvePreview;

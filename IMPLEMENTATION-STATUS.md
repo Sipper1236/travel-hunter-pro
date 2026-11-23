@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## ITA Matrix streaming in fare calendars — 2026-11-23
+
+The calendar adapter now forwards validated partial Matrix itinerary updates into its exact-route/date preview. Matrix results can therefore appear before its provider operation finishes; the route/date remains incomplete until Matrix returns its final response. A new all-source regression blocks Matrix after its partial update and verifies the preview before release. Calendar/worker/query tests pass 56/56, full `npm test` passes 656/656, and the production build passes after retrying Next.js's security reminder. The generic production calendar UI fixture remains interception-only and does not prove live Matrix calendar behavior. No Matrix live request was made. [Evidence](docs/ita-matrix-calendar-streaming-2026-11-23.md). Reverse-endpoint scope and work.md §17 remain open.
+
 ## All-source calendar provider streaming — 2026-11-23
 
 All-source calendar providers now run in a bounded two-provider pool for each exact airport-pair/date query. Each completed source publishes progress immediately, so a fast provider no longer waits behind a slower provider that appears earlier in source order. Route/date traversal stays sequential; request budgets, refusal handling, coverage counts, and final provider ordering remain intact. Calendar tests pass 55/55, full suite 655/655, build passes after retrying Next.js's reminder, and the production calendar-streaming browser fixture passes with provider/job traffic intercepted and zero page errors. No live provider request was made. One moderate Next.js 16.4.3 audit finding remains. [Evidence](docs/all-source-calendar-provider-streaming-2026-11-23.md). The broader reverse-endpoint goal and work.md §17 remain open.

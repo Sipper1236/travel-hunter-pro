@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## ITA Matrix streaming in fare calendars — 2026-11-23
+
+The calendar adapter now forwards validated partial Matrix itinerary updates into its exact-route/date preview. Matrix results can therefore appear before its provider operation finishes; the route/date remains incomplete until Matrix returns its final response. A new all-source regression blocks Matrix after its partial update and verifies the preview before release. Calendar/worker/query tests pass 56/56, full `npm test` passes 656/656, and the production build passes after retrying Next.js's security reminder. The generic production calendar UI fixture remains interception-only and does not prove live Matrix calendar behavior. No Matrix live request was made. [Evidence](ita-matrix-calendar-streaming-2026-11-23.md). Reverse-endpoint scope and work.md §17 remain open.
+
 ## All-source calendar provider streaming — 2026-11-23
 
 All-source calendar providers now run in a bounded two-provider pool for each exact airport-pair/date query. Each completed source publishes progress immediately, so a fast provider no longer waits behind a slower provider that appears earlier in source order. Route/date traversal stays sequential; request budgets, refusal handling, coverage counts, and final provider ordering remain intact. Calendar tests pass 55/55, full suite 655/655, build passes after retrying Next.js's reminder, and the production calendar-streaming browser fixture passes with provider/job traffic intercepted and zero page errors. No live provider request was made. One moderate Next.js 16.4.3 audit finding remains. [Evidence](all-source-calendar-provider-streaming-2026-11-23.md). The broader reverse-endpoint goal and work.md §17 remain open.
@@ -7,6 +11,10 @@ All-source calendar providers now run in a bounded two-provider pool for each ex
 ## Latest implementation evidence — Google multi-airport calendars (2026-11-23)
 
 The opt-in Google Flights date-grid adapter supports multiple exact airport pairs per calendar, including bounded region resolutions, when Google is selected alone or with regular adapters in an all-source query. It keeps one structured date-grid response per exact route and date range, while request budget remains charged per logical route/date slot and coverage separately counts actual `wireResponses`. All-source Google price observations require exact successful Google route coverage. Exact route/date/return/CAD and price-only validation remain. Scope is one adult/economy, no active filters or identified travelers, one-way or fixed-return round trip. Calendar/query/worker tests **54/54**, full tests **654/654**, and build passed after retrying past Next's security reminder. The generic fixture calendar UI stream check passed with provider calls intercepted, but it does not exercise Google in all-source mode. Multi-route and all-source backend evidence is fixture-only; no live Google request was made. The opt-in status, source access scope, and complete §17 acceptance remain open. [Details](google-calendar-multi-airport-2026-11-23.md).
+
+## Latest implementation evidence — Matrix calendar streaming (2026-11-23)
+
+Matrix's validated partial itinerary updates now reach the flexible calendar preview before the exact provider query finishes. A delayed-adapter regression proves that the all-source calendar streams the Matrix offer while preserving incomplete route/date coverage. Calendar/worker/query tests **56/56**, full tests **656/656**, and build passed after retrying Next.js's security reminder. No live Matrix calendar query was made. [Details](ita-matrix-calendar-streaming-2026-11-23.md).
 
 ## Latest implementation evidence — progressive Matrix results (2026-11-23)
 
