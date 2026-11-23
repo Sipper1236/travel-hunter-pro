@@ -1,8 +1,8 @@
 # Implementation status against work.md
 
-## Comparison worker round-trip exact-flight guard — 2026-11-23
+## Comparison worker exact-itinerary validation — 2026-11-23
 
-The comparison validator now accepts the canonical nested outbound/return itinerary-key shape and verifies operating-carrier identity for each exact split-ticket segment. Test-first coverage reproduced valid-round-trip rejection and operator substitution. Focused suites passed 41/41; full `npm test` passed 720/720; production build passed; audit found 0 vulnerabilities. Fixture-only; no live query. Separate-ticket seller, inventory, eligibility and all-in-cost evidence remain open. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).
+The comparison validator now checks nested round-trip keys, operating-carrier identity, and party-split flight segments against route, requested date, airport-local/UTC timestamps, chronology, return summary and rebuilt itinerary key. Focused comparison suites passed 10/10; full `npm test` passed 721/721; build passed; audit found 0 vulnerabilities. Fixture-only; no live query. Seller, inventory, eligibility and all-in-cost evidence remain open. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).
 
 ## Flight worker exact-query integrity — 2026-11-23
 

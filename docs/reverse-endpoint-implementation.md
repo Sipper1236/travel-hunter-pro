@@ -1,8 +1,8 @@
 # Reverse-endpoint implementation plan and inventory
 
-## Comparison worker round-trip exact-flight guard — 2026-11-23
+## Comparison worker exact-itinerary validation — 2026-11-23
 
-The worker now parses the nested outbound/return itinerary key and checks all exact split-ticket signature fields, including operating carrier. Full `npm test` passed 720/720; build passed; audit found 0 vulnerabilities. Fixture-only; there is no new live provider or seller evidence. Route discovery, inventory, issueability, baggage/fees, and `work.md` §17 remain open. [Evidence](comparison-roundtrip-worker-guard-2026-11-23.md).
+The worker parses nested outbound/return keys and validates party-split itinerary segments against exact routes, dates, timezone-coherent timestamps, chronology and the rebuilt exact-flight key. Full `npm test` passed 721/721; build passed; audit found 0 vulnerabilities. Fixture-only; no new live provider or seller evidence. Route discovery, inventory, issueability, baggage/fees, and `work.md` §17 remain open. [Evidence](comparison-roundtrip-worker-guard-2026-11-23.md).
 
 ## Flight worker exact-query boundary — 2026-11-23
 

@@ -6,7 +6,9 @@ import {validateComparisonQuery} from '../lib/comparison-query.mjs';
 const input={mode:'party',origin:'YHZ',destination:'BCN',date:'2099-04-15',tripType:'one-way',cabin:'economy',adults:2,children:0,filters:{}};
 const observedAt=new Date().toISOString(),expiresAt=new Date(Date.now()+10*60_000).toISOString();
 const ticket=(adults,price,overrides={})=>({adults,price,currency:'CAD',ignavId:`fare-${adults}-${price}`,provider:'Ignav',observedAt,expiresAt,...overrides});
-const plan=(overrides={})=>({itineraryKey:'exact-itinerary',price:350,currency:'CAD',tripType:'one-way',observedAt,expiresAt,segments:[{}],inbound:null,selfTransfer:false,tickets:[ticket(1,200),ticket(1,150)],...overrides});
+const partySegments=date=>[{marketing_carrier_code:'AC',operating_carrier_code:'AC',flight_number:'100',departure_airport:'YHZ',departure_time_local:`${date}T08:00:00`,departure_time_utc:`${date}T11:00:00Z`,departure_timezone:'America/Halifax',arrival_airport:'BCN',arrival_time_local:`${date}T17:00:00`,arrival_time_utc:`${date}T15:00:00Z`,arrival_timezone:'Europe/Madrid'}];
+const itineraryKey=segments=>JSON.stringify(segments.map(segment=>[segment.marketing_carrier_code,segment.flight_number,segment.departure_airport,segment.departure_time_local,segment.departure_time_utc,segment.arrival_airport,segment.arrival_time_local,segment.arrival_time_utc,segment.operating_carrier_code??null]));
+const plan=(overrides={})=>{const segments=partySegments(input.date);return {itineraryKey:itineraryKey(segments),price:350,currency:'CAD',tripType:'one-way',observedAt,expiresAt,segments,inbound:null,selfTransfer:false,tickets:[ticket(1,200),ticket(1,150)],...overrides};};
 const result=(overrides={})=>({query:validateComparisonQuery(input),coverage:{fareRequestsStarted:3,requestBudget:30,responsesReused:0,interruptedRequests:0,partyCompositions:3,candidateItineraries:1,matchedPlans:1},plans:[plan()],exhaustive:true,...overrides});
 
 test('comparison worker retains a complete, fresh adult partition with an exact CAD total',()=>{
@@ -17,6 +19,10 @@ test('comparison worker rejects mismatched totals, stale quotes, and changed que
  assert.ok(comparisonWorkerResultError(result({plans:[plan({price:351})]}),input));
  assert.ok(comparisonWorkerResultError(result({plans:[plan({tickets:[ticket(1,200),ticket(1,150,{observedAt:'2020-01-01T00:00:00.000Z'})]})]}),input));
  assert.ok(comparisonWorkerResultError(result({query:{...validateComparisonQuery(input),destination:'LHR'}}),input));
+ assert.ok(comparisonWorkerResultError(result({plans:[plan({segments:[{}]})]}),input),'party plans must not accept placeholder flight segments');
+ assert.ok(comparisonWorkerResultError(result({plans:[plan({itineraryKey:'unrelated-itinerary'})]}),input),'party itinerary keys must match their exact flight segments');
+ const wrongAirportTime=plan();wrongAirportTime.segments[0].departure_time_utc='2099-04-15T10:00:00Z';wrongAirportTime.itineraryKey=itineraryKey(wrongAirportTime.segments);
+ assert.ok(comparisonWorkerResultError(result({plans:[wrongAirportTime]}),input),'local and UTC flight times must agree at the airport');
 });
 
 test('identified comparison plans cannot separate a minor from the submitted guardian',()=>{
@@ -26,11 +32,22 @@ test('identified comparison plans cannot separate a minor from the submitted gua
   {id:'child',birthDate:'2015-01-01',guardianId:'parent'},
  ]};
  const query=validateComparisonQuery(identified),fresh=()=>({observedAt,expiresAt});
- const validPlan={itineraryKey:'family-itinerary',price:300,currency:'CAD',observedAt,expiresAt,segments:[{}],tickets:[{...fresh(),price:200,currency:'CAD',travelerIds:['parent','child']},{...fresh(),price:100,currency:'CAD',travelerIds:['other']}]};
+ const segments=partySegments(identified.date),validPlan={itineraryKey:itineraryKey(segments),price:300,currency:'CAD',tripType:'one-way',observedAt,expiresAt,segments,inbound:null,selfTransfer:false,tickets:[{...fresh(),price:200,currency:'CAD',travelerIds:['parent','child']},{...fresh(),price:100,currency:'CAD',travelerIds:['other']}]};
  const envelope={query,coverage:{fareRequestsStarted:7,requestBudget:30,responsesReused:0,interruptedRequests:0},plans:[validPlan],exhaustive:true};
  assert.equal(comparisonWorkerResultError(envelope,identified),null);
  const unsafe=structuredClone(envelope);unsafe.plans[0].tickets=[{...fresh(),price:200,currency:'CAD',travelerIds:['parent']},{...fresh(),price:100,currency:'CAD',travelerIds:['other','child']}];
  assert.ok(comparisonWorkerResultError(unsafe,identified));
+});
+
+test('round-trip party plans preserve exact return flights and inbound chronology',()=>{
+ const roundTripInput={...input,tripType:'round-trip',returnDate:'2099-04-22'},outbound=partySegments(input.date),inbound=[{marketing_carrier_code:'AC',operating_carrier_code:'AC',flight_number:'200',departure_airport:'BCN',departure_time_local:'2099-04-22T09:00:00',departure_time_utc:'2099-04-22T07:00:00Z',departure_timezone:'Europe/Madrid',arrival_airport:'YHZ',arrival_time_local:'2099-04-22T13:00:00',arrival_time_utc:'2099-04-22T16:00:00Z',arrival_timezone:'America/Halifax'}];
+ const roundTripPlan=plan({tripType:'round-trip',itineraryKey:JSON.stringify([itineraryKey(outbound),itineraryKey(inbound)]),inbound:{from:'BCN',to:'YHZ',departureDate:'2099-04-22',departureTime:'09:00',arrivalDate:'2099-04-22',arrivalTime:'13:00',durationMinutes:540,via:[],segments:inbound}});
+ const envelope=result({query:validateComparisonQuery(roundTripInput),plans:[roundTripPlan]});
+ assert.equal(comparisonWorkerResultError(envelope,roundTripInput),null);
+ const changed=structuredClone(envelope);changed.plans[0].inbound.segments[0].flight_number='999';
+ assert.ok(comparisonWorkerResultError(changed,roundTripInput));
+ const reversed=structuredClone(envelope);reversed.plans[0].inbound.segments[0].departure_time_utc='2099-04-15T14:00:00Z';
+ assert.ok(comparisonWorkerResultError(reversed,roundTripInput));
 });
 
 test('exhausted comparison budgets cannot claim fare requests beyond the validated cap',()=>{

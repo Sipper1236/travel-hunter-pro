@@ -1,6 +1,6 @@
 # Travel Hunter Pro documentation index
 
-- [Comparison worker round-trip exact-flight guard (2026-11-23)](comparison-roundtrip-worker-guard-2026-11-23.md) — nested round-trip key parsing and operating-carrier validation for separate-ticket segments; fixture-only evidence and live seller limits.
+- [Comparison worker exact-itinerary validation (2026-11-23)](comparison-roundtrip-worker-guard-2026-11-23.md) — nested round-trip keys, operating-carrier matching, and connected/timestamp-validated party-split segments; fixture-only evidence and live seller limits.
 - [GitHub repository release audit (2026-11-23)](github-repository-release-audit-2026-11-23.md) — public repository preparation, dependency update, clean-install verification, UI check results, and remaining release gates.
 - [Flight worker exact-query integrity (2026-11-23)](flight-worker-exact-query-guard-2026-11-23.md) — exact party, child-age, identified DOB/guardian/infant-seating, and filter preservation at the flight worker boundary, with fixture-only evidence and remaining schema gaps.
 - [Booking.com Demand API bounded pagination (2026-11-23)](booking-demand-bounded-pagination-2026-11-23.md) — strict two-page/60-property ceiling, opaque continuation tokens, per-page evidence, failure retention, fixture tests, and missing partner-credential limits.

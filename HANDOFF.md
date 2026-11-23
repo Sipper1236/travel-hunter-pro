@@ -1,8 +1,8 @@
 # Travel Hunter Pro — Current Handoff
 
-## Comparison worker round-trip exact-flight guard — 2026-11-23
+## Comparison worker exact-itinerary validation — 2026-11-23
 
-Fixed a worker-boundary mismatch that rejected valid separate-ticket round trips because the query stores outbound and inbound itinerary signatures as nested JSON strings. The validator now parses both directions and binds every split segment to the full signature, including operating carrier. A fixture regression rejects changed return flights and operating carriers. Focused suites passed 41/41; full `npm test` passed 720/720; production build passed; audit found 0 vulnerabilities. No live provider or seller query occurred. This closes one comparison persistence bug; availability, simultaneous inventory, eligibility, baggage, fees and seller issuance remain unverified. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).
+Comparison results now bind round-trip split tickets to both nested direction keys and validate party-split plans against exact connected segments, airport-local/UTC timestamps, dates, return chronology and a rebuilt itinerary key. Tests reject changed operators/flights, malformed signatures, placeholder segments and incorrect airport times. Focused suites passed 10/10; full `npm test` passed 721/721; build passed; audit found 0 vulnerabilities. Fixture-only; no provider or seller query occurred. Live availability, simultaneous inventory, eligibility, baggage, fees and seller issuance remain unverified. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).
 
 ## Flight worker exact-query integrity — 2026-11-23
 

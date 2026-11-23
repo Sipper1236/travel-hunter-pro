@@ -1,8 +1,8 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
-## P0 comparison worker round-trip exact-flight guard — 2026-11-23
+## P0 comparison worker exact-itinerary guard — 2026-11-23
 
-Fixed the comparison worker parser for the canonical nested round-trip itinerary key and bound separate-ticket segments to all nine exact signature fields, including operating carrier. A test-first regression reproduces the former rejection of valid round trips and rejects changed return flights/operator identity. Full `npm test` passed 720/720, production build passed, and audit found 0 vulnerabilities. Fixture-only; no provider or seller request. This closes one worker persistence defect but does not establish current fare availability, ticket issuance, simultaneous inventory, carrier eligibility, baggage/fees or checkout totals. The §17 split-itinerary and provider-handoff criteria remain partial. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).
+Fixed nested round-trip itinerary-key parsing and full exact-flight comparison, including operating carrier. Party-split plans now require connected segments, exact requested route/date, airport-local/UTC agreement, valid chronology, matching inbound summary and a key rebuilt from all nine signature fields. Regressions cover valid and tampered round trips, placeholder segments, unknown key fields, mismatched airport times and changed operators. Full `npm test` passed 721/721; build passed; audit found 0 vulnerabilities. Fixture-only; no provider or seller request. Current fares, issuance, simultaneous inventory, eligibility, baggage/fees and checkout totals remain unverified; §17 stays Partial. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).
 
 ## Flight worker exact-query integrity — 2026-11-23
 

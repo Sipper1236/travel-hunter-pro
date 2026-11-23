@@ -1,8 +1,8 @@
 # Travel Hunter Pro — Detailed Handoff (updated 2026-11-23)
 
-## 2026-11-23 continuation — comparison round-trip exact-flight guard
+## 2026-11-23 continuation — comparison exact-itinerary result guard
 
-Corrected the comparison worker's itinerary-key parser: round trips contain two serialized direction keys, each of which contains its own segment signatures. The worker now checks outbound and return split-ticket blocks against those exact signatures, including operating carrier. The regression first failed on a valid round trip and then exposed acceptance of a substituted operating carrier. Focused suites passed 41/41; full suite passed 720/720; build passed; audit found 0 vulnerabilities. No live provider or seller query occurred. Seller availability, simultaneous inventory, carrier eligibility, baggage and mandatory charges remain open. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).
+Corrected round-trip split-ticket parsing and added exact-itinerary validation for party-split plans. Results now require connected segments, requested route/date, airport-local/UTC agreement, outbound/return chronology, matching inbound summary fields and a rebuilt nine-field itinerary key. Regressions cover placeholder flights, unknown signature fields, changed marketing/operating carriers, wrong airport times and changed/impossible return flights. Focused suites passed 10/10; full suite passed 721/721; build passed; audit found 0 vulnerabilities. No live query. Seller availability, simultaneous inventory, carrier eligibility, baggage and mandatory charges remain open. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).
 
 ## 2026-11-23 continuation — Flight worker exact-query integrity
 

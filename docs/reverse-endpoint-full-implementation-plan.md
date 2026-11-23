@@ -1,8 +1,8 @@
 # Reverse-endpoint implementation map and completion plan
 
-## Comparison worker round-trip exact-flight guard — 2026-11-23
+## Comparison worker exact-itinerary validation — 2026-11-23
 
-Comparison worker validation now handles the canonical two-direction nested itinerary key and verifies exact operating-carrier identity for each split segment. Full suite passed 720/720, production build passed, and audit found 0 vulnerabilities. This closes a result-integrity bug only; source availability, seller confirmation, simultaneous inventory and §17 acceptance evidence remain open. [Evidence](comparison-roundtrip-worker-guard-2026-11-23.md).
+Comparison worker validation now handles canonical nested round-trip keys, verifies operator identity, and checks party-split segment route/timezone/date/chronology evidence before persistence. Full suite passed 721/721, build passed and audit found 0 vulnerabilities. This closes result-integrity gaps only; live source availability, seller confirmation, simultaneous inventory and §17 acceptance evidence remain open. [Evidence](comparison-roundtrip-worker-guard-2026-11-23.md).
 
 ## Flight worker exact-query boundary — 2026-11-23
 

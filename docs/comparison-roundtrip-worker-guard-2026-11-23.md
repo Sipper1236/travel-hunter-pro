@@ -1,20 +1,23 @@
-# Comparison worker round-trip exact-flight guard — 2026-11-23
+# Comparison worker exact-itinerary validation — 2026-11-23
 
 ## Change
 
-The comparison worker previously parsed the round-trip itinerary key as if it contained segment arrays directly. The canonical query stores two serialized direction keys inside one serialized pair, so valid round-trip split-ticket plans were rejected at the persistence boundary. The same validator compared only the marketing-flight fields and did not bind the operating carrier, even though the itinerary key records it.
+The comparison result boundary had two itinerary-integrity gaps:
 
-The validator now parses exactly two nested direction keys for round trips, requires each flight signature to contain all nine fields, and compares the operating-carrier code (including an explicit `null`) alongside the marketing carrier, flight number, airports, and local/UTC timestamps. The regression uses exact outbound and inbound segment blocks, then verifies that changing a return flight or operating carrier is rejected.
+- Separate-ticket round-trip keys store two serialized direction keys inside one serialized pair. The worker treated them like direct segment arrays, rejected valid plans, and did not compare operating carrier even though the key includes it.
+- Party-split plans could pass with placeholder segments and an unrelated itinerary key. Their route, dates, airport-local/UTC agreement, chronology and return summary were not checked before persistence.
+
+The worker now parses exactly two nested direction keys, requires each signature to have exactly nine fields, and compares operating carrier with the marketing carrier, flight number, airports and local/UTC timestamps. Party-split plans are validated against requested endpoints and dates; every segment must have a connected route, offset-aware instants, and local timestamps consistent with its attached IANA timezones. Round-trip returns must follow outbound arrival, preserve their summary fields, and rebuild the exact two-direction itinerary key from observed segments.
 
 ## Verification
 
-- Test-first regression reproduced the prior rejection of a valid round-trip plan, then reproduced acceptance of a plan whose operating carrier differed from the selected itinerary.
-- Focused comparison/separate-ticket suites passed **41/41**.
-- Full `npm test` passed **720/720**.
+- Test-first regressions reproduced valid-round-trip rejection, ignored operating-carrier changes, acceptance of unknown signature fields, and acceptance of placeholder party-plan segments. Tests now also reject unrelated keys, local/UTC mismatches, changed return flights and impossible return chronology.
+- Focused comparison result and worker suites passed **10/10**.
+- Full `npm test` passed **721/721**.
 - `npm run build` passed on Next.js 16.4.6.
 - `npm audit --audit-level=low` found **0 vulnerabilities**.
 - No live provider, seller, or booking request was made; evidence is fixture-based.
 
 ## Remaining limits
 
-This closes one exact-flight persistence bug. It does not prove that split tickets are currently available, concurrently bookable, accepted by carriers for the full party, or valid after baggage, connection, transfer, and mandatory charges. The live separate-ticket and seller-verification acceptance criteria in `work.md` remain open.
+This closes worker-result integrity gaps only. It does not prove current fare availability, simultaneous inventory, seller issuance, carrier eligibility, or totals after baggage, transfer and mandatory charges. The live separate-ticket and seller-verification acceptance criteria in `work.md` remain open.

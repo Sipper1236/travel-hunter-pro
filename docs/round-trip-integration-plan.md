@@ -2,9 +2,9 @@
 
 Date: 2026-11-05. Status: execution in progress; live second-source calendar release remains unverified.
 
-## Comparison worker exact round-trip keys — 2026-11-23
+## Comparison worker exact itinerary keys — 2026-11-23
 
-Separate-ticket persistence now parses the two nested direction signatures used by canonical round-trip queries and compares each exact segment, including its operating carrier. A test-first regression failed before the parser fix and rejects changed return/operator identity. Focused suites passed 41/41; full suite 720/720; build passed; audit found 0 vulnerabilities. No live provider was called; regional coverage, fares, seller availability and the broader release gates below remain incomplete. [Evidence](comparison-roundtrip-worker-guard-2026-11-23.md).
+Separate-ticket persistence now parses nested direction signatures and compares each exact segment, including operating carrier. Party-split results also require connected flight segments with airport-local/UTC agreement and requested route/date/return chronology. Tests passed 10/10 focused; full suite 721/721; build passed; audit found 0 vulnerabilities. No live provider was called; regional coverage, fares, seller availability and the broader release gates below remain incomplete. [Evidence](comparison-roundtrip-worker-guard-2026-11-23.md).
 
 ## Execution evidence (2026-11-05)
 

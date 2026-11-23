@@ -1,8 +1,8 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
-## 2026-11-23 continuation — comparison round-trip exact-flight guard
+## 2026-11-23 continuation — comparison exact-itinerary result guard
 
-Fixed a false rejection of valid round-trip split-ticket plans: comparison worker validation now parses the two nested direction keys and checks every segment's complete signature, including operating carrier. Test-first coverage rejected both a changed return flight and a substituted operator. Focused tests passed 41/41; full suite passed 720/720; build passed; audit found 0 vulnerabilities. Fixture-only; no live fare or seller evidence. This does not close `work.md` §17 split-ticket acceptance. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).
+Comparison validation now parses exact nested round-trip keys, compares operating carriers, and validates party-split plans against connected segments, airport-local/UTC times, requested dates, round-trip chronology and rebuilt itinerary keys. Fixture tests reject placeholder segments, changed flights/operators, invalid airport times and malformed keys. Focused tests passed 10/10; full suite passed 721/721; build passed; audit found 0 vulnerabilities. No live fare or seller query; `work.md` §17 split-ticket acceptance remains open. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).
 
 ## 2026-11-23 continuation — Flight worker exact-query integrity
 
