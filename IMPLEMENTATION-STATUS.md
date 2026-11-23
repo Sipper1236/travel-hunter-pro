@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Google one-way reverse-result audit — 2026-11-23
+
+The one-way `api-anything` wrapper only projects route-level price and time fields; it omits exact per-segment identity and response-side currency confirmation. The canonical validator rejects those rows rather than inventing a complete itinerary. Native selected round-trip RPC support does not cover one-way. The Google one-way structured result remains incomplete; implementation requires a verified raw segment mapping or a separately validated native one-way flow, plus CAD evidence and end-to-end worker/UI proof. No live request was made. See [gap evidence](docs/google-api-anything-one-way-gap-2026-11-23.md).
+
 ## Bounded regional airport-pair overlap — 2026-11-23
 
 Auto-detected two-region, one-way adult-only count searches now run with at most two airport pairs in flight. Provider pacing/cooldown and exact route input remain unchanged; final coverage is deterministic, and a refusal stops new pairs while exposing already-active work. Query shapes that may use a browser-backed session remain sequential. Focused region/location/streaming/worker tests pass **36/36**, full `npm test` passes **665/665**, and the production build passes after retrying Next.js's reminder. Audit remains one moderate Next.js advisory with an out-of-range suggested fix. No live provider request or p95 benchmark was made. Overall reverse-endpoint implementation and §17 remain incomplete. [Evidence](docs/regional-pair-streaming-2026-11-23.md).

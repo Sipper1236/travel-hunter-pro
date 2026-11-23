@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Google one-way structured-result gap — 2026-11-23
+
+The current API Anything `search`/`top` projection supplies route-level price/time summaries but omits per-segment flight identity and response-side CAD confirmation. The app correctly refuses to promote these rows to complete flight offers. Google native selected round-trip support does not imply native one-way support; the experimental one-way calendar probe returned marker 4. No Google request was made for this audit. Keep Google one-way incomplete until a verified segment projection or a separately validated native one-way selection flow passes timezone, currency, freshness, worker and UI checks. [Gap evidence](docs/google-api-anything-one-way-gap-2026-11-23.md).
+
 ## Bounded regional airport-pair overlap — 2026-11-23
 
 Regional one-way adult-only count searches now overlap up to two airport pairs, with shared source pacing/cooldown, deterministic final coverage ordering, serialized recovery checkpoints and explicit active-pair coverage after an early source stop. Family, identified travelers, infants/youths/seniors, round trips and ordinary city expansion remain sequential. Focused region/location/streaming/worker tests pass **36/36**, full `npm test` **665/665**, and `npm run build` passes after retrying Next.js's security reminder. `npm audit --audit-level=low` still reports one moderate Next.js 16.4.3 advisory; the forced fix is outside the declared dependency range. No live provider call was made; real speedup/p95 remains open. [Evidence](docs/regional-pair-streaming-2026-11-23.md).
