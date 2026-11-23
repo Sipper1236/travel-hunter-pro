@@ -39,6 +39,16 @@ test('normalizes the ordinary widget JSON response with exact route, stay, hotel
  assert.equal(normalizeVacationApiResponse(actualAdultMarker,{...context,requestUrl:apiRequestUrl,sourceUrl:listingUrl,responseBytes:88189}).offers.length,1);
 });
 
+test('normalizes a one-child structured package only when request and provider party rows preserve the exact age',()=>{
+ const childQuery={...query,childrenAges:[7]};
+ const childListing=new URL(listingUrl);childListing.searchParams.set('nb_child','1');childListing.searchParams.set('non_adult1','7');childListing.searchParams.set('r0','1-adult-0,1-child-7');
+ const childRequest=new URL(apiRequestUrl);childRequest.searchParams.set('child-ages','7');
+ const response=packageApiResponse();response.results.packages[0].pricing={grandTotal:3200,total:3200,perPaxType:[{paxCount:1,paxType:'A',price:2400,taxFees:200,total:2600},{paxCount:1,paxType:'C',price:500,taxFees:100,total:600}]};
+ const result=normalizeVacationApiResponse(response,{...context,query:childQuery,requestUrl:childRequest.href,sourceUrl:childListing.href,responseBytes:88189});
+ assert.equal(result.offers.length,1);assert.equal(result.offers[0].price,3200);assert.deepEqual(result.offers[0].occupancyEvidence.childrenAgesInListingUrl,[7]);
+ assert.deepEqual(result.offers[0].packageEvidence.paxRows,[{count:1,type:'A'},{count:1,type:'C'}]);
+});
+
 test('structured widget results fail closed on mismatched requests, routes, stays, references, totals, currencies, or unverified parties',()=>{
  const base=packageApiResponse();
  for(const changed of [
@@ -58,7 +68,7 @@ test('structured widget results fail closed on mismatched requests, routes, stay
  assert.throws(()=>normalizeVacationApiResponse(base,{...context,requestUrl:apiRequestUrl.replace('orig=YHZ','orig=YYZ'),sourceUrl:listingUrl,responseBytes:88189}),/request does not match/);
  assert.throws(()=>normalizeVacationApiResponse(base,{...context,requestUrl:apiRequestUrl.replace('cabin=Y','cabin=E'),sourceUrl:listingUrl,responseBytes:88189}),/request does not match/);
  assert.throws(()=>normalizeVacationApiResponse({...base,results:{...base.results,metaData:{...base.results.metaData,currentEnd:1}}},{...context,requestUrl:apiRequestUrl,sourceUrl:listingUrl,responseBytes:88189}),/unsupported result envelope/);
- assert.throws(()=>normalizeVacationApiResponse(base,{...context,query:{...query,childrenAges:[8]},requestUrl:apiRequestUrl,sourceUrl:listingUrl,responseBytes:88189}),/adult-only/);
+ assert.throws(()=>normalizeVacationApiResponse(base,{...context,query:{...query,childrenAges:[8]},requestUrl:apiRequestUrl,sourceUrl:listingUrl,responseBytes:88189}),/request does not match/);
  assert.throws(()=>normalizeVacationApiResponse(base,{...context,currencyTermsText:'',requestUrl:apiRequestUrl,sourceUrl:listingUrl,responseBytes:88189}),/CAD terms/);
 });
 test('maximum stops requires explicit outbound and return evidence and applies to both directions',async()=>{

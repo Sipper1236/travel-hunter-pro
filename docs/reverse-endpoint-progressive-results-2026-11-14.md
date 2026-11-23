@@ -1,5 +1,11 @@
 # Reverse-endpoint fan-out and progressive flight results — 2026-11-14
 
+## ACV exact-child structured path — 2026-11-23
+
+The ACV structured normalizer/worker path now accepts an adult party plus one exact-age child in one room. It validates the child age in the normal widget request, listing URL (`non_adult1` and the explicit `r0` allocation), and passenger pricing rows (adult `A`, child `C`); row counts and their exact-cent tax/fee totals must match the submitted party and package group total. Fixtures cover changed ages, wrong passenger category and mismatched worker evidence. A fresh ordinary-widget API submission for one adult and the previously supplied age-7 child returned 20 records; all 20 normalized and the resulting object passed the package worker result validator. Focused ACV suites passed 36/36.
+
+This was a direct adapter invocation through the normal public widget flow plus the same worker-result guard, not a durable job/UI check. The local Next.js 16.4.3 `next dev` process emitted a security-upgrade prompt and exited before the browser check could run. No upgrade was applied. Multiple children, infants, expanded pages, multi-room occupancy, complete offset-aware journey segments, seller availability, exact room/property and final charges remain open. See [ACV structured package evidence](acv-structured-package-endpoint-discovery-2026-11-14.md).
+
 ## ACV structured package live path — 2026-11-14
 
 The ordinary Air Canada Vacations widget now feeds an adult-only, one-room, first-page structured package normalizer. A current local website → durable worker → widget query returned a 20-record JSON page; 20/20 package rows passed validation and appeared in CAD in the UI. Response metadata reported 78 total listings, so additional packages remain beyond the 20-result page. The durable job took 24.955 seconds from creation to completion on this single run; this is not a latency guarantee. Validation binds the widget query and rendered listing URL, hotel destination ID, itinerary/hotel references, observed stay dates, adult party rows, economy cabin and comparable totals.

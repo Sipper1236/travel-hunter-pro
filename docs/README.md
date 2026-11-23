@@ -2,7 +2,7 @@
 
 - [Reverse-endpoint implementation plan and inventory](reverse-endpoint-implementation.md) — current adapter/API inventory, access and entitlement gates, full adapter contract, and latency/streaming targets.
 - [Reverse-endpoint full implementation map](reverse-endpoint-full-implementation-plan.md) — provider-by-provider endpoint map, end-to-end completion contract, fast request path, priorities, and current evidence/open access gates.
-- [ACV structured package endpoint discovery (2026-11-14)](acv-structured-package-endpoint-discovery-2026-11-14.md) — live ordinary-widget response schema and 20/20 website-to-worker integration evidence, response joins, observed stay dates, and scope limits; credentials, prices and property names withheld.
+- [ACV structured package endpoint discovery (2026-11-14)](acv-structured-package-endpoint-discovery-2026-11-14.md) — ordinary-widget response contract plus adult and one-child adapter/worker-validator evidence, observed stay dates, and scope limits; credentials, prices and property names withheld.
 - [Reverse-endpoint progressive flight results (2026-11-14)](reverse-endpoint-progressive-results-2026-11-14.md) — bounded provider fan-out, durable progress timestamps, sanitized HTTP/Google RPC latency histograms, decoded response caps, current Google calendar and ACV endpoint feasibility checks, and remaining endpoint/access gates.
 - [ACV suggestion RPC response bound (2026-11-14)](acv-suggestion-response-bound-2026-11-14.md) — decoded-body limit and fail-closed JSON handling for the widget's structured location suggestion response, with exact-boundary tests and browser-buffering limitations.
 

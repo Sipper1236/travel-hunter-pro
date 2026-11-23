@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## ACV structured child-party continuation — 2026-11-23
+
+Implemented one-child structured ACV package support: exact age is bound by the widget request, listing URL and room assignment; adult and child passenger price rows must match counts and reconcile to the CAD group total. The live ordinary widget returned 20 records for one adult plus age-7 child; 20/20 normalized and passed the package worker validator. Focused ACV tests passed 36/36. This is not a durable website/UI check because `next dev` stopped with a Next.js 16.4.3 security-upgrade prompt; the upgrade was not run. Other child counts, infants, pages >20, multi-room allocation, complete offset-aware package flights, seller availability and all-in checkout remain open. Overall goal remains active and incomplete.
+
 ## ACV endpoint continuation — 2026-11-14
 
 Hardened the adult-only Air Canada Vacations JSON path against the current ordinary widget schema: economy request/segment code `Y`, hotel destination ID matching request `dest`, inclusive zero-based page end, and adult passenger marker `A` with exact adult counts and totals. The worker rechecks these joins. Live local website-to-worker evidence: 20/20 records accepted and rendered in structured mode, CAD displayed, 78 provider listings reported, more remain outside page one; one job took 24.955 seconds. Focused ACV tests passed 34/34. P6 and the reverse-endpoint goal remain active; child/infant and 40-result shapes still use the rendered-card path, and package segment chronology, seller availability, per-room allocation, mandatory charges and checkout totals are not verified.

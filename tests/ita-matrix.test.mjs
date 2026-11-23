@@ -10,14 +10,14 @@ import {buildMatrixUrl,makeMatrixBody,normalizeMatrix,parseMatrixBatch,parseMatr
 import {searchProviders} from '../lib/providers.mjs';
 import {validateMatrixOptions,matrixDetailExpansionEligible} from '../lib/matrix-options.mjs';
 
-const query={origin:'JFK',destination:'YYZ',departureDate:'2026-11-15',returnDate:'2026-12-08',currency:'CAD',cabin:'PREMIUM-COACH',passengers:{adults:1,youths:1,children:1}};
+const query={origin:'JFK',destination:'YYZ',departureDate:'2099-11-15',returnDate:'2099-12-08',currency:'CAD',cabin:'PREMIUM-COACH',passengers:{adults:1,youths:1,children:1}};
 const testKey='AIza'+'A'.repeat(35);
 const slice=(from,to,departure,arrival,flight)=>({origin:{code:from},destination:{code:to},departure,arrival,flights:[flight],cabins:['PREMIUM-COACH'],duration:120});
-const raw={solutionList:{solutions:[{id:'sol-1',displayTotal:'CAD523.19',ext:{totalPrice:'CAD523.19'},passengerCount:3,pricings:[{ext:{pax:{adults:1,youth:1,children:1}}}],itinerary:{carriers:[{code:'EA',shortName:'Example Air'}],slices:[slice('JFK','YYZ','2026-11-15T10:00:00-05:00','2026-11-15T12:00:00-05:00','EA123'),slice('YYZ','JFK','2026-12-08T14:00:00-05:00','2026-12-08T16:00:00-05:00','EA456')]}}]}};
+const raw={solutionList:{solutions:[{id:'sol-1',displayTotal:'CAD523.19',ext:{totalPrice:'CAD523.19'},passengerCount:3,pricings:[{ext:{pax:{adults:1,youth:1,children:1}}}],itinerary:{carriers:[{code:'EA',shortName:'Example Air'}],slices:[slice('JFK','YYZ','2099-11-15T10:00:00-05:00','2099-11-15T12:00:00-05:00','EA123'),slice('YYZ','JFK','2099-12-08T14:00:00-05:00','2099-12-08T16:00:00-05:00','EA456')]}}]}};
 
 test('validates Matrix search and creates different API and SPA round-trip shapes',()=>{
  const body=makeMatrixBody(query);assert.equal(body.inputs.slices.length,2);assert.equal(body.inputs.pax.youth,1);assert.equal(body.inputs.pax.youths,undefined);assert.equal(body.inputs.pax.children,1);assert.equal(body.inputs.cabin,'PREMIUM-COACH');
- const url=buildMatrixUrl(query),state=JSON.parse(Buffer.from(new URL(url).searchParams.get('search'),'base64').toString());assert.equal(new URL(url).pathname,'/flights');assert.equal(state.slices.length,1);assert.equal(state.slices[0].dates.returnDate,'2026-12-08');assert.equal(state.options.cabin,'PREMIUM_COACH');assert.equal(state.pax.youth,'1');
+ const url=buildMatrixUrl(query),state=JSON.parse(Buffer.from(new URL(url).searchParams.get('search'),'base64').toString());assert.equal(new URL(url).pathname,'/flights');assert.equal(state.slices.length,1);assert.equal(state.slices[0].dates.returnDate,'2099-12-08');assert.equal(state.options.cabin,'PREMIUM_COACH');assert.equal(state.pax.youth,'1');
  const calendar=buildMatrixUrl(query,{calendar:true,duration:23});assert.equal(new URL(calendar).pathname,'/calendar');assert.equal(JSON.parse(Buffer.from(new URL(calendar).searchParams.get('search'),'base64').toString()).slices[0].dates.duration,'23');
  assert.throws(()=>validateMatrixSearch({...query,departureDate:'2026-02-30'}),/departureDate/);assert.throws(()=>buildMatrixUrl(query,{calendar:true,duration:366}),/duration/);
 });
@@ -25,7 +25,7 @@ test('validates Matrix search and creates different API and SPA round-trip shape
 test('Matrix API response body is capped before parsing oversized batch data',async()=>{
  let cancelled=false;
  const response=new Response(new ReadableStream({start(controller){controller.enqueue(new TextEncoder().encode('x'.repeat(5_000_001)));},cancel(){cancelled=true;}}));
- await assert.rejects(searchMatrix({origin:'YHZ',destination:'YYZ',departureDate:'2026-11-15',currency:'CAD',cabin:'COACH',passengers:{adults:1}},{apiKey:testKey,fetcher:async()=>response}),error=>error.sourceStatus==='invalid_response');
+ await assert.rejects(searchMatrix({origin:'YHZ',destination:'YYZ',departureDate:'2099-11-15',currency:'CAD',cabin:'COACH',passengers:{adults:1}},{apiKey:testKey,fetcher:async()=>response}),error=>error.sourceStatus==='invalid_response');
  assert.equal(cancelled,true,'oversized batch bodies should be cancelled while streaming');
 });
 
@@ -54,7 +54,7 @@ test('validates bounded Matrix route and detail controls and applies them to the
  assert.deepEqual(validateMatrixOptions({maxExtraLegsRelativeToMinimum:5,allowAirportChanges:false,expandDetailedItineraries:true}),{maxExtraLegsRelativeToMinimum:5,allowAirportChanges:false,expandDetailedItineraries:true});
  assert.throws(()=>validateMatrixOptions({maxExtraLegsRelativeToMinimum:6}),/0 and 5/);
  assert.throws(()=>validateMatrixOptions({expandDetailedItineraries:'yes'}),/expand detailed itineraries/);
- const standard={origin:'YHZ',destination:'YYZ',date:'2026-11-15',tripType:'one-way',cabin:'economy',adults:1,children:0,source:'ita-matrix',matrixOptions:{maxExtraLegsRelativeToMinimum:3,allowAirportChanges:false,expandDetailedItineraries:true}};
+ const standard={origin:'YHZ',destination:'YYZ',date:'2099-11-15',tripType:'one-way',cabin:'economy',adults:1,children:0,source:'ita-matrix',matrixOptions:{maxExtraLegsRelativeToMinimum:3,allowAirportChanges:false,expandDetailedItineraries:true}};
  let sent;await searchProviders(standard,{searchMatrix:async input=>{sent=input;return {offers:[],sources:[]};}});
  assert.equal(sent.maxExtraLegsRelativeToMinimum,3);assert.equal(sent.allowAirportChanges,false);assert.equal(sent.expandDetailedItineraries,true);assert.equal(sent.currency,'CAD');
 });
@@ -79,7 +79,7 @@ test('Matrix rejects malformed grouping and does not invent cabin evidence',()=>
 });
 
 test('normalizer only returns complete matching CAD itineraries',()=>{
- const result=normalizeMatrix(raw,query,new Date().toISOString());assert.equal(result.offers.length,1);assert.equal(result.offers[0].price,523.19);assert.equal(result.offers[0].inbound.from,'YYZ');assert.equal(result.offers[0].segments[0].flight_number,'EA123');assert.equal(result.offers[0].segments[0].departure_time_local,'2026-11-15T10:00:00-05:00');assert.match(result.offers[0].sourceUrl,/matrix\.itasoftware\.com\/flights/);
+ const result=normalizeMatrix(raw,query,new Date().toISOString());assert.equal(result.offers.length,1);assert.equal(result.offers[0].price,523.19);assert.equal(result.offers[0].inbound.from,'YYZ');assert.equal(result.offers[0].segments[0].flight_number,'EA123');assert.equal(result.offers[0].segments[0].departure_time_local,'2099-11-15T10:00:00-05:00');assert.match(result.offers[0].sourceUrl,/matrix\.itasoftware\.com\/flights/);
  assert.equal(result.offers[0].travelers,'1 adult, 1 youth, 1 child');
  const bad=normalizeMatrix({solutionList:{solutions:[{id:'bad',displayTotal:'CAD10'}]}},query);assert.equal(bad.offers.length,0);assert.equal(bad.sources[0].rejected,1);
 });
@@ -155,7 +155,7 @@ test('Matrix is an optional source and maps actual child ages to source categori
 });
 
 test('Matrix observations pass through the existing shared flight result validator',async()=>{
- const q={origin:'JFK',destination:'YYZ',date:'2026-11-15',returnDate:'2026-12-08',tripType:'round-trip',cabin:'premium_economy',adults:1,children:0,source:'ita-matrix'};
+ const q={origin:'JFK',destination:'YYZ',date:'2099-11-15',returnDate:'2099-12-08',tripType:'round-trip',cabin:'premium_economy',adults:1,children:0,source:'ita-matrix'};
  const observation=normalizeMatrix(raw,{...query,departureDate:q.date,returnDate:q.returnDate},new Date().toISOString());
  const result=await searchProviders(q,{searchMatrix:async()=>observation});assert.equal(result.offers.length,1);assert.equal(result.offers[0].provider,'ITA Matrix');assert.equal(result.offers[0].inbound.departureDate,q.returnDate);
 });
