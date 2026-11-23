@@ -1,5 +1,13 @@
 # Reverse-endpoint implementation plan and inventory
 
+## Google calendar RPC live recheck — 2026-11-23
+
+`TRAVEL_GOOGLE_CALENDAR_RPC=1` is enabled locally and in `.env.example` for the supported unfiltered one-adult economy round-trip grid. A live YYZ–LHR fixed five-night calendar produced two date-level CAD observations for two departures with distinct return dates, requiring two exact-return grid responses; a separate fixed-return query populated two departures from one grid response. Worker validation accepted both results. A one-way date-grid attempt is not used: the known one-way grid operation is unsupported, so one-way calendars dispatch exact flight searches. A bounded live one-day YYZ–LHR one-way search returned ten validated itinerary observations through the exact-flight path. Fatal provider failures now appear on the attempted route/date rather than being mislabeled as unscanned; later dates remain unscanned. No prices or RPC payloads were saved. See [evidence](ignav-cheapest-dates-calendar-2026-11-23.md).
+
+## Ignav cheapest-dates live calendar path — 2026-11-23
+
+The structured Ignav `/fares/cheapest-dates` operation is now wired into the calendar worker for unfiltered count-party searches. One bounded live YYZ–LHR request covered 2027-01-10 and 2027-01-11; both rows carried CAD and `unverified` status. The normal calendar aggregator and an isolated durable worker each accepted the exact date cells, with one wire response and two logical date slots. Fixed stays reuse one response; flexible night ranges reuse one response per stay length. Results stay price-only and the UI's exact-date follow-up switches its source to Ignav. `npm test` passes 686/686; the production-build browser fixture verified display/source handoff, while its results were intercepted. This is one live query shape, not broad schema, quota, p95, itinerary, seller or final-price evidence. [Evidence](ignav-cheapest-dates-calendar-2026-11-23.md).
+
 ## Progressive-results production UI check — 2026-11-23
 
 The current production build rendered persisted partial flight and Matrix price-only fixture results before the final response. The production Chromium check measured **339 ms** from the persisted progress timestamp to visible UI across three status polls; it reported zero browser errors, intercepted provider/job calls, and blocked external requests. This is one synthetic fixture sample, not a live source response or p95. The temporary loopback server was stopped. [Evidence](flight-streaming-production-ui-2026-11-23.md).

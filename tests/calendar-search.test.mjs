@@ -54,6 +54,17 @@ test('Ignav round-trip date grids reuse one request with exact fixed stay dates'
  assert.deepEqual(result.dates.map(cell=>[cell.date,cell.returnDate,cell.priceObservations[0]?.price]),[['2099-05-10','2099-05-15',700],['2099-05-11','2099-05-16',725]]);
  assert.equal(calendarWorkerResultError(result),null);
 });
+test('Ignav flexible-stay calendars reuse one grid per stay length across departures',async()=>{
+ const observedAt=new Date().toISOString(),calls=[];
+ const query={origin:'YUL',destination:'FRA',originAirports:['YUL'],destinationAirports:['FRA'],start:'2099-05-20',end:'2099-05-21',tripType:'round-trip',nightsMin:3,nightsMax:4,adults:1,children:0,childrenAges:[],cabin:'economy',filters:{},source:'ignav',searchLimit:4};
+ const searchIgnavCalendar=async input=>{calls.push(input);const dates=[];for(let departure=Date.parse(`${input.start}T00:00:00Z`);departure<=Date.parse(`${input.end}T00:00:00Z`);departure+=86400000){const date=new Date(departure).toISOString().slice(0,10);dates.push({date,returnDate:new Date(departure+input.nights*86400000).toISOString().slice(0,10),price:800+input.nights,currency:'CAD',status:'unverified'});}return {query:{origin:input.origin,destination:input.destination,start:input.start,end:input.end,nights:input.nights,cabin:input.cabin,adults:input.adults,childrenAges:input.childrenAges,maxStops:null},observedAt,dates};};
+ const result=await searchFareCalendar(query,{providerOptions:{searchIgnavCalendar}});
+ assert.equal(calls.length,2,'one grid should cover both departure dates for each requested stay length');
+ assert.deepEqual(calls.map(call=>call.nights),[3,4]);
+ assert.deepEqual(result.dates.map(cell=>[cell.date,cell.returnDate,cell.priceObservations[0]?.price]),[['2099-05-20','2099-05-23',803],['2099-05-20','2099-05-24',804],['2099-05-21','2099-05-24',803],['2099-05-21','2099-05-25',804]]);
+ assert.deepEqual(result.dates.map(cell=>cell.providerCoverage.find(row=>row.provider==='Ignav')?.wireResponses),[1,1,0,0]);
+ assert.equal(calendarWorkerResultError(result),null);
+});
 test('Ignav cheapest-dates declines active filters and keeps the exact-query adapter',async()=>{
  let gridCalls=0,exactCalls=0;
  const query={origin:'YHZ',destination:'CDG',originAirports:['YHZ'],destinationAirports:['CDG'],start:'2099-06-02',end:'2099-06-02',tripType:'one-way',adults:1,children:0,childrenAges:[],cabin:'economy',filters:{maxStops:1},source:'ignav',searchLimit:1};
@@ -72,6 +83,17 @@ test('Google one-way calendar uses one bounded price grid and keeps observations
  assert.ok(result.dates.every(cell=>cell.price===null&&!cell.offer&&cell.status==='price_only_observed'));
  assert.equal(result.coverage.datesWithQuotes,0);assert.equal(result.coverage.datesWithPriceObservations,2);
  assert.equal(calendarWorkerResultError(result),null);
+});
+test('enabled Google calendar grid falls back to exact one-way search when no grid adapter is supplied',async()=>{
+ const previous=process.env.TRAVEL_GOOGLE_CALENDAR_RPC,seen=[];process.env.TRAVEL_GOOGLE_CALENDAR_RPC='1';
+ try{
+  const query={origin:'YYZ',destination:'LHR',originAirports:['YYZ'],destinationAirports:['LHR'],start:'2099-04-18',end:'2099-04-18',tripType:'one-way',adults:1,children:0,childrenAges:[],cabin:'economy',filters:{},source:'google',searchLimit:1};
+  const result=await searchFareCalendar(query,{providerOptions:{searchGoogle:async input=>{seen.push(input);return {offers:[],sources:[{provider:'Google Flights',status:'ok',received:0}]};}}});
+  assert.equal(seen.length,1);
+  assert.equal(seen[0].date,query.start);
+  assert.equal(result.dates[0].priceObservations.length,0);
+  assert.equal(result.dates[0].providerCoverage.find(row=>row.provider==='Google Flights')?.status,'ok');
+ }finally{if(previous===undefined)delete process.env.TRAVEL_GOOGLE_CALENDAR_RPC;else process.env.TRAVEL_GOOGLE_CALENDAR_RPC=previous;}
 });
 
 test('Google fixed-return calendar reuses one price grid per selected airport pair',async()=>{
@@ -473,7 +495,7 @@ test('calendar preserves identified travelers and skips category-changing trips 
 test('provider refusal retains earlier observations and explicitly leaves remaining dates unscanned',async()=>{
  let calls=0;const retryAt=Date.now()+60_000;
  const r=await searchFareCalendar({...input,end:'2099-04-17'},{searcher:async q=>{if(++calls===2)throw new SourceRequestError('Source cooling down.',{status:'rate_limited',httpStatus:429,retryAt});return response([offer(q)]);}});
- assert.equal(calls,2);assert.equal(r.status,'source_unavailable');assert.equal(r.dates[0].price,500);assert.ok(r.dates.slice(1).every(d=>d.status==='not_scanned'&&d.price===null));assert.equal(r.coverage.fullyScanned,false);assert.equal(r.stopped.source.retryAt,new Date(retryAt).toISOString());
+ assert.equal(calls,2);assert.equal(r.status,'source_unavailable');assert.equal(r.dates[0].price,500);assert.equal(r.dates[1].status,'source_failure');assert.equal(r.dates[1].providerCoverage[0].status,'rate_limited');assert.equal(r.dates[1].providerCoverage[0].responseReceived,true);assert.equal(r.dates[2].status,'not_scanned');assert.equal(r.dates[2].price,null);assert.equal(r.coverage.routeFailures.length,1);assert.equal(r.coverage.pairQueriesFailed,1);assert.equal(r.coverage.pairQueriesNotScanned,1);assert.equal(r.coverage.fullyScanned,false);assert.equal(r.stopped.source.retryAt,new Date(retryAt).toISOString());
 });
 test('resume reuses fresh dates and an interrupted read cannot reset the calendar budget',async()=>{
  const query={...input,end:'2099-04-17',searchLimit:3},controller=new AbortController();let checkpoint,calls=0;
