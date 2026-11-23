@@ -19,8 +19,9 @@ function packageRoomAllocationText(rooms=[]){
 function packageCoverageMessage(result){
  const coverage=result?.coverage??{};
  if(coverage.mode==='structured_widget_response'){
-  const remaining=Math.max(0,(coverage.totalAvailable??coverage.returnedPackages??0)-(coverage.returnedPackages??0));
-  return `${result.offers.length} supported package observations from ${coverage.returnedPackages} provider results${coverage.moreAvailable?`; ${remaining} more listings remain beyond this page`:''}.`;
+  const returned=coverage.returnedPackages??0,total=coverage.totalAvailable??returned,remaining=Math.max(0,total-returned);
+  const pages=coverage.responsePages??1,limit=coverage.resultLimit??returned??20;
+  return `${result.offers.length} supported package observations from ${returned} provider result${returned===1?'':'s'} across ${pages} checked page${pages===1?'':'s'}. The provider response reported ${total} matching listings; ${remaining} were beyond the selected ${limit}-result limit.`;
  }
  return `${result.offers.length} supported package observations from ${coverage.flightPanelsAttempted??0} inspected flight panels (${coverage.pagesExpanded??0} additional pages opened, limit ${coverage.resultLimit??20});`;
 }

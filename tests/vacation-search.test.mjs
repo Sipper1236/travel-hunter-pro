@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateVacationQuery,searchVacation,inspectVacationFlightPanels,vacationFlightPanelBudget,loadVacationResultPages,readVacationPackageApiResponse} from '../lib/vacation-search.mjs';
+import {validateVacationQuery,searchVacation,inspectVacationFlightPanels,vacationFlightPanelBudget,loadVacationResultPages,readVacationPackageApiResponse,selectVacationPackageResponsePages} from '../lib/vacation-search.mjs';
 import {openVacationFlightPanel,vacationLocationSelection} from '../lib/vacation-form.mjs';
 const query={origin:'YHZ',originLabel:'Halifax Stanfield Intl. Airport (YHZ)',destinationAirport:'BCN',destinationLabel:'Barcelona, Spain',date:'2099-04-15',returnDate:'2099-04-25',adults:1,rooms:1,childrenAges:[]};
 test('structured package response reader checks status, JSON type, declared and decoded bytes before parsing',async()=>{
@@ -39,6 +39,13 @@ test('package result loading stops after its page budget when a provider adds on
  assert.deepEqual(result,{visibleCards:13,pagesExpanded:1,moreAvailable:true,pageLoadStopped:false,resultLimit:40});assert.equal(clicks,1);
  const singlePage=await loadVacationResultPages(page,20);
  assert.deepEqual(singlePage,{visibleCards:13,pagesExpanded:0,moreAvailable:true,pageLoadStopped:false,resultLimit:20});assert.equal(clicks,1);
+});
+test('structured ACV response selection requires exactly the rendered sequential offsets',()=>{
+ const first={offset:0,response:{id:'first'},requestUrl:'https://vacations-api.aircanada.com/packages-search/search?offset=0',observedAt:'2026-11-23T12:00:00Z'};
+ const second={offset:20,response:{id:'second'},requestUrl:'https://vacations-api.aircanada.com/packages-search/search?offset=20',observedAt:'2026-11-23T12:00:01Z'};
+ assert.deepEqual(selectVacationPackageResponsePages([second,first],[0,20]),[first,second]);
+ assert.deepEqual(selectVacationPackageResponsePages([first],[0]),[first]);
+ for(const [records,offsets] of [[[first],[0,20]],[[first,first],[0,20]],[[first,second,second],[0,20]],[[second],[20]],[[first],[20]]])assert.throws(()=>selectVacationPackageResponsePages(records,offsets),/ACV|sequential/);
 });
 test('duplicate flight controls choose one visible matching target and reject ambiguity',async()=>{
  let clicks=0;const link=(visible,target,expanded='false')=>({isVisible:async()=>visible,getAttribute:async name=>name==='aria-controls'?target:expanded,click:async()=>{clicks++;}});

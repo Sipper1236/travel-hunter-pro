@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {normalizeVacationApiResponse,normalizeVacationListing} from '../lib/vacation-normalize.mjs';
+import {normalizeVacationApiResponse,normalizeVacationListing,mergeVacationApiPages} from '../lib/vacation-normalize.mjs';
 import {searchVacationWithCache,vacationResponseCacheKey} from '../lib/vacation-response-cache.mjs';
 import {createJobStore} from '../lib/job-store.mjs';
 import {mkdtemp,rm} from 'node:fs/promises';
@@ -45,10 +45,46 @@ test('normalizes the ordinary widget JSON response with exact route, stay, hotel
  assert.equal(normalizeVacationApiResponse(actualAdultMarker,{...context,requestUrl:apiRequestUrl,sourceUrl:listingUrl,responseBytes:88189}).offers.length,1);
 });
 
+test('normalizes the observed second structured page only at offset 20 with matching inclusive response bounds',()=>{
+ const pageQuery={...query,maxResults:40},request=new URL(apiRequestUrl);request.searchParams.set('offset','20');
+ const response=packageApiResponse();response.results.metaData={totalAvailable:84,currentStart:20,currentEnd:20};
+ const result=normalizeVacationApiResponse(response,{...context,query:pageQuery,requestUrl:request.href,sourceUrl:listingUrl,observedAt:'2026-10-29T01:00:01Z',responseBytes:88189});
+ assert.equal(result.offers.length,1);
+ assert.equal(result.coverage.responseOffset,20);
+ assert.equal(result.coverage.resultLimit,40);
+ assert.equal(result.sourceEvidence.request.offset,20);
+ assert.equal(result.sourceEvidence.response.currentStart,20);
+ assert.equal(result.sourceEvidence.response.currentEnd,20);
+ const outOfOrder=packageApiResponse();outOfOrder.results.metaData={totalAvailable:84,currentStart:0,currentEnd:0};
+ assert.throws(()=>normalizeVacationApiResponse(outOfOrder,{...context,query:pageQuery,requestUrl:request.href,sourceUrl:listingUrl,responseBytes:88189}),/unsupported result envelope/);
+});
+
+test('merges only sequential ACV pages with matching query, totals, and unique package identities',()=>{
+ const pageQuery={...query,maxResults:40},firstData=packageApiResponse();
+ const firstTemplate=firstData.results.packages[0];firstData.results.packages=Array.from({length:20},(_,index)=>({...firstTemplate,id:`package-${index+1}`}));
+ firstData.results.metaData={totalAvailable:84,currentStart:0,currentEnd:19};
+ const first=normalizeVacationApiResponse(firstData,{...context,query:pageQuery,requestUrl:apiRequestUrl,sourceUrl:listingUrl,responseBytes:88189});
+ const secondRequest=new URL(apiRequestUrl);secondRequest.searchParams.set('offset','20');
+ const secondData=packageApiResponse(),secondTemplate=secondData.results.packages[0];secondData.results.packages=Array.from({length:20},(_,index)=>({...secondTemplate,id:`package-${index+21}`}));secondData.results.metaData={totalAvailable:84,currentStart:20,currentEnd:39};
+ const second=normalizeVacationApiResponse(secondData,{...context,query:pageQuery,requestUrl:secondRequest.href,sourceUrl:listingUrl,observedAt:'2026-10-29T01:00:01Z',responseBytes:88201});
+ const merged=mergeVacationApiPages([first,second],{listingCardsRendered:40});
+ assert.equal(merged.offers.length,40);assert.equal(merged.received,40);assert.equal(merged.rejected,0);
+ assert.deepEqual(merged.coverage.pageOffsets,[0,20]);assert.equal(merged.coverage.pagesExpanded,1);assert.equal(merged.coverage.returnedPackages,40);assert.equal(merged.coverage.moreAvailable,true);assert.equal(merged.coverage.listingCardsRendered,40);
+ assert.deepEqual(merged.sourceEvidence.request.pages,[{offset:0,limit:20},{offset:20,limit:20}]);
+ assert.deepEqual(merged.sourceEvidence.response.pages.map(page=>[page.offset,page.currentStart,page.currentEnd,page.returnedPackages]),[[0,0,19,20],[20,20,39,20]]);
+ assert.deepEqual(merged.offers.slice(0,20).map(offer=>offer.packageEvidence.pageOffset),Array(20).fill(0));assert.deepEqual(merged.offers.slice(20).map(offer=>offer.packageEvidence.pageOffset),Array(20).fill(20));
+ assert.deepEqual(merged.offers.slice(0,20).map(offer=>offer.observedAt),Array(20).fill('2026-10-29T01:00:00Z'));assert.deepEqual(merged.offers.slice(20).map(offer=>offer.observedAt),Array(20).fill('2026-10-29T01:00:01Z'));
+ assert.throws(()=>mergeVacationApiPages([first]),/incomplete/);
+ assert.throws(()=>mergeVacationApiPages([first,{...second,sourceEvidence:{...second.sourceEvidence,request:{...second.sourceEvidence.request,offset:0}}}]),/sequential/);
+ assert.throws(()=>mergeVacationApiPages([first,{...second,sourceEvidence:{...second.sourceEvidence,response:{...second.sourceEvidence.response,totalAvailable:85}}}]),/ACV page/);
+ const duplicateIds=[...second.sourceEvidence.response.packageIds];duplicateIds[0]='package-1';
+ assert.throws(()=>mergeVacationApiPages([first,{...second,sourceEvidence:{...second.sourceEvidence,response:{...second.sourceEvidence.response,packageIds:duplicateIds}}}]),/duplicate package/);
+});
+
 test('ACV structured package cache reuses only an exact fresh worker-valid widget result',async()=>{
  const directory=await mkdtemp(join(tmpdir(),'vacation-response-cache-')),store=createJobStore(join(directory,'jobs.sqlite'));
  const exactQuery=validateVacationQuery({...query,originLabel:'Halifax Stanfield Intl. Airport (YHZ)'}),freshContext={...context,query:exactQuery,observedAt:new Date().toISOString()};
- const result=normalizeVacationApiResponse(packageApiResponse(),{...freshContext,requestUrl:apiRequestUrl,sourceUrl:listingUrl,responseBytes:88189});let calls=0;
+ const normalized=normalizeVacationApiResponse(packageApiResponse(),{...freshContext,requestUrl:apiRequestUrl,sourceUrl:listingUrl,responseBytes:88189}),result=mergeVacationApiPages([normalized],{listingCardsRendered:1});let calls=0;
  try{
   const search=async()=>{calls++;return result;};
   const first=await searchVacationWithCache(exactQuery,{cache:store,search});assert.equal(first.offers.length,1);assert.equal(first.cacheStatus,undefined);

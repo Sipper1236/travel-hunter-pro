@@ -12,6 +12,16 @@ function makeResult(query=input){
  const offer={name:'Barcelona Beach Hotel',stars:4,price:3200,currency:'CAD',currencyEvidenceUrl:'https://vacations.aircanada.com/en/terms-conditions',provider:'Air Canada Vacations',source:'Air Canada Vacations via api-anything',product:'supplier-package',observedAt,query,occupancyEvidence:{status:'listing_parameters_match',adultsRequested:query.adults,adultsInListingUrl:query.adults,roomsRequested:query.rooms,roomsInListingUrl:query.rooms,childrenAgesRequested:[...query.childrenAges],childrenAgesInListingUrl:[...query.childrenAges],lapInfantsRequested:query.infants?.length??0,lapInfantsInListingUrl:0,perRoomAllocation:query.rooms===1?'single_room_request':'not_exposed_by_widget',...(query.rooms===1?{roomAllocations:[{adults:query.adults,childrenAges:[...query.childrenAges]}]}:{})},propertyCity:'Barcelona',destinationMatch:{status:'provider-listed city matches selected destination',city:'Barcelona',evidence:'Hotel card city label'},mealPlan:'Breakfast',taxText:'Provider displayed package estimate.',cancellationText:null,flightSummary:'Departure flight summary: nonstop. Return flight summary: nonstop.',flightStops:{outbound:0,inbound:0},bookingStatus:'Observed estimated package total; final availability, exact property address and local charges unconfirmed',sourceUrl:listingUrl.toString()};
  return {status:'observed',query,offers:[offer],received:1,rejected:0,coverage:{visibleCards:1,flightPanelsAttempted:1,flightPanelLimit:20,moreAvailable:false,pageLoadStopped:false,resultLimit:20,pagesExpanded:0}};
 }
+function attestStructuredPage(result){
+ const evidence=result.sourceEvidence,offset=evidence.request.offset,observedAt=evidence.observedAt,packageIds=result.offers.map(offer=>offer.packageEvidence.responsePackageId);
+ result.offers.forEach(offer=>{offer.packageEvidence.pageOffset=offset;});
+ evidence.request.pages=[{offset,limit:20}];
+ evidence.response={...evidence.response,currentStart:offset,currentEnd:offset+Math.max(0,result.received-1),packageIds};
+ evidence.packageLinks=evidence.packageLinks.map(link=>({...link,pageOffset:offset,observedAt:result.offers.find(offer=>offer.packageEvidence.responsePackageId===link.packageId)?.observedAt??observedAt}));
+ evidence.response.pages=[{offset,limit:20,returnedPackages:result.received,totalAvailable:evidence.response.totalAvailable,currentStart:offset,currentEnd:evidence.response.currentEnd,observedAt,responseBytes:evidence.responseBytes,packageIds}];
+ result.coverage.pageOffsets=[offset];result.coverage.pageRanges=[{offset,currentStart:offset,currentEnd:evidence.response.currentEnd}];result.coverage.responsePages=1;result.coverage.listingCardsRendered=result.received;
+ return result;
+}
 
 test('package worker accepts a current CAD package matching exact route, dates, party, and filters',()=>{
  assert.equal(packageWorkerResultError(makeResult(),input,now),null);
@@ -34,6 +44,7 @@ test('package worker accepts structured widget results only with exact request, 
  offer.packageEvidence={responsePackageId:'package-1',hotelId:'hotel-1',itineraryId:'itinerary-1',paxRows:[{count:1,type:'A'}],groupTotalCents:320000,adultCount:1,childrenAges:[],rooms:1,roomAllocations:[{adults:1,childrenAges:[]}],requestOrigin:'YHZ',requestDestination:'BCN',requestDestinationId:'12345',departureDate:'2027-04-15',returnDate:'2027-04-25',outboundArrivalDate:'2027-04-16'};
  result.coverage={mode:'structured_widget_response',returnedPackages:1,totalAvailable:80,responseOffset:0,responseLimit:20,resultLimit:20,moreAvailable:true,pagesExpanded:0};
  result.sourceEvidence={mode:'structured_widget_response',endpoint:'https://vacations-api.aircanada.com/packages-search/search',method:'GET',status:200,responseBytes:88189,observedAt:new Date(now).toISOString(),request:{origin:'YHZ',destination:'BCN',destinationId:'12345',departureDate:'2027-04-15',returnDate:'2027-04-25',adults:1,childrenAges:[],rooms:1,cabin:'economy',offset:0,limit:20},response:{returnedPackages:1,totalAvailable:80},packageLinks:[{packageId:'package-1',hotelId:'hotel-1',itineraryId:'itinerary-1',destinationId:'12345',totalCents:320000}],currency:'CAD'};
+ attestStructuredPage(result);
  assert.equal(packageWorkerResultError(result,input,now),null);
  const changedRequest=structuredClone(result);changedRequest.sourceEvidence.request.returnDate='2027-04-24';assert.match(packageWorkerResultError(changedRequest,input,now),/structured request/);
  const changedStay=structuredClone(result);changedStay.offers[0].hotelStay.checkIn='2027-04-15';assert.match(packageWorkerResultError(changedStay,input,now),/hotel stay/);
@@ -45,6 +56,25 @@ test('package worker accepts structured widget results only with exact request, 
  const oversized=structuredClone(result);oversized.sourceEvidence.responseBytes=2_000_001;assert.match(packageWorkerResultError(oversized,input,now),/response evidence/);
 });
 
+test('package worker validates two sequential structured pages and each offer’s page-level observation',()=>{
+ const query={...input,maxResults:40},result=makeResult(query),first=result.offers[0];
+ first.source='Air Canada Vacations packages-search/search';first.destinationMatch.evidence='Structured package hotel destination field and selected provider destination ID';first.hotelStay={checkIn:'2027-04-16',checkOut:'2027-04-25'};
+ first.packageEvidence={responsePackageId:'package-1',hotelId:'hotel-1',itineraryId:'itinerary-1',pageOffset:0,paxRows:[{count:1,type:'A'}],groupTotalCents:320000,adultCount:1,childrenAges:[],rooms:1,roomAllocations:[{adults:1,childrenAges:[]}],requestOrigin:'YHZ',requestDestination:'BCN',requestDestinationId:'12345',departureDate:'2027-04-15',returnDate:'2027-04-25',outboundArrivalDate:'2027-04-16'};
+ const second=structuredClone(first);second.name='Second Barcelona hotel';second.observedAt=new Date(now+1000).toISOString();second.packageEvidence={...second.packageEvidence,responsePackageId:'package-21',pageOffset:20};
+ result.offers=[first,second];result.received=40;result.rejected=38;
+ const firstAt=first.observedAt,secondAt=second.observedAt;
+ const firstIds=Array.from({length:20},(_,index)=>`package-${index+1}`),secondIds=Array.from({length:20},(_,index)=>`package-${index+21}`);
+ result.coverage={mode:'structured_widget_response',returnedPackages:40,totalAvailable:84,responseOffset:0,responseLimit:20,resultLimit:40,moreAvailable:true,pagesExpanded:1,pageOffsets:[0,20],pageRanges:[{offset:0,currentStart:0,currentEnd:19},{offset:20,currentStart:20,currentEnd:39}],responsePages:2,listingCardsRendered:40};
+ result.sourceEvidence={mode:'structured_widget_response',endpoint:'https://vacations-api.aircanada.com/packages-search/search',method:'GET',status:200,responseBytes:176378,observedAt:secondAt,request:{origin:'YHZ',destination:'BCN',destinationId:'12345',departureDate:'2027-04-15',returnDate:'2027-04-25',adults:1,childrenAges:[],rooms:1,cabin:'economy',offset:0,limit:20,pages:[{offset:0,limit:20},{offset:20,limit:20}]},response:{returnedPackages:40,totalAvailable:84,currentStart:0,currentEnd:39,pages:[{offset:0,limit:20,returnedPackages:20,totalAvailable:84,currentStart:0,currentEnd:19,observedAt:firstAt,responseBytes:88189,packageIds:firstIds},{offset:20,limit:20,returnedPackages:20,totalAvailable:84,currentStart:20,currentEnd:39,observedAt:secondAt,responseBytes:88189,packageIds:secondIds}]},packageLinks:[{packageId:'package-1',hotelId:'hotel-1',itineraryId:'itinerary-1',destinationId:'12345',totalCents:320000,pageOffset:0,observedAt:firstAt},{packageId:'package-21',hotelId:'hotel-1',itineraryId:'itinerary-1',destinationId:'12345',totalCents:320000,pageOffset:20,observedAt:secondAt}],currency:'CAD'};
+ assert.equal(packageWorkerResultError(result,query,Date.parse(secondAt)),null);
+ const checkedAt=Date.parse(secondAt),skipped=structuredClone(result);skipped.coverage.pageOffsets=[0,40];assert.match(packageWorkerResultError(skipped,query,checkedAt),/coverage/);
+ const changedRange=structuredClone(result);changedRange.sourceEvidence.response.pages[1].currentStart=0;assert.match(packageWorkerResultError(changedRange,query,checkedAt),/page/);
+ const changedTotal=structuredClone(result);changedTotal.sourceEvidence.response.pages[1].totalAvailable=85;assert.match(packageWorkerResultError(changedTotal,query,checkedAt),/page/);
+ const repeatedId=structuredClone(result);repeatedId.sourceEvidence.response.pages[1].packageIds[0]='package-1';assert.match(packageWorkerResultError(repeatedId,query,checkedAt),/duplicate package/);
+ const wrongOfferPage=structuredClone(result);wrongOfferPage.offers[1].packageEvidence.pageOffset=0;assert.match(packageWorkerResultError(wrongOfferPage,query,checkedAt),/package evidence/);
+ const stalePage=structuredClone(result);stalePage.sourceEvidence.response.pages[1].observedAt='2026-11-14T01:00:00Z';assert.match(packageWorkerResultError(stalePage,query,checkedAt),/page/);
+});
+
 test('package worker accepts structured child pricing only when the exact age, room, and adult/child price rows match',()=>{
  const childInput={...input,childrenAges:[7]},result=makeResult(childInput),offer=result.offers[0],listing=new URL(offer.sourceUrl);
  listing.searchParams.set('non_adult1','7');listing.searchParams.set('r0','1-adult-0,1-child-7');offer.sourceUrl=listing.href;
@@ -53,6 +83,7 @@ test('package worker accepts structured child pricing only when the exact age, r
  offer.packageEvidence={responsePackageId:'child-package',hotelId:'hotel-1',itineraryId:'itinerary-1',paxRows:[{count:1,type:'A'},{count:1,type:'C'}],groupTotalCents:320000,adultCount:1,childrenAges:[7],rooms:1,roomAllocations:[{adults:1,childrenAges:[7]}],requestOrigin:'YHZ',requestDestination:'BCN',requestDestinationId:'12345',departureDate:'2027-04-15',returnDate:'2027-04-25',outboundArrivalDate:'2027-04-16'};
  result.coverage={mode:'structured_widget_response',returnedPackages:1,totalAvailable:80,responseOffset:0,responseLimit:20,resultLimit:20,moreAvailable:true,pagesExpanded:0};
  result.sourceEvidence={mode:'structured_widget_response',endpoint:'https://vacations-api.aircanada.com/packages-search/search',method:'GET',status:200,responseBytes:88189,observedAt:new Date(now).toISOString(),request:{origin:'YHZ',destination:'BCN',destinationId:'12345',departureDate:'2027-04-15',returnDate:'2027-04-25',adults:1,childrenAges:[7],rooms:1,cabin:'economy',offset:0,limit:20},response:{returnedPackages:1,totalAvailable:80},packageLinks:[{packageId:'child-package',hotelId:'hotel-1',itineraryId:'itinerary-1',destinationId:'12345',totalCents:320000}],currency:'CAD'};
+ attestStructuredPage(result);
  assert.equal(packageWorkerResultError(result,childInput,now),null);
  const changedRequest=structuredClone(result);changedRequest.sourceEvidence.request.childrenAges=[8];assert.match(packageWorkerResultError(changedRequest,childInput,now),/structured request/);
  const changedRows=structuredClone(result);changedRows.offers[0].packageEvidence.paxRows[1].type='A';assert.match(packageWorkerResultError(changedRows,childInput,now),/package evidence/);
@@ -67,6 +98,7 @@ test('package worker accepts three structured children only when request, listin
  offer.packageEvidence={responsePackageId:'three-child-package',hotelId:'hotel-1',itineraryId:'itinerary-1',paxRows:[{count:1,type:'A'},{count:1,type:'C'},{count:1,type:'C'},{count:1,type:'C'}],groupTotalCents:440000,adultCount:1,childrenAges:[7,12,15],rooms:1,roomAllocations:[{adults:1,childrenAges:[7,12,15]}],requestOrigin:'YHZ',requestDestination:'BCN',requestDestinationId:'12345',departureDate:'2027-04-15',returnDate:'2027-04-25',outboundArrivalDate:'2027-04-16'};
  result.coverage={mode:'structured_widget_response',returnedPackages:1,totalAvailable:80,responseOffset:0,responseLimit:20,resultLimit:20,moreAvailable:true,pagesExpanded:0};
  result.sourceEvidence={mode:'structured_widget_response',endpoint:'https://vacations-api.aircanada.com/packages-search/search',method:'GET',status:200,responseBytes:88189,observedAt:new Date(now).toISOString(),request:{origin:'YHZ',destination:'BCN',destinationId:'12345',departureDate:'2027-04-15',returnDate:'2027-04-25',adults:1,childrenAges:[7,12,15],rooms:1,cabin:'economy',offset:0,limit:20},response:{returnedPackages:1,totalAvailable:80},packageLinks:[{packageId:'three-child-package',hotelId:'hotel-1',itineraryId:'itinerary-1',destinationId:'12345',totalCents:440000}],currency:'CAD'};
+ attestStructuredPage(result);
  assert.equal(packageWorkerResultError(result,childInput,now),null);
  const changedAges=structuredClone(result);changedAges.offers[0].packageEvidence.childrenAges=[12,7];assert.match(packageWorkerResultError(changedAges,childInput,now),/package evidence/);
  const missingRow=structuredClone(result);missingRow.offers[0].packageEvidence.paxRows.pop();assert.match(packageWorkerResultError(missingRow,childInput,now),/package evidence/);
@@ -82,6 +114,7 @@ test('package worker requires observed adult allocations for every structured ro
  offer.packageEvidence={responsePackageId:'two-room-package',hotelId:'hotel-1',itineraryId:'itinerary-1',paxRows:[{count:2,type:'A'}],groupTotalCents:640000,adultCount:2,childrenAges:[],rooms:2,roomAllocations,requestOrigin:'YHZ',requestDestination:'BCN',requestDestinationId:'12345',departureDate:'2027-04-15',returnDate:'2027-04-25',outboundArrivalDate:'2027-04-16'};
  result.coverage={mode:'structured_widget_response',returnedPackages:1,totalAvailable:80,responseOffset:0,responseLimit:20,resultLimit:20,moreAvailable:true,pagesExpanded:0};
  result.sourceEvidence={mode:'structured_widget_response',endpoint:'https://vacations-api.aircanada.com/packages-search/search',method:'GET',status:200,responseBytes:88189,observedAt:new Date(now).toISOString(),request:{origin:'YHZ',destination:'BCN',destinationId:'12345',departureDate:'2027-04-15',returnDate:'2027-04-25',adults:2,childrenAges:[],rooms:2,cabin:'economy',offset:0,limit:20},response:{returnedPackages:1,totalAvailable:80},packageLinks:[{packageId:'two-room-package',hotelId:'hotel-1',itineraryId:'itinerary-1',destinationId:'12345',totalCents:640000}],currency:'CAD'};
+ attestStructuredPage(result);
  assert.equal(packageWorkerResultError(result,multiRoomInput,now),null);
  const missingRoom=structuredClone(result),missingUrl=new URL(result.offers[0].sourceUrl);missingUrl.searchParams.delete('r1');missingRoom.offers[0].sourceUrl=missingUrl.href;assert.match(packageWorkerResultError(missingRoom,multiRoomInput,now),/Air Canada Vacations listing/);
  const tamperedRoom=structuredClone(result);tamperedRoom.offers[0].packageEvidence.roomAllocations[0].adults=2;assert.match(packageWorkerResultError(tamperedRoom,multiRoomInput,now),/occupancy evidence/);

@@ -1,6 +1,10 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
-Verification refresh — 2026-11-23: `npm test` 642/642; build passed after retrying past the Next.js security reminder; audit reports one moderate Next.js issue with a fix outside the declared range.
+## 2026-11-23 continuation — ACV structured pagination
+
+Extended the ordinary-widget ACV adapter to validate one or two sequential 20-result pages for supported party shapes, up to the user-selected 40-result limit. The worker repeats query, page-range, total, identity, observation, link and rendered-card checks. Two prior normal-widget requests confirmed the live offset-0/20 shape and dynamic `totalAvailable` values; a post-change adapter attempt could not load the provider form and submitted no search. Full suite passed 710/710 and focused package suites passed 45/45 after the refusal-handling guard. Production build passed on the final code state; audit found 0 vulnerabilities. Production browser coverage-message and responsive fixture checks passed with provider traffic intercepted. Current website-to-worker evidence is still open. See [ACV pagination evidence](docs/acv-structured-pagination-2026-11-23.md).
+
+Earlier verification refresh — 2026-11-23, before this ACV continuation: `npm test` 642/642; the prior tree's build passed after retrying past the Next.js security reminder; its audit report described the then-installed Next.js version. The current ACV continuation's final build and zero-finding audit are recorded above.
 
 ## 2026-11-23 continuation — Omkar Expedia recheck
 

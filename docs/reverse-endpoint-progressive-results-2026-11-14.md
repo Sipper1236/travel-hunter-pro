@@ -1,5 +1,9 @@
 # Reverse-endpoint fan-out and progressive flight results — 2026-11-14
 
+## ACV structured 40-result pagination — 2026-11-23
+
+The ordinary-widget ACV adapter and worker now accept at most two sequential 20-record pages for supported party shapes, with exact page ranges, totals, package identities, per-page timestamps and rendered-card count. Two prior normal-widget observations established the offset-0/offset-20 response shape. The post-change live adapter attempt could not load the form and submitted no package query; current website-to-worker proof is still required. Full tests/build/audit and remaining caveats are recorded in [the pagination note](acv-structured-pagination-2026-11-23.md).
+
 ## Production UI progressive-results recheck — 2026-11-23
 
 Ran `TRAVEL_CHECK_URL=http://127.0.0.1:3117 node scripts/check-flight-streaming-ui.mjs` against the current production build. It displayed the persisted partial flight fare and a separate Matrix price-only observation before the final fixture result. Persisted-to-visible time was **339 ms** across three polls; browser errors were 0, provider/job calls were intercepted, and external requests were blocked. The loopback server was stopped after the check. This is one synthetic fixture sample, not live provider latency or p95. [Detailed evidence](flight-streaming-production-ui-2026-11-23.md).
