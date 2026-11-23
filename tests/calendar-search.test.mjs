@@ -1,14 +1,35 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {searchFareCalendar} from '../lib/calendar-search.mjs';
 import {calendarWorkerResultError} from '../lib/calendar-worker-result.mjs';
 import {validateCalendarQuery,calendarStorageKey,addDays,calendarSources,calendarProviders} from '../lib/calendar-query.mjs';
 import {SourceRequestError} from '../lib/source-errors.mjs';
 import {buildMatrixUrl} from '../lib/ita-matrix.mjs';
+import {createJobStore} from '../lib/job-store.mjs';
 const input={origin:'YHZ',destination:'BCN',start:'2099-04-15',end:'2099-04-16',tripType:'round-trip',nights:5,adults:2,children:2,childrenAges:[10,15],cabin:'business',filters:{maxStops:0,maxPrice:1200,airlinesInclude:['AC'],airlinesExclude:['BA'],sort:'price_high'}};
 const leg=(from,to,day,n='100',carrier='AC',depart='08:00:00',arrive='16:00:00')=>({marketing_carrier_code:carrier,flight_number:n,departure_airport:from,arrival_airport:to,departure_time_utc:`${day}T${depart}Z`,arrival_time_utc:`${day}T${arrive}Z`,departure_time_local:`${day}T${depart}`,arrival_time_local:`${day}T${arrive}`});
 const offer=(q,price=500,extra={})=>({provider:'Ignav',source:'Ignav live fare API',price,currency:'CAD',observedAt:new Date(Date.now()).toISOString(),travelers:'Actual query party',bookingStatus:'Observed; seller not rechecked',fees:'Inclusions unverified',cabin:q.cabin,from:q.origin,to:q.destination,departureDate:q.date,arrivalDate:q.date,departureTime:'08:00',arrivalTime:'16:00',durationMinutes:480,airlines:['AC'],via:[],segments:[leg(q.origin,q.destination,q.date)],ignavId:'fare_12345678',itineraryKey:'exact-flights',...(q.tripType==='round-trip'?{inbound:{from:q.destination,to:q.origin,departureDate:q.returnDate,arrivalDate:q.returnDate,departureTime:'08:00',arrivalTime:'16:00',durationMinutes:480,via:[],segments:[leg(q.destination,q.origin,q.returnDate,'200')]}}:{}),...extra});
 const response=offers=>({sources:[{provider:'Ignav',status:'ok',received:offers.length}],offers});
+test('Ignav calendar observations reuse the durable exact-query cache across worker connections',async()=>{
+ const directory=await mkdtemp(join(tmpdir(),'travel-ignav-calendar-cache-')),path=join(directory,'jobs.sqlite');
+ let firstStore=createJobStore({path}),secondStore,calls=0;
+ const query={origin:'YHZ',destination:'BCN',originAirports:['YHZ'],destinationAirports:['BCN'],start:'2099-04-15',end:'2099-04-15',tripType:'one-way',adults:1,children:0,childrenAges:[],cabin:'economy',filters:{},source:'ignav',searchLimit:1};
+ const providerOptions={searchIgnav:async q=>{calls++;return response([offer(q,501)]);}};
+ try{
+  const first=await searchFareCalendar(query,{providerCache:firstStore,providerOptions});
+  const firstObservedAt=first.dates[0].offer?.observedAt;
+  assert.ok(firstObservedAt);
+  firstStore.close();firstStore=null;
+  secondStore=createJobStore({path});
+  const second=await searchFareCalendar(query,{providerCache:secondStore,providerOptions});
+  assert.equal(calls,1,'the second worker connection must use the exact fresh provider response');
+  assert.equal(second.dates[0].offer?.observedAt,firstObservedAt,'cache reuse preserves the original fare observation time');
+  assert.equal(second.dates[0].providerCoverage.find(row=>row.provider==='Ignav')?.cacheStatus,'hit');
+ }finally{firstStore?.close();secondStore?.close();await rm(directory,{recursive:true,force:true});}
+});
 test('Google one-way calendar uses one bounded price grid and keeps observations separate from itinerary fares',async()=>{
  const seen=[];const observedAt=new Date().toISOString();
  const sourceUrl='https://www.google.com/travel/flights?'+new URLSearchParams({q:'Flights from YHZ to LHR on 2099-04-15 one way',hl:'en-CA',gl:'CA',curr:'CAD'});

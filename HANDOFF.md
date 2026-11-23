@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Ignav fare-calendar cache — 2026-11-23
+
+Calendar workers now pass the shared SQLite provider cache into exact provider searches, extending Ignav's existing exact-query cache to repeated fare-calendar searches across jobs/workers. The cache preserves the original observation timestamp and reports a hit; it still excludes identified parties, infants, empty results, stale observations and invalid/mismatched offers. Regression was red before the wiring and passes across two independent persistent store connections. Focused calendar/provider tests pass 71/71; full `npm test` passes 679/679. `npm run build` passes after retrying past Next.js 16.4.3's security reminder. No live request or real latency measurement was made. See [dated evidence](docs/ignav-calendar-cache-2026-11-23.md). Broader reverse-endpoint and §17 work remains incomplete.
+
 ## Skyscanner polling budget hardening — 2026-11-23
 
 The partner adapter now validates poll configuration before dispatch, caps search and refresh at eight poll operations, enforces a 1–10 s configured interval, and reports poll operations used/remaining. Fully validated offers from incomplete poll snapshots are published through provider progress before polling finishes; route aggregation accepts the offer under worker validation, later snapshots replace prior route state, and final output remains authoritative. A zero-poll budget returns any initial partial offers with explicit partial coverage. Skyscanner/provider tests pass 31/31; route streaming regression passes 2/2; full `npm test` passes 678/678. Production build passed on the unchanged application code after retrying Next.js's security reminder. `SKYSCANNER_API_KEY` is absent here, so this is fixture evidence only, not live partner verification.

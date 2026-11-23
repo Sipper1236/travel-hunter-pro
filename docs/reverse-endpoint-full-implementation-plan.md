@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Ignav fare-calendar cache — 2026-11-23
+
+Calendar worker dispatch now shares the durable provider cache used by ordinary flight searches. Exact fresh Ignav calendar responses can be reused across independent worker/store connections without changing the source observation timestamp; the result still passes normal offer and calendar validation. Focused calendar/provider tests pass 71/71; full `npm test` passes 679/679 and `npm run build` passes after retrying past Next.js 16.4.3's security reminder, with no live call or latency claim. Empty/stale/invalid observations and identified/infant parties are not cacheable. [Evidence](ignav-calendar-cache-2026-11-23.md). Other provider cache coverage and access-gated integrations remain open.
+
 ## Bounded regional airport-pair overlap — 2026-11-23
 
 Two-region one-way adult-only count searches now overlap at most two exact airport pairs. Per-provider pacing/cooldown remains in force; final route coverage is ordered by the selected pair list, and a source refusal stops new pair scheduling while allowing active work to finish visibly. Family/identified/infant/youth/senior parties, round trips, and ordinary city expansion stay sequential where browser sessions may be used. Focused search/location/streaming/worker tests pass **36/36**, with no live call or speed benchmark. [Evidence](regional-pair-streaming-2026-11-23.md). Provider and §17 acceptance gaps remain open.

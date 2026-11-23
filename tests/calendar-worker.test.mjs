@@ -31,7 +31,9 @@ test('actual calendar runner reuses fresh dates after pause, preserves ages/cabi
   await waitFor(()=>['complete','error'].includes(store.get(job.id).status));const done=store.get(job.id);assert.equal(done.status,'complete',JSON.stringify(done.error));
   assert.deepEqual(done.result.dates.map(d=>[d.price,d.returnDate]),[[500,'2099-04-20'],[500,'2099-04-21']]);assert.deepEqual(done.result.query.childrenAges,[10,15]);assert.ok(done.result.dates.every(d=>d.offer.cabin==='business'));
   assert.equal(done.result.coverage.responsesReused,1);assert.equal(done.result.coverage.interruptedRequests,1);assert.equal(done.result.coverage.fareRequestsStarted,3);
-  refuse=true;const refused=store.submit(input,'calendar_456',{kind:'calendar'});await waitFor(()=>store.get(refused.id).status==='complete');const result=store.get(refused.id).result;
+  // Use a distinct exact query so the fresh response cached by the prior job
+  // cannot mask the fixture's provider refusal path.
+  refuse=true;const refused=store.submit({...input,filters:{maxStops:1}},'calendar_456',{kind:'calendar'});await waitFor(()=>store.get(refused.id).status==='complete');const result=store.get(refused.id).result;
   assert.equal(result.status,'source_unavailable');assert.equal(result.dates[0].price,500);assert.equal(result.dates[1].status,'not_scanned');assert.equal(result.stopped.source.status,'rate_limited');assert.ok(result.stopped.source.retryAt);assert.equal(result.coverage.fullyScanned,false);
  }finally{worker?.stop();for(const child of children)if(child.exitCode===null)child.kill('SIGKILL');await rm(directory,{recursive:true,force:true});}
 });

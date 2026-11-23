@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Ignav cache coverage for fare calendars — 2026-11-23
+
+The durable exact-query Ignav cache is now available to calendar worker searches in addition to ordinary flight searches. The worker supplies its shared SQLite job store to the calendar dispatcher, which forwards it to each eligible exact Ignav query. A persistent cross-connection regression verifies the second calendar job avoids another provider call and retains the original fare observation time. Focused calendar/provider tests pass 71/71; full `npm test` passes 679/679 and `npm run build` passes after retrying past Next.js 16.4.3's security reminder. No live request was made and no provider speed claim is made. Empty, stale, invalid, mismatched, identified-party and infant observations remain ineligible for cache reuse. See [dated evidence](docs/ignav-calendar-cache-2026-11-23.md). Reverse-endpoint implementation is still incomplete.
+
 ## Skyscanner poll budget and coverage — 2026-11-23
 
 `lib/skyscanner.mjs` rejects poll budgets outside 0–8 and poll intervals outside 1–10 seconds before any provider call. Search and exact-itinerary refresh results disclose poll operations used, the cap, and remaining operations; exhausting the cap leaves the source `partial`. Fully validated itineraries from incomplete poll snapshots now flow through the provider progress callback, receive the normal airline/filter checks, pass exact-route worker-result validation, and are replaced by later snapshots/final output. Skyscanner/provider tests pass 31/31; route streaming regression passes 2/2; full `npm test` passes 678/678. Production build passed before this test-only change. `SKYSCANNER_API_KEY` is missing locally, so live partner validation, allowed polling cadence, and real first-result timing remain open.
