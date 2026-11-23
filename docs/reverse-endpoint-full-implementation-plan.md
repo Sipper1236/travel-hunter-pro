@@ -6,7 +6,7 @@ One read-only YYZ–LHR one-way CAD search (2027-02-12, one adult/economy) retur
 
 ## Google native one-way cache — 2026-11-23
 
-Exact fresh Google native one-way itinerary results now use the existing durable provider cache for Google-only and all-source searches. Identity binds route/date/party/cabin/filter and the fixed Canada/CAD market. Reuse requires a nonempty exact result with the generated Google URL and every offer still passing CAD, itinerary and freshness validation. Invalid cache rows are deleted; hits keep the original observation time. The 60-second maximum TTL is capped by offer freshness. Full tests pass 690/690 and build passes after the Next.js security-reminder retry. This is fixture/store evidence; no live Google cache-hit speed claim is made. [Evidence](google-oneway-response-cache-2026-11-23.md).
+Exact fresh Google native one-way itinerary results now use the existing durable provider cache for Google-only and all-source searches. Identity binds route/date/party/cabin/filter and the fixed Canada/CAD market. Reuse requires a nonempty exact result with the generated Google URL and every offer still passing CAD, itinerary and freshness validation. Invalid cache rows are deleted; hits keep the original observation time. The 60-second maximum TTL is capped by offer freshness. A live YYZ–LHR query returned 10 accepted offers in 5,083 ms and its immediate cache hit returned 10 in 3 ms from the same process/store, with one upstream request total. One route/date sample is not p95. Full tests pass 690/690 and build passes after the Next.js security-reminder retry. [Evidence](google-oneway-response-cache-2026-11-23.md).
 
 ## Google calendar RPC enablement and one-way fallback — 2026-11-23
 

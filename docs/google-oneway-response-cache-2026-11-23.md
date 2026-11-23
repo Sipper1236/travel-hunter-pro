@@ -8,12 +8,12 @@ The cache key hashes the provider/version and Canada/CAD locale together with ex
 
 ## Verification
 
+- Live guarded check: one exact YYZ→LHR one-way query for 2027-02-12, one adult/economy, returned 10 validated Google offers in **5,083 ms**. An immediate identical request through the same in-memory SQLite provider store returned 10 offers with `cacheStatus: hit` in **3 ms**. The second operation reused the first observation; it did not make another Google request. No prices, flight identifiers, or response payloads were recorded. These are two samples from one query, not a p95 or a provider-latency guarantee.
 - `node --test tests/google-response-cache.test.mjs tests/providers.test.mjs`: **20 passed, 0 failed**.
 - `npm test`: **690 passed, 0 failed**.
 - `npm run build`: passed on retry. The first attempt compiled and generated routes, then stopped at Next.js 16.4.3's security-upgrade reminder; the retry completed and retained the advisory warning.
 - `git diff --check`: clean before documentation updates.
-- No live Google request was made to benchmark a cache hit. Runtime speedup is therefore verified only through deterministic adapter/store tests, not a live latency measurement.
 
 ## Limits
 
-This cache does not make the underlying unofficial Google web-app RPC public, establish unattended-use permission, validate a live cache hit, refresh seller availability, or broaden party/cabin/trip support. It does not cache Google round trips or price-only calendar observations. Existing provider-policy, source-stability, seller-refresh and `work.md` §17 gates remain open.
+This cache does not make the underlying unofficial Google web-app RPC public, establish unattended-use permission, refresh seller availability, or broaden party/cabin/trip support. It does not cache Google round trips or price-only calendar observations. The live timing is one exact route/date/query sample and does not establish source stability or p95. Existing provider-policy, source-stability, seller-refresh and `work.md` §17 gates remain open.
