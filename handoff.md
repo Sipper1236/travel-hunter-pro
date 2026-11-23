@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Detailed Handoff (updated 2026-11-23)
 
+## 2026-11-23 continuation — flight worker top-level schema
+
+The durable flight worker now rejects unrecognized result-level properties, so fabricated booking or seller-verification claims cannot ride along with valid flight offers. Source and location metadata used by current adapters remain allowed. Skyscanner partial results now keep filters only in the exact validated query instead of duplicating them at top level. Focused flight/Skyscanner suites passed 31/31, full `npm test` passed 738/738, isolated build passed, and audit found zero vulnerabilities. This is not field-by-field validation of nested offers, statuses, and coverage, and does not close §17. [Evidence](docs/flight-worker-top-level-schema-2026-11-23.md).
+
 ## 2026-11-23 continuation — shared flight chronology
 
 The shared offer validator now checks offset-aware timestamp consistency and elapsed chronology across each flight's segments, connecting legs, and round-trip directions. It rejects malformed and unknown offsets, contradictory local/UTC fields, missing offset-aware times in a multi-segment itinerary, and impossible transfer order. One-segment legacy local-time records remain accepted. Focused cross-provider tests passed 100/100; the full suite passed 737/737; isolated Next.js build passed; audit found no vulnerabilities. Same-origin health is `ok` with one live worker, no queue, and no expired leases/deadlines. No provider request or booking occurred. This partial P0 fix does not establish source timezone authority, live prices, carrier eligibility, or seller availability. [Evidence](docs/flight-segment-chronology-2026-11-23.md).

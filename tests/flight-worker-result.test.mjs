@@ -21,6 +21,12 @@ test('flight worker result rejects missing schemas, invalid source status, and s
  assert.ok(flightWorkerResultError(result({offers:[offer({observedAt:'2020-01-01T00:00:00Z'})]}),input));
 });
 
+test('flight worker result rejects unknown top-level claims but keeps documented adapter metadata',()=>{
+ assert.match(flightWorkerResultError(result({booked:true}),input),/unknown|unsupported.*field/i);
+ assert.match(flightWorkerResultError(result({sellerVerified:true}),input),/unknown|unsupported.*field/i);
+ assert.equal(flightWorkerResultError(result({searchUrl:'https://matrix.itasoftware.com/flights',limitations:['Price observation only.']}),input),null);
+});
+
 test('flight worker rejects offset-aware connecting segments whose departure precedes the prior arrival',()=>{
  const segments=[
   {marketing_carrier_code:'AC',flight_number:'123',departure_airport:'YHZ',arrival_airport:'YUL',departure_time_local:'2099-04-15T08:00:00-03:00',departure_time_utc:'2099-04-15T11:00:00Z',arrival_time_local:'2099-04-15T10:00:00-04:00',arrival_time_utc:'2099-04-15T14:00:00Z'},

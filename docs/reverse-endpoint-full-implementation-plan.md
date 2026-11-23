@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Flight worker output-field boundary — 2026-11-23
+
+Unknown top-level flight worker result keys now fail validation; known adapter/location fields remain accepted, and Skyscanner partial results avoid duplicate filters. This is one schema increment and does not complete nested source/offer/coverage validation. [Evidence](flight-worker-top-level-schema-2026-11-23.md).
+
 ## Shared flight-segment chronology — 2026-11-23
 
 The common offer validator checks explicit offset-aware timestamps within segments, across connections, and between outbound and inbound legs. Multi-segment offers without such evidence and round trips without cross-direction evidence are rejected; one-segment legacy local-only fixtures remain supported. This improves integrity for every adapter but is not a substitute for source-specific timezone verification, fresh provider evidence, or seller confirmation. [Evidence](flight-segment-chronology-2026-11-23.md).

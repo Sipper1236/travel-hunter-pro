@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Flight worker top-level result schema — 2026-11-23
+
+Unknown flight result properties such as `booked` and `sellerVerified` are rejected. Existing source and location metadata remain allowed. Skyscanner no longer duplicates filters outside the exact query envelope. Focused flight/Skyscanner suites passed 31/31; full suite 738/738; isolated build passed; audit found zero vulnerabilities; controlled browser check passed with provider calls intercepted. This is top-level field-name validation, not a complete nested schema. [Evidence](docs/flight-worker-top-level-schema-2026-11-23.md).
+
 ## Flight-segment chronology guard — 2026-11-23
 
 The shared flight-offer validator now rejects impossible or contradictory offset-aware segment timelines, invalid/unknown offsets, connections that depart before arrival, and round trips whose inbound leg begins before outbound arrival. It requires offset-aware chronology for multi-segment offers and cross-direction round trips; one-segment legacy local-time fixtures remain supported. Focused cross-provider tests passed 100/100, full suite 737/737, isolated build passed, audit found 0 vulnerabilities, all 144 Markdown files passed the link checker, and the controlled local browser check reported zero browser/application CSP errors with provider calls intercepted. The same-origin health check reported one live worker and no queued/expired jobs. No live provider call. Source-specific and seller verification remain open. [Evidence](docs/flight-segment-chronology-2026-11-23.md).

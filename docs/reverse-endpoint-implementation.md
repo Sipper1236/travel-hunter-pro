@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## Flight worker output-field boundary — 2026-11-23
+
+The durable flight result validator now rejects unknown top-level output keys, retaining current adapter/location metadata and exact query evidence. Skyscanner progressive responses no longer duplicate filters outside the query envelope. Nested schemas are still being audited. [Evidence](flight-worker-top-level-schema-2026-11-23.md).
+
 ## Shared flight-segment chronology — 2026-11-23
 
 Normalized flight offers now fail closed on contradictory offset-aware segment timestamps, impossible segment/connection order, invalid or unknown offsets, and round-trip chronology violations. This protects the result boundary across adapters but does not establish each source's timezone authority or live seller acceptance. Full tests passed 737/737; build and audit passed. [Evidence](flight-segment-chronology-2026-11-23.md).

@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — flight worker output keys
+
+Added a fail-closed top-level result-field allowlist and removed duplicate Skyscanner progress filters, with exact filters still preserved in the validated query. Full suite 738/738, build and audit passed. Nested result schemas and the remaining `work.md` acceptance items stay open. See [evidence](docs/flight-worker-top-level-schema-2026-11-23.md).
+
 ## 2026-11-23 continuation — shared segment chronology
 
 Implemented and verified stricter offset-aware segment chronology across connections and round trips. Focused cross-provider suites passed 100/100; full suite 737/737; isolated build passed; npm audit found zero vulnerabilities. The result-integrity item advances, but source-specific timezone trust, live seller verification, and all remaining `work.md` acceptance gaps remain open. No provider call was made. See [evidence](docs/flight-segment-chronology-2026-11-23.md).

@@ -1,5 +1,7 @@
 # Travel Hunter Pro documentation index
 
+- [Flight worker top-level schema (2026-11-23)](flight-worker-top-level-schema-2026-11-23.md) — rejects unsupported result claims and removes duplicate Skyscanner query metadata; nested schemas remain open.
+
 - [Shared flight-segment chronology guard (2026-11-23)](flight-segment-chronology-2026-11-23.md) — offset-aware intra-flight, connection, and round-trip checks with fixture verification and provider/seller limits.
 
 - [Package worker coverage-mode validation (2026-11-23)](package-worker-coverage-mode-2026-11-23.md) — rejects unknown explicit coverage modes rather than validating them as rendered-card results; one incremental strict-schema fix.

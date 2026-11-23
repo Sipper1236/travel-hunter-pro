@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Flight worker top-level schema — 2026-11-23
+
+Flight results now reject unknown top-level claims such as `booked` and `sellerVerified`; Skyscanner's redundant top-level filters were removed while exact query filters remain checked. Full suite passed 738/738, isolated build passed, audit found 0 vulnerabilities. Nested field schemas and other worker contracts remain open. [Evidence](docs/flight-worker-top-level-schema-2026-11-23.md).
+
 ## Shared flight-segment chronology — 2026-11-23
 
 The common offer gate now checks offset-aware chronology within each segment, between connections, and across round-trip legs; it rejects contradictory local/UTC values and invalid or unknown offsets. Full suite: 737/737; isolated build and controlled local browser check passed; npm audit: zero vulnerabilities; Markdown links passed. This is fixture-backed validation, with source-specific time-zone authority and live seller verification still open. [Evidence](docs/flight-segment-chronology-2026-11-23.md).
