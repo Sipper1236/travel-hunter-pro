@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Comparison worker round-trip exact-flight guard — 2026-11-23
+
+The comparison validator now accepts the canonical nested outbound/return itinerary-key shape and verifies operating-carrier identity for each exact split-ticket segment. Test-first coverage reproduced valid-round-trip rejection and operator substitution. Focused suites passed 41/41; full `npm test` passed 720/720; production build passed; audit found 0 vulnerabilities. Fixture-only; no live query. Separate-ticket seller, inventory, eligibility and all-in-cost evidence remain open. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).
+
 ## Flight worker exact-query integrity — 2026-11-23
 
 Flight worker persistence and streaming now require exact traveler and filter query evidence. Count parties preserve adult/child counts and exact ages; identified parties preserve traveler IDs, DOBs, guardians, and infant seating. Unsupported filter fields and altered normalized filters fail closed. Skyscanner's partial result metadata now preserves identified assignments without forwarding identity data to the provider. Focused suites passed 30/30, full `npm test` passed 719/719, build passed, audit found 0 vulnerabilities, and Markdown links passed for 134 files. Fixture-based only; no live provider request. This improves, but does not complete, P0 worker schemas: calendar, comparison, hotel, package, source-specific chronology, and seller verification remain open. [Evidence](docs/flight-worker-exact-query-guard-2026-11-23.md).

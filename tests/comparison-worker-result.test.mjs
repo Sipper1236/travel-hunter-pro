@@ -54,6 +54,25 @@ test('separate-ticket plans cover every exact baseline segment once and reject c
  assert.ok(comparisonWorkerResultError(changed,segmentInput));
 });
 
+test('round-trip separate-ticket plans preserve every exact outbound and return segment',()=>{
+ const segment=(from,to,flight,departure,arrival)=>({marketing_carrier_code:'AC',flight_number:flight,departure_airport:from,arrival_airport:to,departure_time_local:departure.slice(0,19),departure_time_utc:departure,arrival_time_local:arrival.slice(0,19),arrival_time_utc:arrival});
+ const outbound=[segment('YHZ','YUL','100','2099-04-15T08:00:00Z','2099-04-15T09:00:00Z'),segment('YUL','BCN','200','2099-04-15T13:00:00Z','2099-04-15T21:00:00Z')];
+ const inbound=[segment('BCN','YUL','300','2099-04-22T08:00:00Z','2099-04-22T10:00:00Z'),segment('YUL','YHZ','400','2099-04-22T14:00:00Z','2099-04-22T17:00:00Z')];
+ const keyFor=segments=>JSON.stringify(segments.map(s=>[s.marketing_carrier_code,s.flight_number,s.departure_airport,s.departure_time_local,s.departure_time_utc,s.arrival_airport,s.arrival_time_local,s.arrival_time_utc,null]));
+ const segmentInput={mode:'segments',origin:'YHZ',destination:'BCN',date:'2099-04-15',tripType:'round-trip',returnDate:'2099-04-22',cabin:'economy',adults:1,children:0,childrenAges:[],searchLimit:4,itineraryKey:JSON.stringify([keyFor(outbound),keyFor(inbound)])};
+ const exactTicket=(direction,index,value)=>({direction,segment:index+1,segmentEnd:index+1,adults:1,price:value,currency:'CAD',cabin:'economy',ignavId:`${direction}-${index+1}`,observedAt,expiresAt,segments:[(direction==='outbound'?outbound:inbound)[index]]});
+ const envelope={query:validateComparisonQuery(segmentInput),coverage:{fareRequestsStarted:4,requestBudget:4,responsesReused:0,interruptedRequests:0},plans:[{price:450,currency:'CAD',observedAt,expiresAt,tickets:[exactTicket('outbound',0,100),exactTicket('outbound',1,200),exactTicket('inbound',0,50),exactTicket('inbound',1,100)]}],routeAlternatives:[],routeAlternativeCoverage:{scope:'same_exact_airport_pair_refresh',candidateItinerariesReturned:0,matchingAlternatives:0,alternativesShown:0,displayLimit:8,omittedMatchingAlternatives:0,providerCompletionKnown:false,providerReportedComplete:false,alternateAirportPairsPlanned:0,alternateAirportPairsAttempted:0,alternateAirportPairsAttemptedList:[],alternateAirportPairsSearched:0,alternateAirportPairsSearchedList:[],alternateAirportPairsStoppedList:[],alternateAirportPairsNotSearched:[],airportPairSearchLimit:8,exhaustive:false}};
+ assert.equal(comparisonWorkerResultError(envelope,segmentInput),null);
+ const changed=structuredClone(envelope);changed.plans[0].tickets[3].segments[0].flight_number='999';
+ assert.ok(comparisonWorkerResultError(changed,segmentInput));
+ const changedOperator=structuredClone(envelope);changedOperator.plans[0].tickets[0].segments[0].operating_carrier_code='ZZ';
+ assert.ok(comparisonWorkerResultError(changedOperator,segmentInput),'the segment key includes operating-carrier identity as well as the marketing flight');
+ const extraSignature=JSON.parse(keyFor(outbound));extraSignature[0].push('unvalidated-field');
+ const malformedInput={...segmentInput,itineraryKey:JSON.stringify([JSON.stringify(extraSignature),keyFor(inbound)])};
+ const malformedEnvelope=structuredClone(envelope);malformedEnvelope.query=validateComparisonQuery(malformedInput);
+ assert.ok(comparisonWorkerResultError(malformedEnvelope,malformedInput),'unknown itinerary signature fields must not be silently ignored');
+});
+
 test('alternate-route coverage preserves unsearched airport pairs and never claims exhaustive coverage',()=>{
  const routeInput={mode:'segments',origin:'YHZ',destination:'BCN',date:'2099-04-15',adults:1,children:0,childrenAges:[],searchLimit:4,routeSearchLimit:1,routePairs:[{origin:'YHZ',destination:'LHR'},{origin:'YHZ',destination:'CDG'}],itineraryKey:'selected-itinerary'};
  const query=validateComparisonQuery(routeInput),coverage={scope:'bounded_resolved_airport_pairs',candidateItinerariesReturned:0,matchingAlternatives:0,alternativesShown:0,displayLimit:8,omittedMatchingAlternatives:0,providerCompletionKnown:false,providerReportedComplete:false,alternateAirportPairsPlanned:2,alternateAirportPairsAttempted:0,alternateAirportPairsAttemptedList:[],alternateAirportPairsSearched:0,alternateAirportPairsSearchedList:[],alternateAirportPairsStoppedList:[],alternateAirportPairsNotSearched:routeInput.routePairs,airportPairSearchLimit:1,exhaustive:false};

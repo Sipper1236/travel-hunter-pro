@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — comparison round-trip exact-flight guard
+
+Fixed a false rejection of valid round-trip split-ticket plans: comparison worker validation now parses the two nested direction keys and checks every segment's complete signature, including operating carrier. Test-first coverage rejected both a changed return flight and a substituted operator. Focused tests passed 41/41; full suite passed 720/720; build passed; audit found 0 vulnerabilities. Fixture-only; no live fare or seller evidence. This does not close `work.md` §17 split-ticket acceptance. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).
+
 ## 2026-11-23 continuation — Flight worker exact-query integrity
 
 Flight worker output now binds exact child ages, identified DOB/guardian/infant-seating assignments, and normalized filters to the submitted request before progress or final persistence. Skyscanner partial progress preserves identified-party assignments without sending identity data upstream. Focused suites passed 30/30; full `npm test` passed 719/719; production build passed; audit found 0 vulnerabilities; Markdown links passed for 134 files. No live provider request was made. This closes only part of the strict worker-schema requirement; all other open `work.md` criteria remain active. [Evidence](docs/flight-worker-exact-query-guard-2026-11-23.md).

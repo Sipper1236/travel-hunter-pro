@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Comparison worker round-trip exact-flight guard — 2026-11-23
+
+Fixed a worker-boundary mismatch that rejected valid separate-ticket round trips because the query stores outbound and inbound itinerary signatures as nested JSON strings. The validator now parses both directions and binds every split segment to the full signature, including operating carrier. A fixture regression rejects changed return flights and operating carriers. Focused suites passed 41/41; full `npm test` passed 720/720; production build passed; audit found 0 vulnerabilities. No live provider or seller query occurred. This closes one comparison persistence bug; availability, simultaneous inventory, eligibility, baggage, fees and seller issuance remain unverified. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).
+
 ## Flight worker exact-query integrity — 2026-11-23
 
 The durable flight-result guard now rejects results that change or omit child ages, identified DOB/guardian/infant-seating assignments, or the submitted filters. Skyscanner's partial result metadata now retains the exact identified party while the upstream request still sends no names, IDs, DOBs, or guardian links. Regression coverage was added for matching and tampered query envelopes. Focused flight-worker/Skyscanner/location-streaming suites passed 30/30; full `npm test` passed 719/719, `npm run build` passed, `npm audit --audit-level=low` found 0 vulnerabilities, and Markdown links passed for 134 files. No live provider request was made. This advances only the flight part of P0 strict worker schemas; other worker types and live seller/eligibility evidence remain open. [Evidence](docs/flight-worker-exact-query-guard-2026-11-23.md).

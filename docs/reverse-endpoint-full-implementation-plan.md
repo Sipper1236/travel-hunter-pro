@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Comparison worker round-trip exact-flight guard — 2026-11-23
+
+Comparison worker validation now handles the canonical two-direction nested itinerary key and verifies exact operating-carrier identity for each split segment. Full suite passed 720/720, production build passed, and audit found 0 vulnerabilities. This closes a result-integrity bug only; source availability, seller confirmation, simultaneous inventory and §17 acceptance evidence remain open. [Evidence](comparison-roundtrip-worker-guard-2026-11-23.md).
+
 ## Flight worker exact-query boundary — 2026-11-23
 
 The worker-result guard now checks submitted count-party ages, identified traveler IDs/DOBs/guardian links/infant seating, and normalized filters before flight progress or completion is accepted. Skyscanner progressive query metadata retains identified assignments while keeping identity fields out of its upstream API request. Full tests pass 719/719, build passes, audit reports 0 vulnerabilities, and Markdown links pass for 134 files. This is a fixture regression; it does not complete strict result contracts for the other worker types or establish live provider/seller evidence. [Evidence](flight-worker-exact-query-guard-2026-11-23.md).

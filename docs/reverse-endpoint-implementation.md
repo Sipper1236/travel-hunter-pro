@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## Comparison worker round-trip exact-flight guard — 2026-11-23
+
+The worker now parses the nested outbound/return itinerary key and checks all exact split-ticket signature fields, including operating carrier. Full `npm test` passed 720/720; build passed; audit found 0 vulnerabilities. Fixture-only; there is no new live provider or seller evidence. Route discovery, inventory, issueability, baggage/fees, and `work.md` §17 remain open. [Evidence](comparison-roundtrip-worker-guard-2026-11-23.md).
+
 ## Flight worker exact-query boundary — 2026-11-23
 
 Flight results are now checked against the submitted traveler and filter envelope before durable progress or completion. Count parties bind exact ages; identified parties bind IDs, DOBs, guardians and infant seating. Skyscanner partial metadata preserves the same assignments without sending identities upstream. Full tests pass 719/719, build passes, audit reports 0 vulnerabilities, and Markdown links pass for 134 files. No live provider request was made; other worker contracts and source access/runtime evidence remain open. [Evidence](flight-worker-exact-query-guard-2026-11-23.md).

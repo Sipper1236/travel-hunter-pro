@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Complete Work History, Requirements, Architecture, Limitations, and Roadmap
 
+## P0 comparison worker round-trip exact-flight guard — 2026-11-23
+
+Fixed the comparison worker parser for the canonical nested round-trip itinerary key and bound separate-ticket segments to all nine exact signature fields, including operating carrier. A test-first regression reproduces the former rejection of valid round trips and rejects changed return flights/operator identity. Full `npm test` passed 720/720, production build passed, and audit found 0 vulnerabilities. Fixture-only; no provider or seller request. This closes one worker persistence defect but does not establish current fare availability, ticket issuance, simultaneous inventory, carrier eligibility, baggage/fees or checkout totals. The §17 split-itinerary and provider-handoff criteria remain partial. [Evidence](docs/comparison-roundtrip-worker-guard-2026-11-23.md).
+
 ## Flight worker exact-query integrity — 2026-11-23
 
 The flight worker-result guard now checks that persisted and streamed query metadata retains the exact count party and child ages, or each identified traveler's ID, DOB, guardian assignment, and infant seating. It also compares normalized filters and rejects unsupported filter fields. Skyscanner progress metadata now preserves identified-party assignments while its upstream request continues to send only provider-supported age counts. Regression coverage rejects changed/missing party and filter data. Full `npm test` passed 719/719, `npm run build` passed on Next.js 16.4.6, `npm audit --audit-level=low` found 0 vulnerabilities, and the Markdown-link check passed for 134 files. No live provider request was made. This is a partial P0 worker-schema improvement: calendar, comparison, hotel, and package result contracts still need a full field-by-field audit, and seller/age eligibility remain open. See [evidence](docs/flight-worker-exact-query-guard-2026-11-23.md).

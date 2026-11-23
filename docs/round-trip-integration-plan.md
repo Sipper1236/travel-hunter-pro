@@ -2,6 +2,10 @@
 
 Date: 2026-11-05. Status: execution in progress; live second-source calendar release remains unverified.
 
+## Comparison worker exact round-trip keys — 2026-11-23
+
+Separate-ticket persistence now parses the two nested direction signatures used by canonical round-trip queries and compares each exact segment, including its operating carrier. A test-first regression failed before the parser fix and rejects changed return/operator identity. Focused suites passed 41/41; full suite 720/720; build passed; audit found 0 vulnerabilities. No live provider was called; regional coverage, fares, seller availability and the broader release gates below remain incomplete. [Evidence](comparison-roundtrip-worker-guard-2026-11-23.md).
+
 ## Execution evidence (2026-11-05)
 
 - Shared preflight, eligible-source budgets, Ignav bounded retry/failure isolation and HTTP-attempt accounting are implemented with controlled worker/browser coverage. Exact `unsupported_search` date refusals now continue independently and have separate coverage counters.
