@@ -1,5 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import { refreshSkyscanner, searchSkyscanner } from '../lib/skyscanner.mjs';
 import {searchProviders} from '../lib/providers.mjs';
 import {createJobStore} from '../lib/job-store.mjs';
@@ -130,6 +134,16 @@ test('Skyscanner cache bypasses partial results and identified travelers',async(
   assert.equal(skyscannerResponseCacheKey({...query,travelers:people},{apiKey:'fixture-account'}),null,'identified travelers are not cache eligible');
   assert.equal(skyscannerResponseCacheKey({...query,date:'2099-02-30'},{apiKey:'fixture-account'}),null,'invalid dates are not cache eligible');
  }finally{cache.close();}
+});
+
+test('Skyscanner exact-query results are shared by separate worker processes',async()=>{
+ const directory=await mkdtemp(join(tmpdir(),'travel-skyscanner-cache-')),database=join(directory,'jobs.sqlite');
+ const fixture={...response('RESULT_STATUS_COMPLETE'),sessionToken:'process-session'},query={...input,source:'skyscanner',filters:{}};
+ const script=`import {searchProviders} from './lib/providers.mjs';let calls=0;globalThis.fetch=async()=>{calls++;return Response.json(JSON.parse(process.env.SKYCANNER_RESPONSE))};const timezones={byCode:new Map([['YHZ',{timeZone:'America/Halifax'}],['BCN',{timeZone:'Europe/Madrid'}]]),sourceUrl:'https://example.com/timezone-fixture',retrievedAt:new Date().toISOString()};const result=await searchProviders(JSON.parse(process.env.SKYCANNER_QUERY),{providerCache:(await import('./lib/job-store.mjs')).getJobStore(),loadSkyscannerTimezones:async()=>timezones});console.log(JSON.stringify({calls,cached:result.sources[0]?.cacheStatus==='hit',observedAt:result.offers[0]?.observedAt}));`;
+ const run=()=>JSON.parse(execFileSync(process.execPath,['--input-type=module','-e',script],{cwd:process.cwd(),encoding:'utf8',timeout:15000,env:{...process.env,TRAVEL_JOB_DB:database,SKYSCANNER_API_KEY:'fixture-process-account',SKYCANNER_QUERY:JSON.stringify(query),SKYCANNER_RESPONSE:JSON.stringify(fixture)}}));
+ try{
+  const first=run(),second=run();assert.equal(first.calls,1);assert.equal(first.cached,false);assert.equal(second.calls,0);assert.equal(second.cached,true);assert.equal(second.observedAt,first.observedAt);
+ }finally{await rm(directory,{recursive:true,force:true});}
 });
 
 test('Skyscanner converts documented price units and refuses unknown units or fractional cents',async()=>{
