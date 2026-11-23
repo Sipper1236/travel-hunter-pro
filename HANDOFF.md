@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Flight offer booking-claim guard — 2026-11-23
+
+Flight offers now fail validation if they carry unsupported `booked`, `ticketed`, or seller-verification properties, or affirmative completed-booking status text. A clear “not booked” status remains valid. Focused tests passed 13/13; full suite 739/739; isolated build, audit, and controlled browser check passed. This prevents unsupported booking claims but does not verify seller availability or checkout price. [Evidence](docs/flight-offer-booking-claim-guard-2026-11-23.md).
+
 ## Flight worker top-level result schema — 2026-11-23
 
 Unknown flight result properties such as `booked` and `sellerVerified` are rejected. Existing source and location metadata remain allowed. Skyscanner no longer duplicates filters outside the exact query envelope. Focused flight/Skyscanner suites passed 31/31; full suite 738/738; isolated build passed; audit found zero vulnerabilities; controlled browser check passed with provider calls intercepted. This is top-level field-name validation, not a complete nested schema. [Evidence](docs/flight-worker-top-level-schema-2026-11-23.md).

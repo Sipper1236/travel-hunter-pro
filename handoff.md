@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Detailed Handoff (updated 2026-11-23)
 
+## 2026-11-23 continuation — flight offer booking claims
+
+The shared flight-offer validator blocks unsupported completion fields (`booked`, `reserved`, `ticketed`) and seller-verification flags, plus affirmative completed-booking status text. A stated “not booked” observation remains valid. Red regressions reproduced the false acceptance; focused tests passed 13/13 and full suite 739/739; isolated build, audit, and controlled local browser checks passed. No seller request or booking was made. This is an honesty guard, not proof of current availability, ticket issuance, or checkout price. [Evidence](docs/flight-offer-booking-claim-guard-2026-11-23.md).
+
 ## 2026-11-23 continuation — flight worker top-level schema
 
 The durable flight worker now rejects unrecognized result-level properties, so fabricated booking or seller-verification claims cannot ride along with valid flight offers. Source and location metadata used by current adapters remain allowed. Skyscanner partial results now keep filters only in the exact validated query instead of duplicating them at top level. Focused flight/Skyscanner suites passed 31/31, full `npm test` passed 738/738, isolated build passed, and audit found zero vulnerabilities. This is not field-by-field validation of nested offers, statuses, and coverage, and does not close §17. [Evidence](docs/flight-worker-top-level-schema-2026-11-23.md).

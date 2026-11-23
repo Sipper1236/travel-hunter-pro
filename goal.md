@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — reject unsupported booking claims
+
+Added a shared flight-offer guard against invented booking completion and seller-verification claims, retaining explicitly not-booked status wording. Full suite 739/739, build, audit, and controlled browser check passed. Live seller verification and the remaining `work.md` requirements are still open. See [evidence](docs/flight-offer-booking-claim-guard-2026-11-23.md).
+
 ## 2026-11-23 continuation — flight worker output keys
 
 Added a fail-closed top-level result-field allowlist and removed duplicate Skyscanner progress filters, with exact filters still preserved in the validated query. Full suite 738/738, build and audit passed. Nested result schemas and the remaining `work.md` acceptance items stay open. See [evidence](docs/flight-worker-top-level-schema-2026-11-23.md).

@@ -27,6 +27,13 @@ test('flight worker result rejects unknown top-level claims but keeps documented
  assert.equal(flightWorkerResultError(result({searchUrl:'https://matrix.itasoftware.com/flights',limitations:['Price observation only.']}),input),null);
 });
 
+test('flight worker offers cannot claim a completed booking or seller verification',()=>{
+ assert.ok(flightWorkerResultError(result({offers:[offer({booked:true})]}),input));
+ assert.ok(flightWorkerResultError(result({offers:[offer({sellerVerified:true})]}),input));
+ assert.ok(flightWorkerResultError(result({offers:[offer({bookingStatus:'Booked and ticketed.'})]}),input));
+ assert.equal(flightWorkerResultError(result({offers:[offer({bookingStatus:'Not booked; seller not rechecked.'})]}),input),null);
+});
+
 test('flight worker rejects offset-aware connecting segments whose departure precedes the prior arrival',()=>{
  const segments=[
   {marketing_carrier_code:'AC',flight_number:'123',departure_airport:'YHZ',arrival_airport:'YUL',departure_time_local:'2099-04-15T08:00:00-03:00',departure_time_utc:'2099-04-15T11:00:00Z',arrival_time_local:'2099-04-15T10:00:00-04:00',arrival_time_utc:'2099-04-15T14:00:00Z'},

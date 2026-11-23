@@ -1,5 +1,7 @@
 # Travel Hunter Pro documentation index
 
+- [Flight offer booking-claim guard (2026-11-23)](flight-offer-booking-claim-guard-2026-11-23.md) — rejects unsupported completed-booking and seller-verification claims while preserving explicit observation status.
+
 - [Flight worker top-level schema (2026-11-23)](flight-worker-top-level-schema-2026-11-23.md) — rejects unsupported result claims and removes duplicate Skyscanner query metadata; nested schemas remain open.
 
 - [Shared flight-segment chronology guard (2026-11-23)](flight-segment-chronology-2026-11-23.md) — offset-aware intra-flight, connection, and round-trip checks with fixture verification and provider/seller limits.

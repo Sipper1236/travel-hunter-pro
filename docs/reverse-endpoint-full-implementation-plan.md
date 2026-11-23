@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Flight offer booking-claim boundary — 2026-11-23
+
+The shared offer validator now blocks unsupported booking-completion and seller-verification claims. This is an honesty constraint only; it does not establish refreshed quote, seller availability, or completed booking. [Evidence](flight-offer-booking-claim-guard-2026-11-23.md).
+
 ## Flight worker output-field boundary — 2026-11-23
 
 Unknown top-level flight worker result keys now fail validation; known adapter/location fields remain accepted, and Skyscanner partial results avoid duplicate filters. This is one schema increment and does not complete nested source/offer/coverage validation. [Evidence](flight-worker-top-level-schema-2026-11-23.md).

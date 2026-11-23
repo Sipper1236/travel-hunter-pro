@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Flight offer booking-claim guard — 2026-11-23
+
+Flight-offer validation rejects unsupported completed-booking and seller-verification fields plus affirmative booking-status text. It still permits explicit not-booked observations. Full suite passed 739/739, isolated build and audit passed, and controlled browser QA reported no app errors. Live seller availability remains unverified. [Evidence](docs/flight-offer-booking-claim-guard-2026-11-23.md).
+
 ## Flight worker top-level schema — 2026-11-23
 
 Flight results now reject unknown top-level claims such as `booked` and `sellerVerified`; Skyscanner's redundant top-level filters were removed while exact query filters remain checked. Full suite passed 738/738, isolated build passed, audit found 0 vulnerabilities. Nested field schemas and other worker contracts remain open. [Evidence](docs/flight-worker-top-level-schema-2026-11-23.md).

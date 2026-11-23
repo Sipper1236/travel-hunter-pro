@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## Flight offer booking-claim boundary — 2026-11-23
+
+The normalized offer gate rejects unsupported claims that an offer is booked, ticketed, reserved, or seller-verified. Explicit “not booked” observations are allowed; seller availability still requires an actual seller check. [Evidence](flight-offer-booking-claim-guard-2026-11-23.md).
+
 ## Flight worker output-field boundary — 2026-11-23
 
 The durable flight result validator now rejects unknown top-level output keys, retaining current adapter/location metadata and exact query evidence. Skyscanner progressive responses no longer duplicate filters outside the query envelope. Nested schemas are still being audited. [Evidence](flight-worker-top-level-schema-2026-11-23.md).
