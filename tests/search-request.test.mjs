@@ -11,6 +11,12 @@ test('exact-airport Google round trips dispatch through the configured provider 
  assert.equal(result.sources[0].provider,'Google Flights');
 });
 
+test('normal flight search forwards the durable provider cache to location and source dispatch',async()=>{
+ const query={origin:'YHZ',destination:'LAX',originType:'place',destinationType:'place',date:'2099-11-12',tripType:'one-way',adults:1,children:0,cabin:'economy',source:'ignav'},providerCache={getProviderResponse(){},setProviderResponse(){}};let received;
+ await executeFlightSearch(query,{providerCache,searchLocationsImpl:async(_input,_detections,options)=>{received=options.providerCache;return {offers:[],sources:[]};}});
+ assert.equal(received,providerCache);
+});
+
 test('auto-detected named region policy survives into expanded-search dispatch',async()=>{
  const query={origin:'Scandinavia',destination:'YYZ',originType:'auto',destinationType:'place',date:'2099-11-12',returnDate:'2099-11-19',tripType:'round-trip',adults:1,children:0,cabin:'economy',source:'ignav'};
  let detections;

@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Latest implementation evidence — Ignav exact-query cache (2026-11-23)
+
+Added SQLite-backed caching for exact, validated Ignav flight results in the ordinary API and worker flow. Cache keys bind route, dates/trip, count party and exact child ages, cabin, filters, CAD/market, and a hash of account scope. Only positive results with all offers passing current full-offer and quote-freshness validation are stored; the maximum TTL is five minutes and is capped at each offer's original usable-until time. Hits retain the original observation timestamp. Identified travelers, infants, children without exact ages, empty results, and rejected/stale offers bypass the cache. Storage is bounded to 100 entries and 512 KB per result. UI labels cached observations. Verification: 40/40 focused tests, 649/649 full tests, production build passed after retrying past Next's security reminder, fixture UI check passed (369 ms, cached label asserted, external traffic blocked, no browser errors). No live request was made to demonstrate a warm hit. No other source is cached without its own terms/freshness policy. One moderate Next.js 16.4.3 audit finding remains; available fix is outside the declared range. This is not full reverse-endpoint implementation or §17 acceptance.
+
 Updated: 2026-11-23
 
 ## Latest implementation evidence — ACV adult multi-room

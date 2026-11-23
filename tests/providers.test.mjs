@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { searchProviders } from '../lib/providers.mjs';
 import { localRequest } from '../lib/local-request.mjs';
 import {fetchSource} from '../lib/source-fetch.mjs';
+import {createJobStore} from '../lib/job-store.mjs';
 
 const query = { origin: 'YHZ', destination: 'BCN', date: '2099-04-15', adults: 1, children: 0 };
 const segment=(from,to,carrier='EA',number='EA123',date='2099-04-15',departure='09:00',arrival='18:00')=>({from,to,carrierCode:carrier,flightNumber:number,departureAt:`${date}T${departure}:00Z`,arrivalAt:`${date}T${arrival}:00Z`});
@@ -54,6 +55,21 @@ test('source accepted counts reflect the final shared-filtered results',async()=
  assert.equal(source.accepted,1);
  assert.equal(source.filterRejected,1);
  assert.equal(result.filterCoverage.airline,1);
+});
+
+test('exact fresh Ignav offers are reused across flight jobs without refreshing observation time',async()=>{
+ const store=createJobStore({path:':memory:'});let calls=0;const input={...query,source:'ignav'};
+ const searchIgnav=async()=>{calls++;return {offers:[fare(150,'Ignav')],sources:[{provider:'Ignav',status:'ok',received:1,accepted:1}]};};
+ try{
+  const first=await searchProviders(input,{providerCache:store,searchIgnav});
+  const originalObservedAt=first.offers[0].observedAt;
+  const second=await searchProviders(input,{providerCache:store,searchIgnav});
+  assert.equal(calls,1);assert.equal(second.offers[0].observedAt,originalObservedAt);
+  assert.equal(second.sources[0].cacheStatus,'hit');
+  const changed=await searchProviders({...input,filters:{maxStops:0}},{providerCache:store,searchIgnav});
+  assert.equal(calls,2,'a changed stop filter must spend a fresh provider request');
+  assert.notEqual(changed.sources[0].cacheStatus,'hit');
+ }finally{store.close();}
 });
 
 test('native Google search metrics include shared-filter results without rewriting diagnostics',async()=>{

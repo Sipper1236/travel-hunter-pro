@@ -4,6 +4,7 @@ import {flightWorkerResultError} from '../lib/flight-worker-result.mjs';
 import {comparisonWorkerResultError} from '../lib/comparison-worker-result.mjs';
 import {hotelWorkerResultError} from '../lib/hotel-worker-result.mjs';
 import {packageWorkerResultError} from '../lib/package-worker-result.mjs';
+import {getJobStore} from '../lib/job-store.mjs';
 const cancellation=new AbortController();
 let completed=false;
 const send=message=>{if(process.connected)process.send(message,()=>{});};
@@ -25,7 +26,7 @@ process.once('message',async ({kind='flight',input,checkpoint})=>{
   });
   try {
     const onProgress=progress=>send({progress});
-    const result=kind==='calendar'?await (await import('../lib/calendar-search.mjs')).searchFareCalendar(input,{signal:cancellation.signal,checkpoint,onCheckpoint:saveCheckpoint,onProgress}):kind==='comparison'?await (await import('../lib/comparison-search.mjs')).executeComparison(input,{signal:cancellation.signal,checkpoint,onCheckpoint:saveCheckpoint,onProgress}):kind==='hotel'?await (await import('../lib/hotel-search.mjs')).searchHotel(input,{signal:cancellation.signal,onProgress,nextInteraction:()=>interactions.shift(),onInteractionResult:result=>send({interactionResult:result})}):kind==='package'?await (await import('../lib/vacation-search.mjs')).searchVacation(input,{signal:cancellation.signal,onProgress}):await (await import('../lib/search-request.mjs')).executeFlightSearch(input,{checkpoint,onCheckpoint:saveCheckpoint,onProgress});
+    const result=kind==='calendar'?await (await import('../lib/calendar-search.mjs')).searchFareCalendar(input,{signal:cancellation.signal,checkpoint,onCheckpoint:saveCheckpoint,onProgress}):kind==='comparison'?await (await import('../lib/comparison-search.mjs')).executeComparison(input,{signal:cancellation.signal,checkpoint,onCheckpoint:saveCheckpoint,onProgress}):kind==='hotel'?await (await import('../lib/hotel-search.mjs')).searchHotel(input,{signal:cancellation.signal,onProgress,nextInteraction:()=>interactions.shift(),onInteractionResult:result=>send({interactionResult:result})}):kind==='package'?await (await import('../lib/vacation-search.mjs')).searchVacation(input,{signal:cancellation.signal,onProgress}):await (await import('../lib/search-request.mjs')).executeFlightSearch(input,{checkpoint,onCheckpoint:saveCheckpoint,onProgress,providerCache:getJobStore()});
     if(kind==='calendar'){
       const validationError=calendarWorkerResultError(result);
       if(validationError)throw Error(`Calendar worker result failed validation: ${validationError}.`);

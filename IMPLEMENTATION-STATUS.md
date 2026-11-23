@@ -1,5 +1,11 @@
 # Implementation status against work.md
 
+## Ignav exact-query response cache — 2026-11-23
+
+Implemented a persistent exact-query Ignav cache through the ordinary API and durable worker paths. Cache identity includes route, outbound/return dates and trip type, exact count-party shape and child ages, cabin, filters, CAD/market, and a one-way hash of the configured provider key as account scope. Only positive results whose every offer passes current itinerary/CAD/freshness validation can be stored. The five-minute maximum expiry is capped by the original quote expiry; cache reads do not rewrite observation times. Identified parties, infants, children without exact ages, empty results and invalid/stale offers bypass the cache. SQLite enforces a 100-entry cap and 512 KB per result. UI source status labels cache hits.
+
+Focused tests: 40/40. Full `npm test`: 649/649. Production build: passed after retrying Next.js's security reminder. Rebuilt fixture browser check: passed in 369 ms, with the cached-result label asserted, provider/job traffic intercepted, zero browser errors and external requests blocked. No live warm-cache request was made; this is test evidence, not proof of a live provider cache hit. `npm audit --audit-level=low`: one moderate Next.js 16.4.3 vulnerability; available fix is outside the declared range. This does not close any provider-specific reverse-endpoint or overall `work.md` §17 criterion.
+
 ## Ignav stale-result explanation — 2026-11-23
 
 Changed the visible Ignav source explanation to name stale/expired quotes and unusable fare/itinerary rows instead of exposing internal `quote_freshness`/`unusable` codes; raw reason counts remain available. Focused `tests/ignav.test.mjs`: 24/24; full `npm test`: 642/642. Build passed on retry after the Next.js security reminder. `npm audit --audit-level=low` still finds one moderate Next.js 16.4.3 issue; available fix is outside the declared range. [Evidence](docs/ignav-live-adapter-check-2026-11-23.md).

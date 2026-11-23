@@ -1,5 +1,11 @@
 # Travel Hunter Pro — Current Handoff
 
+## Ignav exact-query response cache — 2026-11-23
+
+Added a durable SQLite response cache for validated Ignav flight offers. It keys on exact route, dates/trip type, count party and exact child ages, cabin, filters, market, currency, and a hash of the configured Ignav account scope. It only caches positive, fully accepted, currently fresh CAD results for count-based parties; identified travelers, infants, missing child ages, empty results, and invalid/stale offers bypass storage. TTL is at most five minutes and never extends the quote's original freshness window. Cache hits preserve each offer's original `observedAt` and the UI labels them “cached observed results.” Storage is capped at 100 entries and 512 KB per result. This is Ignav-only; no cache policy has been inferred for other providers.
+
+Verification: focused cache/store/provider/search tests **40/40**; full `npm test` **649/649**; `npm run build` passed after retrying past Next.js's security reminder; `npm run check:flight-streaming` passed against an isolated production build with fixture traffic intercepted (partial/final rendering in 369 ms, cached label asserted, zero browser errors, external requests blocked); `git diff --check` clean. No live provider request was made to force a cache hit, so live warm-hit behavior remains unverified. `npm audit --audit-level=low` reports one moderate vulnerability in Next.js 16.4.3; the available fix is outside the declared dependency range. Broader reverse-endpoint work and §17 acceptance remain open.
+
 ## Ignav stale-result explanation — 2026-11-23
 
 The Ignav source status now shows readable explanations for stale/expired quotes and rows lacking usable fare/itinerary evidence, while preserving machine-readable rejection counters. Added/updated the stale-result regression. Focused Ignav suite 24/24; full `npm test` 642/642; build succeeded after retrying past the Next.js security reminder; audit still has one moderate Next.js 16.4.3 issue with the available fix outside the declared range. See [dated Ignav evidence](docs/ignav-live-adapter-check-2026-11-23.md).

@@ -19,7 +19,7 @@ try{
   const body=route.request().postDataJSON();
   if(body.action==='start'){
    const input=body.input,now=new Date().toISOString(),query={...input,tripType:input.tripType??'one-way',returnDate:null,cabin:input.cabin??'economy',childrenAges:input.childrenAges??[]};
-   const source={provider:'Ignav',status:'ok',received:1,accepted:1};
+   const source={provider:'Ignav',status:'ok',received:1,accepted:1,cacheStatus:'hit'};
    const locationResolution={origin:{type:'place',kind:'airport',airports:[{code:'YHZ',name:'Halifax Stanfield'}],method:'fixture'},destination:{type:'place',kind:'airport',airports:[{code:'LHR',name:'London Heathrow'}],method:'fixture'}};
    const coverage={side:'both',partial:true,airportLimit:10,pairsChecked:1,pairsPlanned:1,checked:[{origin:{code:'YHZ',name:'Halifax Stanfield'},destination:{code:'LHR',name:'London Heathrow'},sources:[source],offers:1,complete:false}],origin:locationResolution.origin,destination:locationResolution.destination,uncheckedPairs:[],uncheckedAirportPairs:[]};
    const partial={query,observedAt:now,offers:[offer(600,now)],priceObservations:[],sources:[{...source,route:{origin:'YHZ',destination:'LHR'}}],complete:false,partial:true,coverage,locationResolution,originDetection:{type:'place',kind:'airport'},destinationDetection:{type:'place',kind:'airport'},streaming:{providerResponsesReceived:1,providerResponsesPlanned:7,pairsWithResponses:1,pairsPlanned:1,firstResponseMs:450,providerLatencyMs:{ignav:{samples:1,latestMs:440,maxMs:440}}},limitation:'Live partial results; other provider responses are pending.',limitations:['This is a controlled browser fixture.']};
@@ -51,6 +51,7 @@ try{
  const persistedToUiMs=Date.now()-persistedAt;
  assert.ok(persistedToUiMs<1500,`the UI should expose persisted progress within one polling interval; observed ${persistedToUiMs}ms`);
  assert.equal(await results.locator('article.offer').count(),1,'the early provider fare should render before the job completes');
+ await results.getByText('cached observed results',{exact:false}).waitFor();
  assert.match(await results.locator('article.offer').innerText(),/(?:CA\$|CAD\s*)600\.00/);
  assert.match(await results.innerText(),/1 of 7 provider\/route responses received/);
  await results.getByText(/Flight search complete: 1 validated price observation is available\./).waitFor({state:'attached'});
