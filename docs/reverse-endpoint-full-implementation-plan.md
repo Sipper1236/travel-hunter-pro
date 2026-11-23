@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Flight provider status-row schema — 2026-11-23
+
+Flight worker source rows use an allowlist of current provider/orchestration keys. This blocks unsupported nested seller claims but does not yet validate nested telemetry or all source statuses. [Evidence](flight-worker-source-row-schema-2026-11-23.md).
+
 ## Flight offer booking-claim boundary — 2026-11-23
 
 The shared offer validator now blocks unsupported booking-completion and seller-verification claims. This is an honesty constraint only; it does not establish refreshed quote, seller availability, or completed booking. [Evidence](flight-offer-booking-claim-guard-2026-11-23.md).

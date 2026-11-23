@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Flight worker provider-row schema — 2026-11-23
+
+Provider status rows now reject unknown field names, including `sellerVerified`; current adapter metadata remains allowed. Focused cross-provider suites passed 99/99 and full suite 739/739. Build, audit, and controlled browser check passed. Nested telemetry, empty-result status values, and other result subtrees are still open. [Evidence](docs/flight-worker-source-row-schema-2026-11-23.md).
+
 ## Flight offer booking-claim guard — 2026-11-23
 
 Flight offers now fail validation if they carry unsupported `booked`, `ticketed`, or seller-verification properties, or affirmative completed-booking status text. A clear “not booked” status remains valid. Focused tests passed 13/13; full suite 739/739; isolated build, audit, and controlled browser check passed. This prevents unsupported booking claims but does not verify seller availability or checkout price. [Evidence](docs/flight-offer-booking-claim-guard-2026-11-23.md).

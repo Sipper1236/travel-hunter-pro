@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Flight worker provider-row fields — 2026-11-23
+
+Unknown provider status row fields now fail validation. Full suite passed 739/739; build and controlled browser check passed; audit found zero vulnerabilities. Nested telemetry and the remaining worker/result schemas remain incomplete. [Evidence](docs/flight-worker-source-row-schema-2026-11-23.md).
+
 ## Flight offer booking-claim guard — 2026-11-23
 
 Flight-offer validation rejects unsupported completed-booking and seller-verification fields plus affirmative booking-status text. It still permits explicit not-booked observations. Full suite passed 739/739, isolated build and audit passed, and controlled browser QA reported no app errors. Live seller availability remains unverified. [Evidence](docs/flight-offer-booking-claim-guard-2026-11-23.md).

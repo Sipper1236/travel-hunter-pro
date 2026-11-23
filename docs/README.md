@@ -1,5 +1,7 @@
 # Travel Hunter Pro documentation index
 
+- [Flight worker source-row schema (2026-11-23)](flight-worker-source-row-schema-2026-11-23.md) — provider-row key allowlist and explicit remaining nested-schema gaps.
+
 - [Flight offer booking-claim guard (2026-11-23)](flight-offer-booking-claim-guard-2026-11-23.md) — rejects unsupported completed-booking and seller-verification claims while preserving explicit observation status.
 
 - [Flight worker top-level schema (2026-11-23)](flight-worker-top-level-schema-2026-11-23.md) — rejects unsupported result claims and removes duplicate Skyscanner query metadata; nested schemas remain open.

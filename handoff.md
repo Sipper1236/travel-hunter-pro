@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Detailed Handoff (updated 2026-11-23)
 
+## 2026-11-23 continuation — flight provider-row field allowlist
+
+Flight worker provider status rows now reject unknown keys, including an injected `sellerVerified` claim. Current source and regional route metadata remain allowed. Focused tests passed 99/99; full suite 739/739; isolated build, audit, and controlled browser check passed. This does not yet validate the contents of nested timing/diagnostic objects, enumerate source states for empty results, or complete schemas for observations/coverage/other workers. [Evidence](docs/flight-worker-source-row-schema-2026-11-23.md).
+
 ## 2026-11-23 continuation — flight offer booking claims
 
 The shared flight-offer validator blocks unsupported completion fields (`booked`, `reserved`, `ticketed`) and seller-verification flags, plus affirmative completed-booking status text. A stated “not booked” observation remains valid. Red regressions reproduced the false acceptance; focused tests passed 13/13 and full suite 739/739; isolated build, audit, and controlled local browser checks passed. No seller request or booking was made. This is an honesty guard, not proof of current availability, ticket issuance, or checkout price. [Evidence](docs/flight-offer-booking-claim-guard-2026-11-23.md).

@@ -104,6 +104,7 @@ test('each priced offer requires a matching successful provider row with accepte
  assert.match(flightWorkerResultError(result({sources:[{provider:'Ignav',status:'blocked',received:1,accepted:1}]}),input),/no matching successful source status/);
  assert.match(flightWorkerResultError(result({sources:[{provider:'Ignav',status:'ok',received:1,accepted:0}]}),input),/no matching successful source status/);
  assert.match(flightWorkerResultError(result({sources:[{provider:'Ignav',status:'ok',received:1,accepted:2}]}),input),/invalid accepted count/);
+ assert.match(flightWorkerResultError(result({sources:[{provider:'Ignav',status:'ok',received:1,accepted:1,sellerVerified:true}]}),input),/unsupported.*source|source.*field/i);
 });
 
 test('region-expanded flights must belong to a route recorded in exact pair coverage',()=>{

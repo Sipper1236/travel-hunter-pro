@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation plan and inventory
 
+## Flight provider status-row schema — 2026-11-23
+
+Provider result rows now reject unknown top-level fields; current route/source metadata remains accepted. Nested source telemetry and status values still need full schema definitions. [Evidence](flight-worker-source-row-schema-2026-11-23.md).
+
 ## Flight offer booking-claim boundary — 2026-11-23
 
 The normalized offer gate rejects unsupported claims that an offer is booked, ticketed, reserved, or seller-verified. Explicit “not booked” observations are allowed; seller availability still requires an actual seller check. [Evidence](flight-offer-booking-claim-guard-2026-11-23.md).

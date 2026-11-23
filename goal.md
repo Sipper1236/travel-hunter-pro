@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — flight provider-row schema
+
+Added a known-field boundary for flight worker source rows, including regional source coverage; unknown `sellerVerified` metadata now fails validation. Full suite 739/739, build, audit, and controlled browser QA passed. Nested telemetry and the broad completion goal remain open. See [evidence](docs/flight-worker-source-row-schema-2026-11-23.md).
+
 ## 2026-11-23 continuation — reject unsupported booking claims
 
 Added a shared flight-offer guard against invented booking completion and seller-verification claims, retaining explicitly not-booked status wording. Full suite 739/739, build, audit, and controlled browser check passed. Live seller verification and the remaining `work.md` requirements are still open. See [evidence](docs/flight-offer-booking-claim-guard-2026-11-23.md).
