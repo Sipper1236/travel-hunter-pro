@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Detailed Handoff (updated 2026-11-23)
 
+## 2026-11-23 continuation — package worker coverage mode
+
+A test-first regression reproduced that an explicit unknown package `coverage.mode` was accepted as if it were the browser-rendered path. The durable validator now distinguishes the supported structured widget mode from the existing omitted-mode rendered-card result and rejects other values. Package worker plus vacation-search suites passed 33/33; full `npm test` passed 735/735; isolated production build passed; audit found 0 vulnerabilities; and Markdown links passed for 143 files. The local website and worker remained healthy. This closes one schema-discriminator gap; the broader strict worker schema and §17 remain open. No provider query. [Evidence](docs/package-worker-coverage-mode-2026-11-23.md).
+
 ## 2026-11-23 continuation — separate-ticket baseline refusal
 
 The initial exact-itinerary refresh now honors rate-limit and access-stop statuses. Before the fix, a valid baseline plus `rate_limited` could still trigger another fare request. The optimizer now stops after that one request, returns `source_unavailable`, preserves only fresh alternatives from the same partial response, and lists unsearched airport pairs. Route-coverage wording no longer says all pairs responded unless all were actually searched. Focused comparison/search/worker tests passed 61/61; full suite passed 734/734; isolated production build passed; `npm audit --audit-level=low` found zero vulnerabilities; the browser check passed with provider/job calls intercepted, external requests blocked and zero errors. No live request or booking occurred. Seller availability, simultaneous inventory, ticket issuance, baggage, fees, and all-in totals remain open. [Evidence](docs/comparison-baseline-refusal-stop-2026-11-23.md).

@@ -1,5 +1,9 @@
 # Reverse-endpoint implementation map and completion plan
 
+## Package worker coverage-mode validation — 2026-11-23
+
+The package worker now fails closed when an explicit coverage mode is unknown. Only `structured_widget_response` and the legacy rendered-card shape with no `mode` are accepted. This prevents an unrecognized response schema from silently receiving the less strict browser-path checks. Focused package/normalizer tests passed 33/33; full suite 735/735; isolated build passed; audit found 0 vulnerabilities; Markdown links passed for 143 files. No live provider request was made, and broader schema, ACV live access, and §17 acceptance remain open. See [evidence](package-worker-coverage-mode-2026-11-23.md).
+
 ## Current ACV widget entry point — 2026-11-23
 
 The public Flight & Hotel page currently returns promotional content without the widget selectors used by the package adapter. The local site now stops location/package work with a safe unavailable status; no direct endpoint or private credential replay is substituted. Explicit challenge pages are blocked and cooled down without interaction. No fresh package result or latency evidence is available. [Current evidence](acv-current-widget-entrypoint-2026-11-23.md). Continue with other authorized sources while P6 remains open.

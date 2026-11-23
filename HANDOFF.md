@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Package worker coverage-mode schema — 2026-11-23
+
+The durable ACV package validator previously treated every explicit coverage mode except `structured_widget_response` as rendered-card evidence. A test-first regression reproduced acceptance of `unrecognized-provider-mode`; the validator now accepts only the existing structured mode or an omitted mode for the browser path. Focused package worker/normalizer suites passed 33/33; full suite passed 735/735; isolated Next.js 16.4.6 build passed; audit found 0 vulnerabilities; Markdown links passed for 143 files; and `git diff --check` passed. The local site is HTTP 200 and same-origin health is `ok` with one live worker, queue 0 and no expired leases/deadlines. No provider request was made. P0 strict schemas and §17 remain open. [Evidence](docs/package-worker-coverage-mode-2026-11-23.md).
+
 ## Separate-ticket baseline refusal guard — 2026-11-23
 
 The comparison worker previously ignored `rate_limited`/access-stop statuses on the initial baseline response and could issue more fare searches. It now stops immediately, retains only valid alternatives from that same response, marks response completeness accurately, and lists all unsearched airport pairs. The coverage UI no longer claims unsearched pairs returned successfully. Focused comparison/search/worker tests passed 61/61; full suite passed 734/734; isolated Next.js 16.4.6 build passed; audit found 0 vulnerabilities; the intercepted Chromium comparison check passed with zero page errors; `git diff --check` passed. No live fare request. Live seller, inventory, eligibility, and all-in cost remain open. [Evidence](docs/comparison-baseline-refusal-stop-2026-11-23.md).

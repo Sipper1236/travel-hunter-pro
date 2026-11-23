@@ -151,3 +151,8 @@ test('package worker permits empty observed results while retaining honest cover
  const invalid=makeResult();invalid.offers=[null];invalid.received=1;invalid.rejected=0;
  assert.match(packageWorkerResultError(invalid,input,now),/invalid package offer/);
 });
+
+test('package worker rejects an unknown coverage mode instead of treating it as browser evidence',()=>{
+ const result=makeResult();result.coverage.mode='unrecognized-provider-mode';
+ assert.match(packageWorkerResultError(result,input,now),/unknown package coverage mode/);
+});

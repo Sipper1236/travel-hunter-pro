@@ -1,5 +1,9 @@
 # Goal — Complete Travel Hunter Pro against `work.md`
 
+## 2026-11-23 continuation — package coverage-mode guard
+
+The package worker no longer treats an unknown explicit coverage mode as rendered-card evidence. The regression failed before the guard; focused package/vacation tests passed 33/33, full suite passed 735/735, isolated build passed, audit found 0 vulnerabilities, and Markdown links passed for 143 files. No provider request was made; this advances the strict worker-schema work without closing P0 or §17. [Evidence](docs/package-worker-coverage-mode-2026-11-23.md).
+
 ## 2026-11-23 continuation — separate-ticket refusal handling
 
 Fixed a source-stop gap in separate-ticket comparisons: a baseline response marked rate-limited or access-denied no longer triggers additional route/block requests. Fresh alternate itineraries from that same response may remain visible as partial observations; unsearched pairs are listed, and the UI only claims successful pair coverage when all planned pairs were actually searched. Focused suites passed 61/61, full suite 734/734, production build passed, audit found 0 vulnerabilities, and the fixture-driven Chromium check passed with zero page errors. No live fares or seller status were checked; the overall `work.md` completion goal remains open. [Evidence](docs/comparison-baseline-refusal-stop-2026-11-23.md).

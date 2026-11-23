@@ -1,5 +1,7 @@
 # Travel Hunter Pro documentation index
 
+- [Package worker coverage-mode validation (2026-11-23)](package-worker-coverage-mode-2026-11-23.md) — rejects unknown explicit coverage modes rather than validating them as rendered-card results; one incremental strict-schema fix.
+
 - [Separate-ticket baseline refusal guard (2026-11-23)](comparison-baseline-refusal-stop-2026-11-23.md) — stops after a refused baseline request, preserves only partial observed routes, and reports unsearched airport pairs accurately.
 - [ACV current widget entry point and safe-stop behavior (2026-11-23)](acv-current-widget-entrypoint-2026-11-23.md) — current public page has no visible search form; local UI stops safely, with no query or fare, and challenge handling is tested.
 - [Hotel worker status schema (2026-11-23)](hotel-worker-status-guard-2026-11-23.md) — known search outcomes, no booking claims, and a cache-test isolation correction.

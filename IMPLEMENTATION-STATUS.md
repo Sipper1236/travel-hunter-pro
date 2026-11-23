@@ -1,5 +1,9 @@
 # Implementation status against work.md
 
+## Package worker coverage-mode schema — 2026-11-23
+
+An explicit unknown ACV package coverage mode can no longer be mistaken for the rendered-card path. The durable validator allows only `structured_widget_response` or the existing omitted-mode browser result. The red regression failed before the guard; focused tests passed 33/33 and full `npm test` passed 735/735. Isolated build passed, audit found 0 vulnerabilities, 143 Markdown files passed link checks, and `git diff --check` passed. Local HTTP 200/health `ok`; one worker available, queue 0, no expired leases/deadlines. No provider request. This is one field-discriminator improvement, not a complete package schema or live ACV acceptance. [Evidence](docs/package-worker-coverage-mode-2026-11-23.md).
+
 ## Separate-ticket baseline refusal guard — 2026-11-23
 
 The optimizer now honors rate-limit/access-stop statuses on the initial baseline response and sends no route or ticket-block follow-up requests afterward. Valid alternatives from that same response remain labeled partial; if no fresh selected itinerary is returned, the status is `source_unavailable`, not `baseline_unavailable`. The UI identifies planned airport pairs that were never searched and only says all pairs returned responses when every pair actually did. Focused suites passed 61/61; full `npm test` passed 734/734; isolated production build passed; audit found zero vulnerabilities; Chromium browser check passed with calls intercepted and zero page errors; `git diff --check` passed. No live provider call; this improves P3 request-stop/coverage accuracy but does not establish route exhaustiveness, live inventory, seller issuance, or comparable final costs. [Evidence](docs/comparison-baseline-refusal-stop-2026-11-23.md).
