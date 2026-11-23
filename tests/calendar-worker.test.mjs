@@ -44,7 +44,10 @@ test('actual worker prices native Google regional return/night combinations with
   worker=startSearchWorker({store,pollMs:10,spawn:()=>{const child=fork(new URL('../scripts/flight-job-runner.mjs',import.meta.url),[],{execArgv:['--import',new URL('./fixtures/google-native-transport.mjs',import.meta.url).href],env:{...process.env,TRAVEL_GOOGLE_ROUND_TRIP:'1',TRAVEL_TIMEZONE_CACHE_DIR:join(directory,'timezones'),TRAVEL_JOB_DB:path},stdio:['ignore','ignore','ignore','ipc']});children.push(child);return child;}});
   const end=Date.now()+60000;while(!['complete','error'].includes(store.get(job.id).status)){if(Date.now()>end)throw Error('Google native worker fixture timed out.');await new Promise(resolve=>setTimeout(resolve,25));}
   const done=store.get(job.id);assert.equal(done.status,'complete',JSON.stringify(done.error));
-  assert.deepEqual(done.result.query.childrenAges,[15]);assert.equal(done.result.coverage.pairQueriesPlanned,4);assert.equal(done.result.coverage.pairQueriesChecked,4);assert.equal(done.result.coverage.fareRequestsStarted,4);
+  assert.deepEqual(done.result.query.childrenAges,[15]);
+  assert.equal(done.result.coverage.pairQueriesPlanned,4,`Expected two return dates across two airport pairs: ${JSON.stringify(done.result.coverage)}`);
+  assert.equal(done.result.coverage.pairQueriesChecked,4,`Expected each planned regional pair to complete: ${JSON.stringify(done.result)}`);
+  assert.equal(done.result.coverage.fareRequestsStarted,4,`Expected one provider request per route/date pair: ${JSON.stringify(done.result.coverage)}`);
   assert.equal(done.result.coverage.fullyScanned,true);assert.equal(done.result.dates.length,2);
   for(const cell of done.result.dates){assert.equal(cell.offer.provider,'Google Flights');assert.equal(cell.offer.price,1200);assert.equal(cell.offer.inbound.departureDate,cell.returnDate);assert.equal(cell.offer.timeEvidence.status,'directory_validated');assert.deepEqual(cell.offer.googleParty,{adults:3,children:0,total:3});assert.equal(cell.providerCoverage[0].nativeCoverage.nativeRpcResponses,3);}
  }finally{worker?.stop();for(const child of children)if(child.exitCode===null)child.kill('SIGKILL');await rm(directory,{recursive:true,force:true});}
