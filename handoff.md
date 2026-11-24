@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Detailed Handoff (updated 2026-11-23)
 
+## 2026-11-23 continuation — nested flight-offer fields
+
+The flight-offer gate now rejects unknown properties inside segments and inbound legs, with regressions for injected nested seller claims. The Expedia dispatcher test fixture now models the provider's normalized inbound leg rather than cloning the entire offer. Flight-worker tests passed 14/14, provider tests 16/16, and the full suite passed 740/740. Isolated build passed, audit found zero vulnerabilities, browser and Markdown-link checks passed, and local health reported one live worker, queue 0, and no expired leases/deadlines. Nested provider metadata and source truth remain open. No live provider call. [Evidence](docs/flight-offer-nested-field-schema-2026-11-23.md).
+
 ## 2026-11-23 continuation — flight-offer field boundary
 
 Added a top-level allowlist to the shared flight-offer validator after a red regression showed an injected `sellerConfirmed` property passed. Current adapter fields remain accepted. Full suite passed 740/740, isolated production build passed, audit found zero vulnerabilities, and the controlled loopback browser check passed with provider/job calls intercepted and zero app errors/CSP violations. The local dev page was opened at `http://127.0.0.1:3000`; the dev stack and worker were already running. No live source call. Nested schemas and the larger `work.md` goal remain open. [Evidence](docs/flight-offer-field-schema-2026-11-23.md).

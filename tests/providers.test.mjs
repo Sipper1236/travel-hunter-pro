@@ -174,7 +174,7 @@ test('one-way Google search and top metrics remain scoped to their own operation
 test('provider dispatcher allows documented Expedia round-trip child-age requests without reducing the party',async()=>{
  const input={...query,tripType:'round-trip',returnDate:'2099-04-20',adults:2,children:1,childrenAges:[14],source:'expedia'};let seen;
  const outbound={...fare(1200,'Expedia'),travelers:'2 adults, 1 child (14)',durationMinutes:540};
- const inbound={...outbound,from:'BCN',to:'YHZ',departureDate:input.returnDate,departureTime:'09:00',arrivalDate:input.returnDate,arrivalTime:'18:00',segments:[segment('BCN','YHZ','EA','EA456',input.returnDate)]};
+ const inbound={from:'BCN',to:'YHZ',departureDate:input.returnDate,departureTime:'09:00',arrivalDate:input.returnDate,arrivalTime:'18:00',durationMinutes:540,via:[],airlines:['Example Air'],segments:[segment('BCN','YHZ','EA','EA456',input.returnDate)]};
  const result=await searchProviders(input,{searchExpedia:async value=>{seen=value;return {offers:[{...outbound,inbound}],sources:[{provider:'Expedia',status:'ok'}]};}});
  assert.equal(seen.tripType,'round-trip');assert.equal(seen.returnDate,input.returnDate);assert.deepEqual(seen.childrenAges,[14]);
  assert.equal(result.offers.length,1);assert.equal(result.offers[0].inbound.departureDate,input.returnDate);

@@ -1,5 +1,9 @@
 # Travel Hunter Pro — Current Handoff
 
+## Flight offer nested itinerary schema — 2026-11-23
+
+Unknown segment and inbound-leg fields are now rejected by the shared offer validator, closing nested `sellerConfirmed` claim paths. Existing provider segment aliases remain accepted; one dispatcher test fixture was narrowed to the actual inbound-leg shape. Flight-worker tests passed 14/14, provider dispatcher tests 16/16, and full `npm test` passed 740/740. The isolated production build passed, audit found zero vulnerabilities, browser QA passed with provider/job calls intercepted and no browser/application errors, and all 151 Markdown files passed. Local health is `ok`, queue 0, one live worker, 11 stale historical workers, no expired leases/deadlines; the site is open at `http://127.0.0.1:3000`. Nested provider metadata values remain open. No live supplier/seller query. See [nested schema evidence](docs/flight-offer-nested-field-schema-2026-11-23.md).
+
 ## Flight offer top-level field schema — 2026-11-23
 
 `flightOfferError` now rejects unknown top-level offer properties. The red regression reproduced acceptance of an injected `sellerConfirmed` claim; adapter fields in the current Google, Expedia, Ignav, Matrix, Skyscanner, Air Canada NDC, and Omkar flows remain allowed. Full `npm test` passed 740/740, an isolated Next.js 16.4.6 build passed, audit found zero vulnerabilities, and the controlled loopback `check:flight-default` passed with provider/job calls intercepted, no browser errors, and no application CSP violations. The local page returned HTTP 200 and was opened; its existing dev stack and worker were already live. No live fare/seller request occurred. This checks top-level names only; nested metadata values, seller confirmation, passenger eligibility, and all-in prices remain open. [Evidence](docs/flight-offer-field-schema-2026-11-23.md).

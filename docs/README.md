@@ -1,5 +1,7 @@
 # Travel Hunter Pro documentation index
 
+- [Flight offer nested itinerary schema (2026-11-23)](flight-offer-nested-field-schema-2026-11-23.md) — rejects unknown inbound-leg and segment keys; records regression and provider-fixture correction, with nested-metadata and live-source limits.
+
 - [Flight offer top-level field schema (2026-11-23)](flight-offer-field-schema-2026-11-23.md) — rejects unknown offer properties while preserving the current adapter keys; records full test/build/audit/UI checks and the open recursive/live-verification limits.
 
 - [Flight price-observation schema (2026-11-23)](flight-worker-price-observation-schema-2026-11-23.md) — rejects unsupported booking and seller claims on price-only observations.

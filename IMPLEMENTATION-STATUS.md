@@ -1,5 +1,13 @@
 # Implementation status against work.md
 
+## Flight offer nested itinerary schema — 2026-11-23
+
+**Implemented:** Current offer validation rejects unknown keys on inbound-leg and segment objects, including injected seller claims. Adapter-supported carrier, time, and route field variants remain allowed. A provider-dispatch fixture now uses the actual inbound-leg shape.
+
+**Verified:** Flight worker tests 14/14; provider dispatcher tests 16/16; full `npm test` 740/740; isolated Next.js 16.4.6 build; zero npm audit findings; controlled browser check with intercepted provider/job calls; all 151 Markdown files pass. Same-origin local health is `ok`, queue 0, one live worker, zero expired leases/deadlines. No live provider or seller request. See [evidence](docs/flight-offer-nested-field-schema-2026-11-23.md).
+
+**Still open:** Nested provider metadata and cross-field values are not recursively schema-checked. Live fare truth, traveler eligibility, seller availability, fees, and final charges are not established. The broad §17 completion criteria remain open.
+
 ## Flight offer top-level field schema — 2026-11-23
 
 **Implemented:** The shared flight-offer validator rejects fields outside the current adapters' known top-level offer keys; the regression reproduces a previously accepted `sellerConfirmed: true` property.

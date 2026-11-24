@@ -40,6 +40,8 @@ test('flight worker offers cannot claim a completed booking or seller verificati
  assert.ok(flightWorkerResultError(result({offers:[offer({sellerVerified:true})]}),input));
  assert.ok(flightWorkerResultError(result({offers:[offer({bookingStatus:'Booked and ticketed.'})]}),input));
  assert.ok(flightWorkerResultError(result({offers:[offer({sellerConfirmed:true})]}),input));
+ const nestedClaim=offer();nestedClaim.segments[0].sellerConfirmed=true;
+ assert.ok(flightWorkerResultError(result({offers:[nestedClaim]}),input));
  assert.equal(flightWorkerResultError(result({offers:[offer({bookingStatus:'Not booked; seller not rechecked.'})]}),input),null);
 });
 
@@ -69,6 +71,10 @@ test('flight worker rejects round trips whose inbound leg departs before the out
  ]};
  const submitted={...input,tripType:'round-trip',returnDate:'2099-04-15'},returned={...result().query,tripType:'round-trip',returnDate:'2099-04-15'};
  assert.ok(flightWorkerResultError(result({query:returned,offers:[outbound]}),submitted));
+ const validReturn=structuredClone(outbound);validReturn.inbound.departureTime='19:00';validReturn.inbound.arrivalTime='22:00';validReturn.inbound.durationMinutes=420;validReturn.inbound.segments[0].departure_time_local='2099-04-15T19:00:00+01:00';validReturn.inbound.segments[0].departure_time_utc='2099-04-15T18:00:00Z';validReturn.inbound.segments[0].arrival_time_local='2099-04-15T22:00:00-03:00';validReturn.inbound.segments[0].arrival_time_utc='2099-04-16T01:00:00Z';
+ assert.equal(flightWorkerResultError(result({query:returned,offers:[validReturn]}),submitted),null);
+ const unknownReturn=structuredClone(validReturn);unknownReturn.inbound.sellerConfirmed=true;
+ assert.ok(flightWorkerResultError(result({query:returned,offers:[unknownReturn]}),submitted));
 });
 
 test('flight worker query preserves exact count-party ages and every submitted filter',()=>{
